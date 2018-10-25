@@ -1,0 +1,30 @@
+
+{
+    "svn2GitApp": {
+        "migration" : {
+            "home": {
+                "title": "Migrations",
+                "createLabel": "Créer un nouveau Migration",
+                "createOrEditLabel": "Créer ou éditer un Migration"
+            },
+            "created": "Un nouveau Migration a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Migration avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Migration avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Migration {{ id }} ?"
+            },
+            "detail": {
+                "title": "Migration"
+            },
+            "svnGroup": "Svn Group",
+            "svnProject": "Svn Project",
+            "user": "User",
+            "date": "Date",
+            "gitlabGroup": "Gitlab Group",
+            "gitlabProject": "Gitlab Project",
+            "status": "Status",
+            "history": "History",
+            "title": "Migration"
+        }
+    }
+}

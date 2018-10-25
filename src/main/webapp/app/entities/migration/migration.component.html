@@ -1,0 +1,66 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="svn2GitApp.migration.home.title">Migrations</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-migration" [routerLink]="['/migration/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="svn2GitApp.migration.home.createLabel">
+            Create new Migration
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="table-responsive" *ngIf="migrations">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="reset.bind(this)">
+            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="svnGroup"><span jhiTranslate="svn2GitApp.migration.svnGroup">Svn Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="svnProject"><span jhiTranslate="svn2GitApp.migration.svnProject">Svn Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="user"><span jhiTranslate="svn2GitApp.migration.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="gitlabGroup"><span jhiTranslate="svn2GitApp.migration.gitlabGroup">Gitlab Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="gitlabProject"><span jhiTranslate="svn2GitApp.migration.gitlabProject">Gitlab Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
+            <tr *ngFor="let migration of migrations ;trackBy: trackId">
+                <td><a [routerLink]="['/migration', migration.id, 'view' ]">{{migration.id}}</a></td>
+                <td>{{migration.svnGroup}}</td>
+                <td>{{migration.svnProject}}</td>
+                <td>{{migration.user}}</td>
+                <td>{{migration.date | date:'mediumDate'}}</td>
+                <td>{{migration.gitlabGroup}}</td>
+                <td>{{migration.gitlabProject}}</td>
+                <td>{{migration.status}}</td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['/migration', migration.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/migration', migration.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'migration/'+ migration.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

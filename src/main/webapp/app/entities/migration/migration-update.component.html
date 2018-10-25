@@ -1,0 +1,94 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
+            <h2 id="jhi-migration-heading" jhiTranslate="svn2GitApp.migration.home.createOrEditLabel">Create or edit a Migration</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!migration.id">
+                    <label for="id" jhiTranslate="global.field.id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id"
+                        [(ngModel)]="migration.id" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnGroup" for="field_svn_group">Svn Group</label>
+                    <input type="text" class="form-control" name="svnGroup" id="field_svn_group"
+                        [(ngModel)]="migration.svnGroup" required/>
+                    <div [hidden]="!(editForm.controls.svnGroup?.dirty && editForm.controls.svnGroup?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.svnGroup?.errors?.required" jhiTranslate="entity.validation.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnProject" for="field_svn_project">Svn Project</label>
+                    <input type="text" class="form-control" name="svnProject" id="field_svn_project"
+                        [(ngModel)]="migration.svnProject" required/>
+                    <div [hidden]="!(editForm.controls.svnProject?.dirty && editForm.controls.svnProject?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.svnProject?.errors?.required" jhiTranslate="entity.validation.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.user" for="field_user">User</label>
+                    <input type="text" class="form-control" name="user" id="field_user"
+                        [(ngModel)]="migration.user" required/>
+                    <div [hidden]="!(editForm.controls.user?.dirty && editForm.controls.user?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.user?.errors?.required" jhiTranslate="entity.validation.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.date" for="field_date">Date</label>
+                    <div class="input-group">
+                        <input id="field_date" type="text" class="form-control" name="date" ngbDatepicker  #dateDp="ngbDatepicker" [(ngModel)]="migration.date"
+                        />
+                        <span class="input-group-append">
+                            <button type="button" class="btn btn-secondary" (click)="dateDp.toggle()"><fa-icon [icon]="'calendar-alt'"></fa-icon></button>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabGroup" for="field_gitlab_group">Gitlab Group</label>
+                    <input type="text" class="form-control" name="gitlabGroup" id="field_gitlab_group"
+                        [(ngModel)]="migration.gitlabGroup" required/>
+                    <div [hidden]="!(editForm.controls.gitlabGroup?.dirty && editForm.controls.gitlabGroup?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.gitlabGroup?.errors?.required" jhiTranslate="entity.validation.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabProject" for="field_gitlab_project">Gitlab Project</label>
+                    <input type="text" class="form-control" name="gitlabProject" id="field_gitlab_project"
+                        [(ngModel)]="migration.gitlabProject" required/>
+                    <div [hidden]="!(editForm.controls.gitlabProject?.dirty && editForm.controls.gitlabProject?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.gitlabProject?.errors?.required" jhiTranslate="entity.validation.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.status" for="field_status">Status</label>
+                    <input type="text" class="form-control" name="status" id="field_status"
+                        [(ngModel)]="migration.status" />
+                </div>
+
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

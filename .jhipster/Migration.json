@@ -1,0 +1,64 @@
+{
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "relationships": [
+        {
+            "relationshipName": "history",
+            "otherEntityName": "migration_history",
+            "relationshipType": "one-to-many",
+            "otherEntityRelationshipName": "migration"
+        }
+    ],
+    "fields": [
+        {
+            "fieldName": "svn_group",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "svn_project",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "user",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "date",
+            "fieldType": "LocalDate"
+        },
+        {
+            "fieldName": "gitlab_group",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "gitlab_project",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "status",
+            "fieldType": "String"
+        }
+    ],
+    "changelogDate": "20181009153343",
+    "dto": "no",
+    "searchEngine": false,
+    "service": "no",
+    "entityTableName": "migration",
+    "jpaMetamodelFiltering": false,
+    "pagination": "infinite-scroll"
+}

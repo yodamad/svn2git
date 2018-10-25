@@ -1,0 +1,9 @@
+{
+    "svn2GitApp": {
+        "StepEnum" : {
+            "null": "",
+            "SVN_CHECKOUT": "SVN_CHECKOUT",
+            "GIT_PUSH": "GIT_PUSH"
+        }
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "relationships": [
+        {
+            "relationshipName": "migration",
+            "otherEntityName": "migration",
+            "relationshipType": "many-to-one",
+            "otherEntityField": "id"
+        }
+    ],
+    "fields": [
+        {
+            "fieldName": "step",
+            "fieldType": "StepEnum",
+            "fieldValues": "GITLAB_PROJECT_CREATION,SVN_CHECKOUT,GIT_CLEANING,GIT_PUSH"
+        },
+        {
+            "fieldName": "status",
+            "fieldType": "StatusEnum",
+            "fieldValues": "WAITING,RUNNING,DONE,FAILED"
+        },
+        {
+            "fieldName": "date",
+            "fieldType": "Instant"
+        },
+        {
+            "fieldName": "data",
+            "fieldType": "String"
+        }
+    ],
+    "changelogDate": "20181024090448",
+    "dto": "no",
+    "searchEngine": false,
+    "service": "serviceClass",
+    "entityTableName": "migration_history",
+    "jpaMetamodelFiltering": false,
+    "pagination": "no"
+}

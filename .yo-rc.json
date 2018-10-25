@@ -1,0 +1,38 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "fr.yodamad.svn2git",
+      "nativeLanguage": "en"
+    },
+    "jhipsterVersion": "5.4.2",
+    "applicationType": "monolith",
+    "baseName": "svn2git",
+    "packageName": "fr.yodamad.svn2git",
+    "packageFolder": "fr/yodamad/svn2git",
+    "serverPort": "8080",
+    "authenticationType": "jwt",
+    "cacheProvider": "no",
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "h2Disk",
+    "prodDatabaseType": "mysql",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": false,
+    "buildTool": "maven",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "MWU2ZWM1ZDEyM2MxZWRjNzJmMDQ1YTJkNzYzYzM3MWRkYTliMWYyNWRjMDMzOTVmNzYxNmQ2NDAyMTA1Y2IwODAyZWFkNmIzMjM1ODA5YzFhM2NjYmU0MzNkZDk5YmJkMTM2M2Y5MmEyYTAzZTY1YTgzMzY3NTdmOWY0MTYxM2U=",
+    "clientFramework": "angularX",
+    "useSass": true,
+    "clientPackageManager": "npm",
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "otherModules": [],
+    "enableTranslation": true,
+    "nativeLanguage": "en",
+    "languages": [
+      "en",
+      "fr"
+    ]
+  }
+}

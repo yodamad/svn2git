@@ -1,0 +1,51 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="migration">
+            <h2><span jhiTranslate="svn2GitApp.migration.detail.title">Migration</span> {{migration.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="svn2GitApp.migration.svnGroup">Svn Group</span></dt>
+                <dd>
+                    <span>{{migration.svnGroup}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.svnProject">Svn Project</span></dt>
+                <dd>
+                    <span>{{migration.svnProject}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.user">User</span></dt>
+                <dd>
+                    <span>{{migration.user}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.date">Date</span></dt>
+                <dd>
+                    <span>{{migration.date}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.gitlabGroup">Gitlab Group</span></dt>
+                <dd>
+                    <span>{{migration.gitlabGroup}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.gitlabProject">Gitlab Project</span></dt>
+                <dd>
+                    <span>{{migration.gitlabProject}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.status">Status</span></dt>
+                <dd>
+                    <span>{{migration.status}}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/migration', migration.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

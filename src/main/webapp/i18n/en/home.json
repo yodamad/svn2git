@@ -1,0 +1,10 @@
+{
+    "home": {
+        "title": "Welcome, SVN2GIT migration tool!",
+        "question": "If you have any question on Gitlab",
+        "link": {
+            "gitlab": "Gitlab UI"
+        },
+        "start" : "Start"
+    }
+}

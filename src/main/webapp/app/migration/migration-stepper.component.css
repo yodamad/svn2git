@@ -1,0 +1,23 @@
+.ok {
+    background-color: #28a745;
+    color: white;
+}
+
+.ko {
+    background-color: darkred;
+    color: white;
+}
+
+.summary-card {
+    max-width: 400px;
+    margin: 20px;
+}
+
+.my-header {
+    font-size: x-large;
+}
+
+.center-block {
+    width: 50%;
+    margin: 0 auto;
+}

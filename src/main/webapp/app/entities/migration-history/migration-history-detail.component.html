@@ -1,0 +1,45 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="migrationHistory">
+            <h2><span jhiTranslate="svn2GitApp.migrationHistory.detail.title">Migration History</span> {{migrationHistory.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="svn2GitApp.migrationHistory.step">Step</span></dt>
+                <dd>
+                    <span jhiTranslate="{{'svn2GitApp.StepEnum.' + migrationHistory.step}}">{{migrationHistory.step}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migrationHistory.status">Status</span></dt>
+                <dd>
+                    <span jhiTranslate="{{'svn2GitApp.StatusEnum.' + migrationHistory.status}}">{{migrationHistory.status}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migrationHistory.date">Date</span></dt>
+                <dd>
+                    <span>{{migrationHistory.date}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migrationHistory.data">Data</span></dt>
+                <dd>
+                    <span>{{migrationHistory.data}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migrationHistory.migration">Migration</span></dt>
+                <dd>
+                    <div *ngIf="migrationHistory.migration">
+                        <a [routerLink]="['/migration', migrationHistory.migration?.id, 'view']">{{migrationHistory.migration?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/migration-history', migrationHistory.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

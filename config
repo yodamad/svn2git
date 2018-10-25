@@ -1,0 +1,6 @@
+[remote "origin"]
+	url = http://d18c33695e1f/spd/spd_rd.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[remote "gitlab"]
+	url = http://d18c33695e1f/spd/spd_rd.git
+	fetch = +refs/heads/*:refs/remotes/gitlab/*

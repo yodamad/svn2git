@@ -1,0 +1,96 @@
+<mat-horizontal-stepper [linear]="true" #stepper>
+    <!-- First step -->
+    <mat-step [stepControl]="userFormGroup">
+        <form [formGroup]="userFormGroup">
+            <ng-template matStepLabel matStepperIcon="edit">Create your Gitlab account</ng-template>
+            <div>
+                <mat-form-field>
+                    <input matInput placeholder="Gitlab username" formControlName="gitlabUser" required>
+                </mat-form-field>
+                <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)">Check</button>
+            </div>
+            <div>
+                <button mat-stroked-button matStepperNext [disabled]="gitlabUserKO"><i class="material-icons">navigate_next</i> Next</button>
+            </div>
+        </form>
+    </mat-step>
+
+    <!-- First step -->
+    <mat-step [stepControl]="groupFormGroup">
+        <form [formGroup]="groupFormGroup">
+            <ng-template matStepLabel matStepperIcon="done">Create your group on Gitlab</ng-template>
+            <div>
+                <mat-form-field>
+                    <input matInput placeholder="Gitlab group name" formControlName="gitlabGroup" required>
+                </mat-form-field>
+                <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)">Check</button>
+            </div>
+            <div>
+                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> Back</button>
+                <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO"><i class="material-icons">navigate_next</i> Next</button>
+            </div>
+        </form>
+    </mat-step>
+
+    <!-- Third step -->
+    <mat-step [stepControl]="svnFormGroup">
+        <form [formGroup]="svnFormGroup">
+            <ng-template matStepLabel>Check your SVN repository</ng-template>
+            <div>
+                <mat-form-field>
+                    <input matInput placeholder="SVN repository name" formControlName="svnRepository" required>
+                </mat-form-field>
+                <button type="button" mat-raised-button (click)="checkSvnRepository()" [ngClass]="cssClass(svnRepoKO)">Check</button>
+            </div>
+            <div *ngIf="svnDirectories !== null && svnDirectories.length > 0">
+                Choose directories to migrate :
+                <mat-selection-list #dirs [ngModel]="selectedSvnDirectories" (ngModelChange)="onSelectedOptionsChange($event)" [ngModelOptions]="{standalone: true}">
+                    <mat-list-option *ngFor="let directory of svnDirectories" [value]="directory">
+                        {{directory}}
+                    </mat-list-option>
+                </mat-selection-list>
+            </div>
+            <div>
+                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> Back</button>
+                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO"><i class="material-icons">navigate_next</i> Next</button>
+            </div>
+        </form>
+    </mat-step>
+
+    <!-- Last step -->
+    <mat-step>
+        <ng-template matStepLabel>Done</ng-template>
+        <mat-card class="summary-card">
+            <mat-card-header class="card-header">
+                <mat-card-title class="my-header">{{svnFormGroup.controls['svnRepository'].value | uppercase}}</mat-card-title>
+                <mat-card-subtitle style="margin: 0">Migration summary</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <mat-list>
+                    <mat-list-item>
+                        <mat-icon mat-list-icon>face</mat-icon>
+                        <p mat-line>{{userFormGroup.controls['gitlabUser'].value}}</p>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-icon mat-list-icon>flight_takeoff</mat-icon>
+                        <p mat-line>(SVN) {{svnFormGroup.controls['svnRepository'].value}}</p>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-icon mat-list-icon>flight_land</mat-icon>
+                        <p mat-line>(Gitlab) {{groupFormGroup.controls['gitlabGroup'].value}}</p>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-icon mat-list-icon>format_list_bulleted</mat-icon>
+                        <p mat-line>{{selectedSvnDirectories}}</p>
+                    </mat-list-item>
+                </mat-list>
+            </mat-card-content>
+            <mat-card-actions class="center-block">
+                <button mat-stroked-button (click)="go()" class="ok" *ngIf="!migrationStarted"><i class="material-icons">power_settings_new</i> Start migration</button>
+                <button mat-stroked-button *ngIf="migrationStarted" disabled><i class="material-icons">check</i> Migration planned</button>
+            </mat-card-actions>
+        </mat-card>
+        <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> Back</button>
+        <button mat-stroked-button routerLink="/"><i class="material-icons">home</i> Home</button>
+    </mat-step>
+</mat-horizontal-stepper>

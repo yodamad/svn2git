@@ -1,0 +1,25 @@
+
+{
+    "svn2GitApp": {
+        "migration_history" : {
+            "home": {
+                "title": "Migration_histories",
+                "createLabel": "Créer un nouveau Migration History",
+                "createOrEditLabel": "Créer ou éditer un Migration History"
+            },
+            "created": "Un nouveau Migration History a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Migration History avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Migration History avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Migration History {{ id }} ?"
+            },
+            "detail": {
+                "title": "Migration History"
+            },
+            "step": "Step",
+            "status": "Status",
+            "date": "Date",
+            "migration": "Migration"
+        }
+    }
+}

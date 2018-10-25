@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 public class MigrationManager {
 
     @Value("${svn.url}") String svnUrl;
+    @Value("${gitlab.url}") String gitlabUrl;
 
     private final GitlabAdmin gitlab;
     private final MigrationRepository migrationRepository;
@@ -63,7 +64,7 @@ public class MigrationManager {
             migrationRepository.save(migration);
 
             // 1. Create project on gitlab : OK
-            history = startStep(migration, StepEnum.GITLAB_PROJECT_CREATION);
+            history = startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, gitlabUrl + migration.getGitlabGroup());
 
             Group group = gitlab.groupApi().getGroup(migration.getGitlabGroup());
             Project project = gitlab.projectApi().createProject(group.getId(), migration.getSvnProject());
@@ -71,13 +72,17 @@ public class MigrationManager {
             endStep(history);
 
             // 1. Checkout SVN repository : OK
-            history = startStep(migration, StepEnum.SVN_CHECKOUT);
+            history = startStep(migration, StepEnum.SVN_CHECKOUT, svnUrl + migration.getSvnGroup());
 
             String mkdir = "mkdir " + migration.getId();
             execCommand(System.getProperty("java.io.tmpdir"), mkdir);
 
             // 1.
-            String initCommand = "git clone --mirror http://localhost/spd/spd_rd.git spd";
+            String initCommand = String.format("git clone --mirror %s/%s/%s.git %s",
+                gitlabUrl,
+                migration.getGitlabGroup(),
+                migration.getSvnProject(),
+                migration.getGitlabGroup());
             execCommand(rootWorkingDir, initCommand);
 
             String cloneCommand = String.format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
@@ -91,7 +96,7 @@ public class MigrationManager {
             endStep(history);
 
             // 3. Clean large files
-            history = startStep(migration, StepEnum.GIT_CLEANING);
+            history = startStep(migration, StepEnum.GIT_CLEANING, null);
 
             Main.main(new String[]{"--delete-files", "*.zip", "--no-blob-protection", gitWorkingDir});
             String gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
@@ -104,12 +109,14 @@ public class MigrationManager {
             // 4.2 Set up target structure
             // 4.3 Git commit
             // 4.4 Git push
-            history = startStep(migration, StepEnum.GIT_PUSH);
+            history = startStep(migration, StepEnum.GIT_PUSH, null);
 
-            //addRemote(git,"origin", project.getHttpUrlToRepo());
-            addRemote(git,"origin","http://localhost/spd/spd_rd.git");
-            //addRemote(git,"gitlab", project.getHttpUrlToRepo());
-            addRemote(git,"gitlab","http://localhost/spd/spd_rd.git");
+            String gitUrl = String.format("%s/%s/%s.git",
+                gitlabUrl,
+                migration.getGitlabGroup(),
+                migration.getSvnProject());
+            addRemote(git,"origin", gitUrl);
+            addRemote(git,"gitlab", gitUrl);
 
             PushCommand pushCommand = git.push();
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(migration.getUser(), "XYbJSzgWxbuJKrfwaQ1Q"));
@@ -120,9 +127,6 @@ public class MigrationManager {
             migration.setStatus(StatusEnum.DONE);
             migrationRepository.save(migration);
         } catch (Exception exc) {
-
-            exc.printStackTrace();
-
             if (history != null) {
                 history.setStatus(StatusEnum.FAILED);
                 migrationHistoryRepository.save(history);
@@ -182,12 +186,17 @@ public class MigrationManager {
     }
 
     // History management
-    private MigrationHistory startStep(Migration migration, StepEnum step) {
+    private MigrationHistory startStep(Migration migration, StepEnum step, String data) {
         MigrationHistory history = new MigrationHistory()
             .step(step)
             .migration(migration)
             .date(Instant.now())
             .status(StatusEnum.RUNNING);
+
+        if (data != null) {
+            history.data(data);
+        }
+
         return migrationHistoryRepository.save(history);
     }
 

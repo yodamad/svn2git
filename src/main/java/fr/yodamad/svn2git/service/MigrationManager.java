@@ -71,13 +71,13 @@ public class MigrationManager {
 
             endStep(history);
 
-            // 1. Checkout SVN repository : OK
+            // 2. Checkout SVN repository : OK
             history = startStep(migration, StepEnum.SVN_CHECKOUT, svnUrl + migration.getSvnGroup());
 
             String mkdir = "mkdir " + migration.getId();
             execCommand(System.getProperty("java.io.tmpdir"), mkdir);
 
-            // 1.
+            // 2.1. Clone as mirror empty repository, required for BFG
             String initCommand = String.format("git clone --mirror %s/%s/%s.git %s",
                 gitlabUrl,
                 migration.getGitlabGroup(),
@@ -85,6 +85,7 @@ public class MigrationManager {
                 migration.getGitlabGroup());
             execCommand(rootWorkingDir, initCommand);
 
+            // 2.2. SVN checkout
             String cloneCommand = String.format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
                 migration.getSvnProject(),
                 migration.getSvnProject(),
@@ -96,7 +97,7 @@ public class MigrationManager {
             endStep(history);
 
             // 3. Clean large files
-            history = startStep(migration, StepEnum.GIT_CLEANING, null);
+            history = startStep(migration, StepEnum.GIT_CLEANING, "*.zip");
 
             Main.main(new String[]{"--delete-files", "*.zip", "--no-blob-protection", gitWorkingDir});
             String gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
@@ -104,12 +105,8 @@ public class MigrationManager {
 
             endStep(history);
 
-            // 4. Reorganize repo
-            // 4.1 Rename folder
-            // 4.2 Set up target structure
-            // 4.3 Git commit
-            // 4.4 Git push
-            history = startStep(migration, StepEnum.GIT_PUSH, null);
+            // 4. Git push master based on SVN trunk
+            history = startStep(migration, StepEnum.GIT_PUSH, "trunk -> master");
 
             String gitUrl = String.format("%s/%s/%s.git",
                 gitlabUrl,
@@ -137,6 +134,11 @@ public class MigrationManager {
         }
     }
 
+    /**
+     * Get working directory
+     * @param mig
+     * @return
+     */
     private static String workingDir(Migration mig) {
         if (isWindows) {
             return System.getProperty("java.io.tmpdir") + "\\" + mig.getId();
@@ -144,6 +146,11 @@ public class MigrationManager {
         return System.getProperty("java.io.tmpdir") + "/" + mig.getId();
     }
 
+    /**
+     * Get git working directory
+     * @param migration
+     * @return
+     */
     private static String gitWorkingDir(Migration migration) {
         if (isWindows) {
             return workingDir(migration) + "\\" + migration.getSvnGroup() + "\\.git";
@@ -151,6 +158,13 @@ public class MigrationManager {
         return workingDir(migration) + "/" + migration.getSvnGroup() + "/.git";
     }
 
+    /**
+     * Execute a commmand through process
+     * @param directory Directory in which running command
+     * @param command command to execute
+     * @throws InterruptedException
+     * @throws IOException
+     */
     private static void execCommand(String directory, String command) throws InterruptedException, IOException {
         ProcessBuilder builder = new ProcessBuilder();
         if (isWindows) {
@@ -178,6 +192,16 @@ public class MigrationManager {
     }
 
     // Tasks
+
+    /**
+     * Add remote url to git config
+     * @param git Git instance
+     * @param remoteName Remote name for repository
+     * @param remoteUrl Remote URL
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws GitAPIException
+     */
     private static void addRemote(Git git, String remoteName, String remoteUrl) throws IOException, URISyntaxException, GitAPIException {
         RemoteAddCommand remoteAddCommand = git.remoteAdd();
         remoteAddCommand.setName(remoteName);
@@ -186,6 +210,13 @@ public class MigrationManager {
     }
 
     // History management
+    /**
+     * Create a new history for migration
+     * @param migration
+     * @param step
+     * @param data
+     * @return
+     */
     private MigrationHistory startStep(Migration migration, StepEnum step, String data) {
         MigrationHistory history = new MigrationHistory()
             .step(step)
@@ -200,6 +231,10 @@ public class MigrationManager {
         return migrationHistoryRepository.save(history);
     }
 
+    /**
+     * Update history
+     * @param history
+     */
     private void endStep(MigrationHistory history) {
         history.setStatus(StatusEnum.DONE);
         migrationHistoryRepository.save(history);

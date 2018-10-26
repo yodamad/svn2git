@@ -73,11 +73,11 @@
                     </mat-list-item>
                     <mat-list-item>
                         <mat-icon mat-list-icon>flight_takeoff</mat-icon>
-                        <p mat-line>(SVN) {{svnFormGroup.controls['svnRepository'].value}}</p>
+                        <p mat-line>{{svnUrl}}{{svnFormGroup.controls['svnRepository'].value}}</p>
                     </mat-list-item>
                     <mat-list-item>
                         <mat-icon mat-list-icon>flight_land</mat-icon>
-                        <p mat-line>(Gitlab) {{groupFormGroup.controls['gitlabGroup'].value}}</p>
+                        <p mat-line>{{gitlabUrl}}{{groupFormGroup.controls['gitlabGroup'].value}}</p>
                     </mat-list-item>
                     <mat-list-item>
                         <mat-icon mat-list-icon>format_list_bulleted</mat-icon>

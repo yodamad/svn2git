@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
+import { ConfigurationService } from 'app/shared/service/configuration-service';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -20,10 +21,14 @@ export class MigrationStepperComponent implements OnInit {
     selectedSvnDirectories: string[];
     migrationStarted = false;
 
+    svnUrl: string;
+    gitlabUrl: string;
+
     constructor(
         private _formBuilder: FormBuilder,
         private _migrationProcessService: MigrationProcessService,
-        private _migrationService: MigrationService
+        private _migrationService: MigrationService,
+        private _configurationService: ConfigurationService
     ) {}
 
     ngOnInit() {
@@ -36,6 +41,9 @@ export class MigrationStepperComponent implements OnInit {
         this.svnFormGroup = this._formBuilder.group({
             svnRepository: ['', Validators.required]
         });
+
+        this._configurationService.gitlab().subscribe(res => (this.gitlabUrl = res));
+        this._configurationService.svn().subscribe(res => (this.svnUrl = res));
     }
 
     /**

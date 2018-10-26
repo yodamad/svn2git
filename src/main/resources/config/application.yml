@@ -103,7 +103,7 @@ logging:
     file: target/svn2git.log
 
 gitlab:
-    url: http://localhost
+    url: http://localhost/
     token: oN746BJJRSWx6ouqL1jD
 
 svn:

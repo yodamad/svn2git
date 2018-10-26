@@ -39,8 +39,6 @@ import {
     MatTooltipModule,
     MatTreeModule
 } from '@angular/material';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
     exports: [
@@ -86,8 +84,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 export class AllMaterialModule {}
 
 @NgModule({
-    imports: [BrowserModule, BrowserAnimationsModule, FormsModule, AllMaterialModule, MatNativeDateModule, ReactiveFormsModule],
+    imports: [FormsModule, AllMaterialModule, MatNativeDateModule, ReactiveFormsModule],
     providers: [],
-    exports: [BrowserModule, BrowserAnimationsModule, FormsModule, AllMaterialModule, MatNativeDateModule, ReactiveFormsModule]
+    exports: [FormsModule, AllMaterialModule, MatNativeDateModule, ReactiveFormsModule]
 })
 export class MaterialModule {}

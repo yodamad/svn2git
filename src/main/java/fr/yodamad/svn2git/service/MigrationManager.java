@@ -287,7 +287,6 @@ public class MigrationManager {
     private void pushTag(Migration migration, String tag) {
         MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, tag);
         try {
-            //String tagFullName = tag.replaceFirst("refs/remotes/origin/", "");
             String tagName = tag.replaceFirst(REFS_REMOTES_ORIGIN_TAGS, "");
             LOG.debug(">>>>>>>>>>> Tag " + tagName);
 

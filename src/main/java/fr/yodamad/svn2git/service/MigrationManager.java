@@ -44,6 +44,8 @@ public class MigrationManager {
     public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
     @Value("${svn.url}") String svnUrl;
     @Value("${gitlab.url}") String gitlabUrl;
+    @Value("${gitlab.svc-account}") String gitlabSvcUser;
+    @Value("${gitlab.token}") String gitlabSvcToken;
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
 
@@ -133,7 +135,7 @@ public class MigrationManager {
             addRemote(git,"origin", gitUrl);
 
             PushCommand pushCommand = git.push();
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(migration.getUser(), "XYbJSzgWxbuJKrfwaQ1Q"));
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitlabSvcUser, gitlabSvcToken));
             pushCommand.call();
 
             endStep(history, StatusEnum.DONE);
@@ -225,8 +227,8 @@ public class MigrationManager {
 
         builder.directory(new File(directory));
 
-        LOG.debug(format(">>>>>>>>>>>>>>>>>>>>> Exec command : %s", command));
-        LOG.debug(format(">>>>>>>>>>>>>>>>>>>>> in %s", directory));
+        LOG.debug(format("Exec command : %s", command));
+        LOG.debug(format("in %s", directory));
 
         Process process = builder.start();
         StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), LOG::debug);
@@ -236,7 +238,7 @@ public class MigrationManager {
         Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
 
         int exitCode = process.waitFor();
-        LOG.debug(format(">>>>>>>>>>>>>>>>>>>>> Exit : %d", exitCode));
+        LOG.debug(format("Exit : %d", exitCode));
 
         assert exitCode == 0;
     }
@@ -267,7 +269,7 @@ public class MigrationManager {
         MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, branch);
         try {
             String branchName = branch.replaceFirst("refs/remotes/origin/", "");
-            LOG.debug(">>>>>>>>>>> Branch " + branchName);
+            LOG.debug(format("Branch %s", branchName));
 
             String gitCommand = format("git checkout -b %s %s", branchName, branch);
             execCommand(gitWorkingDir(migration), gitCommand);

@@ -104,7 +104,8 @@ logging:
 
 gitlab:
     url: http://localhost/
-    token: oN746BJJRSWx6ouqL1jD
+    svc-account: svc-gitlab
+    token: snikiuSUbxDYCsAnWWtE
 
 svn:
     url: svn://localhost/

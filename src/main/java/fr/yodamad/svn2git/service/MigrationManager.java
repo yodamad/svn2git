@@ -21,7 +21,6 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.gitlab4j.api.models.Group;
-import org.gitlab4j.api.models.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,14 +30,13 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 
 @Service
 public class MigrationManager {
@@ -127,8 +125,12 @@ public class MigrationManager {
                 Arrays.stream(migration.getForbiddenFileExtensions().split(","))
                     .forEach(s -> {
                         MigrationHistory innerHistory = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files with extension : %s", s));
-                        Main.main(new String[]{"--delete-files", s, "--no-blob-protection", gitWorkingDir});
-                        endStep(innerHistory, StatusEnum.DONE, null);
+                        try {
+                            Main.main(new String[]{"--delete-files", s, "--no-blob-protection", gitWorkingDir});
+                            endStep(innerHistory, StatusEnum.DONE, null);
+                        } catch (Exception exc) {
+                            endStep(innerHistory, StatusEnum.FAILED, exc.getMessage());
+                        }
                     });
                 clean = true;
             }

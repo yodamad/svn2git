@@ -25,7 +25,9 @@
             "status": "Status",
             "maxFileSize": "Max File Size",
             "forbiddenFileExtensions": "Forbidden File Extensions",
-            "history": "History"
+            "history": "History",
+            "title": "Migration",
+            "check": "Vérifier le(s) migration(s)"
         }
     }
 }

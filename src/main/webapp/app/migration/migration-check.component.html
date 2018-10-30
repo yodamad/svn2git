@@ -1,0 +1,43 @@
+<!-- Search panel -->
+<div>
+    <span jhiTranslate="global.search-by" style="margin-right: 20px">SearchBy</span>
+    <form [formGroup]="searchFormGroup">
+        <mat-form-field><input matInput type="text" placeholder="user login" formControlName="userCriteria" /></mat-form-field>
+        <span jhiTranslate="global.or" style="margin: 0 20px">Or</span>
+        <mat-form-field><input matInput type="text" placeholder="project group name" formControlName="groupCriteria"/></mat-form-field>
+        <button mat-raised-button type="submit" color="primary" style="margin-left: 20px" (click)="search()"><span jhiTranslate="global.search">Search</span></button>
+    </form>
+    <mat-divider></mat-divider>
+    <div class="table-responsive" *ngIf="migrations">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse">
+                <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="svnGroup"><span jhiTranslate="svn2GitApp.migration.svnGroup">Svn Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="svnProject"><span jhiTranslate="svn2GitApp.migration.svnProject">Svn Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="user"><span jhiTranslate="svn2GitApp.migration.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="gitlabGroup"><span jhiTranslate="svn2GitApp.migration.gitlabGroup">Gitlab Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="gitlabProject"><span jhiTranslate="svn2GitApp.migration.gitlabProject">Gitlab Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="maxFileSize"><span jhiTranslate="svn2GitApp.migration.maxFileSize">Max File Size</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="forbiddenFileExtensions"><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            </tr>
+            </thead>
+            <tbody infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
+            <tr *ngFor="let migration of migrations ;trackBy: trackId">
+                <td>{{migration.id}}</td>
+                <td>{{migration.svnGroup}}</td>
+                <td>{{migration.svnProject}}</td>
+                <td>{{migration.user}}</td>
+                <td>{{migration.date | date:'mediumDate'}}</td>
+                <td>{{migration.gitlabGroup}}</td>
+                <td>{{migration.gitlabProject}}</td>
+                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}">{{migration.status}}</td>
+                <td>{{migration.maxFileSize}}</td>
+                <td>{{migration.forbiddenFileExtensions}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

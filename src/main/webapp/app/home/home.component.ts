@@ -49,6 +49,6 @@ export class HomeComponent implements OnInit {
     }
 
     checkMigration() {
-        alert('Coming soon...');
+        this.router.navigate(['/migration-check']);
     }
 }

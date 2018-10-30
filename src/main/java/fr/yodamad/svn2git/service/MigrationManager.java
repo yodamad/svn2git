@@ -88,19 +88,21 @@ public class MigrationManager {
             endStep(history, StatusEnum.DONE);
 
             // 2. Checkout SVN repository : OK
-
-            history = startStep(migration, StepEnum.SVN_CHECKOUT, svnUrl + migration.getSvnGroup());
-
-            String mkdir = "mkdir " + gitWorkingDir;
-            execCommand(System.getProperty(JAVA_IO_TMPDIR), mkdir);
-
-            // 2.1. Clone as mirror empty repository, required for BFG
             String initCommand = format("git clone %s/%s/%s.git %s",
                 gitlabUrl,
                 migration.getGitlabGroup(),
                 migration.getSvnProject(),
                 migration.getGitlabGroup());
+
+            history = startStep(migration, StepEnum.GIT_CLONE, initCommand);
+
+            String mkdir = "mkdir " + gitWorkingDir;
+            execCommand(System.getProperty(JAVA_IO_TMPDIR), mkdir);
+
+            // 2.1. Clone as mirror empty repository, required for BFG
             execCommand(rootWorkingDir, initCommand);
+
+            endStep(history, StatusEnum.DONE);
 
             // 2.2. SVN checkout
             String cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
@@ -109,6 +111,7 @@ public class MigrationManager {
                 migration.getSvnProject(),
                 svnUrl,
                 migration.getSvnGroup());
+            history = startStep(migration, StepEnum.SVN_CHECKOUT, cloneCommand);
             execCommand(rootWorkingDir, cloneCommand);
 
             endStep(history, StatusEnum.DONE);
@@ -118,7 +121,7 @@ public class MigrationManager {
             String gitCommand;
 
             if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions())) {
-                history = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files with extension(s) : ", migration.getForbiddenFileExtensions()));
+                history = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files with extension(s) : %s", migration.getForbiddenFileExtensions()));
 
                 Main.main(new String[]{"--delete-files", migration.getForbiddenFileExtensions(), "--no-blob-protection", gitWorkingDir});
 
@@ -142,7 +145,7 @@ public class MigrationManager {
             }
 
             // 4. Git push master based on SVN trunk
-            history = startStep(migration, StepEnum.GIT_PUSH, "trunk -> master");
+            history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master)");
 
             String gitUrl = format("%s/%s/%s.git",
                 gitlabUrl,
@@ -309,7 +312,7 @@ public class MigrationManager {
         MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, tag);
         try {
             String tagName = tag.replaceFirst(REFS_REMOTES_ORIGIN_TAGS, "");
-            LOG.debug(">>>>>>>>>>> Tag " + tagName);
+            LOG.debug(format("Tag %s", tagName));
 
             String gitCommand = format("git checkout -b tmp_tag %s", tag);
             execCommand(gitWorkingDir(migration), gitCommand);

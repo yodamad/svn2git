@@ -5,7 +5,8 @@ export const enum StepEnum {
     GITLAB_PROJECT_CREATION = 'GITLAB_PROJECT_CREATION',
     SVN_CHECKOUT = 'SVN_CHECKOUT',
     GIT_CLEANING = 'GIT_CLEANING',
-    GIT_PUSH = 'GIT_PUSH'
+    GIT_PUSH = 'GIT_PUSH',
+    GIT_CLONE = 'GIT_CLONE'
 }
 
 export const enum StatusEnum {

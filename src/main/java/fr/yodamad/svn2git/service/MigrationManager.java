@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.PushCommand;
@@ -113,17 +114,32 @@ public class MigrationManager {
             endStep(history, StatusEnum.DONE);
 
             // 3. Clean large files
-            history = startStep(migration, StepEnum.GIT_CLEANING, "*.zip");
+            boolean clean = false;
+            String gitCommand;
 
-            String gitCommand = "git gc";
-            execCommand(gitWorkingDir, gitCommand);
+            if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions())) {
+                history = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files with extension(s) : ", migration.getForbiddenFileExtensions()));
 
-            Main.main(new String[]{"--strip-blobs-bigger-than", "1M", "--no-blob-protection", gitWorkingDir});
+                Main.main(new String[]{"--delete-files", migration.getForbiddenFileExtensions(), "--no-blob-protection", gitWorkingDir});
 
-            gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
-            execCommand(gitWorkingDir, gitCommand);
+                endStep(history, StatusEnum.DONE);
+            }
 
-            endStep(history, StatusEnum.DONE);
+            if (!StringUtils.isEmpty(migration.getMaxFileSize())) {
+                history = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files bigger than %s", migration.getMaxFileSize()));
+
+                gitCommand = "git gc";
+                execCommand(gitWorkingDir, gitCommand);
+
+                Main.main(new String[]{"--strip-blobs-bigger-than", migration.getMaxFileSize(), "--no-blob-protection", gitWorkingDir});
+
+                endStep(history, StatusEnum.DONE);
+            }
+
+            if (clean) {
+                gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
+                execCommand(gitWorkingDir, gitCommand);
+            }
 
             // 4. Git push master based on SVN trunk
             history = startStep(migration, StepEnum.GIT_PUSH, "trunk -> master");

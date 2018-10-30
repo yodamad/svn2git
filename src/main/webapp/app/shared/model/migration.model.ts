@@ -1,5 +1,12 @@
 import { Moment } from 'moment';
-import { IMigrationHistory } from 'app/shared/model/migration-history.model';
+import { IMigrationHistory } from 'app/shared/model//migration-history.model';
+
+export const enum StatusEnum {
+    WAITING = 'WAITING',
+    RUNNING = 'RUNNING',
+    DONE = 'DONE',
+    FAILED = 'FAILED'
+}
 
 export interface IMigration {
     id?: number;
@@ -9,7 +16,9 @@ export interface IMigration {
     date?: Moment;
     gitlabGroup?: string;
     gitlabProject?: string;
-    status?: string;
+    status?: StatusEnum;
+    maxFileSize?: string;
+    forbiddenFileExtensions?: string;
     histories?: IMigrationHistory[];
 }
 
@@ -22,7 +31,9 @@ export class Migration implements IMigration {
         public date?: Moment,
         public gitlabGroup?: string,
         public gitlabProject?: string,
-        public status?: string,
+        public status?: StatusEnum,
+        public maxFileSize?: string,
+        public forbiddenFileExtensions?: string,
         public histories?: IMigrationHistory[]
     ) {}
 }

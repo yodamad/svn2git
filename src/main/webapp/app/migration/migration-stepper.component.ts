@@ -14,12 +14,15 @@ export class MigrationStepperComponent implements OnInit {
     userFormGroup: FormGroup;
     groupFormGroup: FormGroup;
     svnFormGroup: FormGroup;
+    cleaningFormGroup: FormGroup;
     gitlabUserKO = true;
     gitlabGroupKO = true;
     svnRepoKO = true;
     svnDirectories: string[] = null;
     selectedSvnDirectories: string[];
+    selectedExtensions: string[];
     migrationStarted = false;
+    fileUnit = 'M';
 
     svnUrl: string;
     gitlabUrl: string;
@@ -40,6 +43,9 @@ export class MigrationStepperComponent implements OnInit {
         });
         this.svnFormGroup = this._formBuilder.group({
             svnRepository: ['', Validators.required]
+        });
+        this.cleaningFormGroup = this._formBuilder.group({
+            fileMaxSize: ['']
         });
 
         this._configurationService.gitlab().subscribe(res => (this.gitlabUrl = res));
@@ -83,6 +89,22 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     /**
+     * Get selected extensions to clean
+     * @param values
+     */
+    onSelectedExtensionsChange(values: string[]) {
+        this.selectedExtensions = values;
+    }
+
+    /**
+     * Choose file size unit
+     * @param value
+     */
+    fileSizeUnit(value) {
+        this.fileUnit = value.value;
+    }
+
+    /**
      * Dynamically set css class on Check button
      * @param flag
      */
@@ -111,6 +133,12 @@ export class MigrationStepperComponent implements OnInit {
         mig.svnGroup = this.svnFormGroup.controls['svnRepository'].value;
         mig.svnProject = project;
         mig.user = this.userFormGroup.controls['gitlabUser'].value;
+        if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
+            mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
+        }
+        if (this.selectedExtensions !== undefined && this.selectedExtensions.length > 0) {
+            mig.forbiddenFileExtensions = this.selectedExtensions.toString();
+        }
         return mig;
     }
 }

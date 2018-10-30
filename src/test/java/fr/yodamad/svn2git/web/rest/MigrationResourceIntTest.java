@@ -106,12 +106,12 @@ public class MigrationResourceIntTest {
      */
     public static Migration createEntity(EntityManager em) {
         Migration migration = new Migration()
-            .svn_group(DEFAULT_SVN_GROUP)
-            .svn_project(DEFAULT_SVN_PROJECT)
+            .svnGroup(DEFAULT_SVN_GROUP)
+            .svnProject(DEFAULT_SVN_PROJECT)
             .user(DEFAULT_USER)
             .date(DEFAULT_DATE)
-            .gitlab_group(DEFAULT_GITLAB_GROUP)
-            .gitlab_project(DEFAULT_GITLAB_PROJECT)
+            .gitlabGroup(DEFAULT_GITLAB_GROUP)
+            .gitlabProject(DEFAULT_GITLAB_PROJECT)
             .status(DEFAULT_STATUS);
         return migration;
     }
@@ -315,12 +315,12 @@ public class MigrationResourceIntTest {
         // Disconnect from session so that the updates on updatedMigration are not directly saved in db
         em.detach(updatedMigration);
         updatedMigration
-            .svn_group(UPDATED_SVN_GROUP)
-            .svn_project(UPDATED_SVN_PROJECT)
+            .svnGroup(UPDATED_SVN_GROUP)
+            .svnProject(UPDATED_SVN_PROJECT)
             .user(UPDATED_USER)
             .date(UPDATED_DATE)
-            .gitlab_group(UPDATED_GITLAB_GROUP)
-            .gitlab_project(UPDATED_GITLAB_PROJECT)
+            .gitlabGroup(UPDATED_GITLAB_GROUP)
+            .gitlabProject(UPDATED_GITLAB_PROJECT)
             .status(UPDATED_STATUS);
 
         restMigrationMockMvc.perform(put("/api/migrations")

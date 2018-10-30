@@ -1,6 +1,6 @@
 package fr.yodamad.svn2git.domain;
 
-import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Objects;
+
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 
 /**
  * A Migration.
@@ -51,6 +53,12 @@ public class Migration implements Serializable {
     @Column(name = "status")
     private StatusEnum status;
 
+    @Column(name = "max_file_size")
+    private String maxFileSize;
+
+    @Column(name = "forbidden_file_extensions")
+    private String forbiddenFileExtensions;
+
     @OneToMany(mappedBy = "migration")
     private Set<MigrationHistory> histories = new HashSet<>();
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
@@ -66,7 +74,7 @@ public class Migration implements Serializable {
         return svnGroup;
     }
 
-    public Migration svn_group(String svnGroup) {
+    public Migration svnGroup(String svnGroup) {
         this.svnGroup = svnGroup;
         return this;
     }
@@ -79,7 +87,7 @@ public class Migration implements Serializable {
         return svnProject;
     }
 
-    public Migration svn_project(String svnProject) {
+    public Migration svnProject(String svnProject) {
         this.svnProject = svnProject;
         return this;
     }
@@ -118,7 +126,7 @@ public class Migration implements Serializable {
         return gitlabGroup;
     }
 
-    public Migration gitlab_group(String gitlabGroup) {
+    public Migration gitlabGroup(String gitlabGroup) {
         this.gitlabGroup = gitlabGroup;
         return this;
     }
@@ -131,7 +139,7 @@ public class Migration implements Serializable {
         return gitlabProject;
     }
 
-    public Migration gitlab_project(String gitlabProject) {
+    public Migration gitlabProject(String gitlabProject) {
         this.gitlabProject = gitlabProject;
         return this;
     }
@@ -151,6 +159,32 @@ public class Migration implements Serializable {
 
     public void setStatus(StatusEnum status) {
         this.status = status;
+    }
+
+    public String getMaxFileSize() {
+        return maxFileSize;
+    }
+
+    public Migration maxFileSize(String maxFileSize) {
+        this.maxFileSize = maxFileSize;
+        return this;
+    }
+
+    public void setMaxFileSize(String maxFileSize) {
+        this.maxFileSize = maxFileSize;
+    }
+
+    public String getForbiddenFileExtensions() {
+        return forbiddenFileExtensions;
+    }
+
+    public Migration forbiddenFileExtensions(String forbiddenFileExtensions) {
+        this.forbiddenFileExtensions = forbiddenFileExtensions;
+        return this;
+    }
+
+    public void setForbiddenFileExtensions(String forbiddenFileExtensions) {
+        this.forbiddenFileExtensions = forbiddenFileExtensions;
     }
 
     public Set<MigrationHistory> getHistories() {
@@ -210,6 +244,8 @@ public class Migration implements Serializable {
             ", gitlabGroup='" + getGitlabGroup() + "'" +
             ", gitlabProject='" + getGitlabProject() + "'" +
             ", status='" + getStatus() + "'" +
+            ", maxFileSize='" + getMaxFileSize() + "'" +
+            ", forbiddenFileExtensions='" + getForbiddenFileExtensions() + "'" +
             "}";
     }
 }

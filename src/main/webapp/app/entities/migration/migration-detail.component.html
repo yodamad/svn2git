@@ -31,7 +31,15 @@
                 </dd>
                 <dt><span jhiTranslate="svn2GitApp.migration.status">Status</span></dt>
                 <dd>
-                    <span>{{migration.status}}</span>
+                    <span jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}">{{migration.status}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.maxFileSize">Max File Size</span></dt>
+                <dd>
+                    <span>{{migration.maxFileSize}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span></dt>
+                <dd>
+                    <span>{{migration.forbiddenFileExtensions}}</span>
                 </dd>
             </dl>
 

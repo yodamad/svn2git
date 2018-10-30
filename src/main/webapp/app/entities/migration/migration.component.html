@@ -22,6 +22,8 @@
             <th jhiSortBy="gitlabGroup"><span jhiTranslate="svn2GitApp.migration.gitlabGroup">Gitlab Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="gitlabProject"><span jhiTranslate="svn2GitApp.migration.gitlabProject">Gitlab Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="maxFileSize"><span jhiTranslate="svn2GitApp.migration.maxFileSize">Max File Size</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="forbiddenFileExtensions"><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -34,7 +36,9 @@
                 <td>{{migration.date | date:'mediumDate'}}</td>
                 <td>{{migration.gitlabGroup}}</td>
                 <td>{{migration.gitlabProject}}</td>
-                <td>{{migration.status}}</td>
+                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}">{{migration.status}}</td>
+                <td>{{migration.maxFileSize}}</td>
+                <td>{{migration.forbiddenFileExtensions}}</td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

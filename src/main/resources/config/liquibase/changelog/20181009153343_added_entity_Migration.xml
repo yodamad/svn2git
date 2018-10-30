@@ -50,6 +50,14 @@
                 <constraints nullable="true" />
             </column>
 
+            <column name="max_file_size" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="forbidden_file_extensions" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
         </createTable>
         

@@ -1,0 +1,34 @@
+{
+    "migration-process" : {
+        "back" : " Back",
+        "check" : "Check",
+        "cleaning" : {
+            "options" : "Cleaning options"
+        },
+        "done" : "Done",
+        "file" : {
+            "extensions" : "File extensions to clean",
+            "size" : "Max size authorized for a file"
+        },
+        "gitlab" : {
+            "check" : {
+                "account" : "Check your Gitlab account",
+                "group" : "Check your Gitlab group"
+            }
+        },
+        "home" : "Home",
+        "migration" : {
+            "planned" : "Migration planned",
+            "start" : "Start migration"
+        },
+        "next" : "Next",
+        "only" : "only",
+        "summary" : "Migration summary",
+        "svn" : {
+            "check" : {
+                "repository" : "Check your SVN repository"
+            },
+            "directories" : "Choose directories to migrate"
+        }
+    }
+}

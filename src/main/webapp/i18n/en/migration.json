@@ -23,8 +23,9 @@
             "gitlabGroup": "Gitlab Group",
             "gitlabProject": "Gitlab Project",
             "status": "Status",
-            "history": "History",
-            "title": "Migration"
+            "maxFileSize": "Max File Size",
+            "forbiddenFileExtensions": "Forbidden File Extensions",
+            "history": "History"
         }
     }
 }

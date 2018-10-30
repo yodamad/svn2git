@@ -7,7 +7,7 @@ import { take, map } from 'rxjs/operators';
 import * as moment from 'moment';
 import { DATE_FORMAT } from 'app/shared/constants/input.constants';
 import { MigrationService } from 'app/entities/migration/migration.service';
-import { IMigration, Migration } from 'app/shared/model/migration.model';
+import { IMigration, Migration, StatusEnum } from 'app/shared/model/migration.model';
 
 describe('Service Tests', () => {
     describe('Migration Service', () => {
@@ -25,7 +25,18 @@ describe('Service Tests', () => {
             httpMock = injector.get(HttpTestingController);
             currentDate = moment();
 
-            elemDefault = new Migration(0, 'AAAAAAA', 'AAAAAAA', 'AAAAAAA', currentDate, 'AAAAAAA', 'AAAAAAA', 'AAAAAAA');
+            elemDefault = new Migration(
+                0,
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                currentDate,
+                'AAAAAAA',
+                'AAAAAAA',
+                StatusEnum.WAITING,
+                'AAAAAAA',
+                'AAAAAAA'
+            );
         });
 
         describe('Service methods', async () => {
@@ -70,13 +81,15 @@ describe('Service Tests', () => {
             it('should update a Migration', async () => {
                 const returnedFromService = Object.assign(
                     {
-                        svn_group: 'BBBBBB',
-                        svn_project: 'BBBBBB',
+                        svnGroup: 'BBBBBB',
+                        svnProject: 'BBBBBB',
                         user: 'BBBBBB',
                         date: currentDate.format(DATE_FORMAT),
-                        gitlab_group: 'BBBBBB',
-                        gitlab_project: 'BBBBBB',
-                        status: 'BBBBBB'
+                        gitlabGroup: 'BBBBBB',
+                        gitlabProject: 'BBBBBB',
+                        status: 'BBBBBB',
+                        maxFileSize: 'BBBBBB',
+                        forbiddenFileExtensions: 'BBBBBB'
                     },
                     elemDefault
                 );
@@ -98,13 +111,15 @@ describe('Service Tests', () => {
             it('should return a list of Migration', async () => {
                 const returnedFromService = Object.assign(
                     {
-                        svn_group: 'BBBBBB',
-                        svn_project: 'BBBBBB',
+                        svnGroup: 'BBBBBB',
+                        svnProject: 'BBBBBB',
                         user: 'BBBBBB',
                         date: currentDate.format(DATE_FORMAT),
-                        gitlab_group: 'BBBBBB',
-                        gitlab_project: 'BBBBBB',
-                        status: 'BBBBBB'
+                        gitlabGroup: 'BBBBBB',
+                        gitlabProject: 'BBBBBB',
+                        status: 'BBBBBB',
+                        maxFileSize: 'BBBBBB',
+                        forbiddenFileExtensions: 'BBBBBB'
                     },
                     elemDefault
                 );

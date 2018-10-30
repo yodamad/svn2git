@@ -10,8 +10,8 @@
                         [(ngModel)]="migration.id" readonly />
                 </div>
                 <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnGroup" for="field_svn_group">Svn Group</label>
-                    <input type="text" class="form-control" name="svnGroup" id="field_svn_group"
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnGroup" for="field_svnGroup">Svn Group</label>
+                    <input type="text" class="form-control" name="svnGroup" id="field_svnGroup"
                         [(ngModel)]="migration.svnGroup" required/>
                     <div [hidden]="!(editForm.controls.svnGroup?.dirty && editForm.controls.svnGroup?.invalid)">
                         <small class="form-text text-danger"
@@ -21,8 +21,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnProject" for="field_svn_project">Svn Project</label>
-                    <input type="text" class="form-control" name="svnProject" id="field_svn_project"
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnProject" for="field_svnProject">Svn Project</label>
+                    <input type="text" class="form-control" name="svnProject" id="field_svnProject"
                         [(ngModel)]="migration.svnProject" required/>
                     <div [hidden]="!(editForm.controls.svnProject?.dirty && editForm.controls.svnProject?.invalid)">
                         <small class="form-text text-danger"
@@ -53,8 +53,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabGroup" for="field_gitlab_group">Gitlab Group</label>
-                    <input type="text" class="form-control" name="gitlabGroup" id="field_gitlab_group"
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabGroup" for="field_gitlabGroup">Gitlab Group</label>
+                    <input type="text" class="form-control" name="gitlabGroup" id="field_gitlabGroup"
                         [(ngModel)]="migration.gitlabGroup" required/>
                     <div [hidden]="!(editForm.controls.gitlabGroup?.dirty && editForm.controls.gitlabGroup?.invalid)">
                         <small class="form-text text-danger"
@@ -64,8 +64,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabProject" for="field_gitlab_project">Gitlab Project</label>
-                    <input type="text" class="form-control" name="gitlabProject" id="field_gitlab_project"
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabProject" for="field_gitlabProject">Gitlab Project</label>
+                    <input type="text" class="form-control" name="gitlabProject" id="field_gitlabProject"
                         [(ngModel)]="migration.gitlabProject" required/>
                     <div [hidden]="!(editForm.controls.gitlabProject?.dirty && editForm.controls.gitlabProject?.invalid)">
                         <small class="form-text text-danger"
@@ -76,8 +76,22 @@
                 </div>
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="svn2GitApp.migration.status" for="field_status">Status</label>
-                    <input type="text" class="form-control" name="status" id="field_status"
-                        [(ngModel)]="migration.status" />
+                    <select class="form-control" name="status" [(ngModel)]="migration.status" id="field_status" >
+                        <option value="WAITING">{{'svn2GitApp.StatusEnum.WAITING' | translate}}</option>
+                        <option value="RUNNING">{{'svn2GitApp.StatusEnum.RUNNING' | translate}}</option>
+                        <option value="DONE">{{'svn2GitApp.StatusEnum.DONE' | translate}}</option>
+                        <option value="FAILED">{{'svn2GitApp.StatusEnum.FAILED' | translate}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.maxFileSize" for="field_maxFileSize">Max File Size</label>
+                    <input type="text" class="form-control" name="maxFileSize" id="field_maxFileSize"
+                        [(ngModel)]="migration.maxFileSize" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions" for="field_forbiddenFileExtensions">Forbidden File Extensions</label>
+                    <input type="text" class="form-control" name="forbiddenFileExtensions" id="field_forbiddenFileExtensions"
+                        [(ngModel)]="migration.forbiddenFileExtensions" />
                 </div>
 
             </div>

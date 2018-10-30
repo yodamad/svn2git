@@ -1,49 +1,49 @@
 <mat-horizontal-stepper [linear]="true" #stepper>
-    <!-- First step -->
+    <!-- Check Gitlab account step -->
     <mat-step [stepControl]="userFormGroup">
         <form [formGroup]="userFormGroup">
-            <ng-template matStepLabel matStepperIcon="edit">Create your Gitlab account</ng-template>
+            <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Create your Gitlab account</span></ng-template>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="Gitlab username" formControlName="gitlabUser" required>
                 </mat-form-field>
-                <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)">Check</button>
+                <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)"><span jhiTranslate="migration-process.check">Check</span></button>
             </div>
             <div>
-                <button mat-stroked-button matStepperNext [disabled]="gitlabUserKO"><i class="material-icons">navigate_next</i> Next</button>
+                <button mat-stroked-button matStepperNext [disabled]="gitlabUserKO"><i class="material-icons">navigate_next</i> <span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
 
-    <!-- First step -->
+    <!-- Check Gitlab group step -->
     <mat-step [stepControl]="groupFormGroup">
         <form [formGroup]="groupFormGroup">
-            <ng-template matStepLabel matStepperIcon="done">Create your group on Gitlab</ng-template>
+            <ng-template matStepLabel matStepperIcon="done"><span jhiTranslate="migration-process.gitlab.check.group">Create your group on Gitlab</span></ng-template>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="Gitlab group name" formControlName="gitlabGroup" required>
                 </mat-form-field>
-                <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)">Check</button>
+                <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)"><span jhiTranslate="migration-process.check">Check</span></button>
             </div>
             <div>
-                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> Back</button>
-                <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO"><i class="material-icons">navigate_next</i> Next</button>
+                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
 
-    <!-- Third step -->
+    <!-- Check svn repository step -->
     <mat-step [stepControl]="svnFormGroup">
         <form [formGroup]="svnFormGroup">
-            <ng-template matStepLabel>Check your SVN repository</ng-template>
+            <ng-template matStepLabel><span jhiTranslate="migration-process.svn.check.repository">Check your SVN repository</span></ng-template>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="SVN repository name" formControlName="svnRepository" required>
                 </mat-form-field>
-                <button type="button" mat-raised-button (click)="checkSvnRepository()" [ngClass]="cssClass(svnRepoKO)">Check</button>
+                <button type="button" mat-raised-button (click)="checkSvnRepository()" [ngClass]="cssClass(svnRepoKO)"><span jhiTranslate="migration-process.check">Check</span></button>
             </div>
             <div *ngIf="svnDirectories !== null && svnDirectories.length > 0">
-                Choose directories to migrate :
+                <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
                 <mat-selection-list #dirs [ngModel]="selectedSvnDirectories" (ngModelChange)="onSelectedOptionsChange($event)" [ngModelOptions]="{standalone: true}">
                     <mat-list-option *ngFor="let directory of svnDirectories" [value]="directory">
                         {{directory}}
@@ -51,19 +51,52 @@
                 </mat-selection-list>
             </div>
             <div>
-                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> Back</button>
-                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO"><i class="material-icons">navigate_next</i> Next</button>
+                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
 
-    <!-- Last step -->
+    <!-- Cleaning options step -->
+    <mat-step [stepControl]="cleaningFormGroup">
+        <form [formGroup]="cleaningFormGroup">
+            <br/>
+            <div><b><span jhiTranslate="migration-process.file.size">Max size authorized for a file</span></b>:</div>
+            <mat-form-field style="max-width: 35px;">
+                <input matInput type="number" formControlName="fileMaxSize" />
+            </mat-form-field>
+            <mat-select (selectionChange)="fileSizeUnit($event)" style="max-width: 35px" value="M">
+                <mat-option value="K">K</mat-option>
+                <mat-option value="M">M</mat-option>
+                <mat-option value="G">G</mat-option>
+            </mat-select>
+            <br/>
+            <mat-divider></mat-divider>
+            <b><span jhiTranslate="migration-process.file.extensions">File extensions to clean</span></b>:
+            <mat-selection-list #extensions [ngModel]="selectedExtensions" (ngModelChange)="onSelectedExtensionsChange($event)" [ngModelOptions]="{standalone: true}">
+                <mat-list-option value="*.zip">*.zip</mat-list-option>
+                <mat-list-option value="*.*ar">*.*ar (ear, jar, war, tar...)</mat-list-option>
+                <mat-list-option value="*.ear"><span>*.ear <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
+                <mat-list-option value="*.jar"><span>*.jar <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
+                <mat-list-option value="*.war"><span>*.war <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
+                <mat-list-option value="*.tar"><span>*.tar <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
+            </mat-selection-list>
+
+            <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
+            <div>
+                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+            </div>
+        </form>
+    </mat-step>
+
+    <!-- Summary step -->
     <mat-step>
-        <ng-template matStepLabel>Done</ng-template>
+        <ng-template matStepLabel><span jhiTranslate="migration-process.done">Done</span></ng-template>
         <mat-card class="summary-card">
             <mat-card-header class="card-header">
                 <mat-card-title class="my-header">{{svnFormGroup.controls['svnRepository'].value | uppercase}}</mat-card-title>
-                <mat-card-subtitle style="margin: 0">Migration summary</mat-card-subtitle>
+                <mat-card-subtitle style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
                 <mat-list>
@@ -83,14 +116,22 @@
                         <mat-icon mat-list-icon>format_list_bulleted</mat-icon>
                         <p mat-line>{{selectedSvnDirectories}}</p>
                     </mat-list-item>
+                    <mat-list-item *ngIf="selectedExtensions != undefined && selectedExtensions.length > 0">
+                        <mat-icon mat-list-icon>layers_clear</mat-icon>
+                        <p mat-line>{{selectedExtensions}}</p>
+                    </mat-list-item>
+                    <mat-list-item *ngIf="cleaningFormGroup.controls['fileMaxSize'] != undefined">
+                        <mat-icon mat-list-icon>unfold_less</mat-icon>
+                        <p mat-line>{{cleaningFormGroup.controls['fileMaxSize'].value}}{{fileUnit}}</p>
+                    </mat-list-item>
                 </mat-list>
             </mat-card-content>
             <mat-card-actions class="center-block">
-                <button mat-stroked-button (click)="go()" class="ok" *ngIf="!migrationStarted"><i class="material-icons">power_settings_new</i> Start migration</button>
-                <button mat-stroked-button *ngIf="migrationStarted" disabled><i class="material-icons">check</i> Migration planned</button>
+                <button mat-stroked-button (click)="go()" class="ok" *ngIf="!migrationStarted"><i class="material-icons">power_settings_new</i> <span jhiTranslate="migration-process.migration.start">Start migration</span></button>
+                <button mat-stroked-button *ngIf="migrationStarted" disabled><i class="material-icons">check</i> <span jhiTranslate="migration-process.migration.planned">Migration planned</span></button>
             </mat-card-actions>
         </mat-card>
-        <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> Back</button>
-        <button mat-stroked-button routerLink="/"><i class="material-icons">home</i> Home</button>
+        <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+        <button mat-stroked-button routerLink="/"><i class="material-icons">home</i> <span jhiTranslate="migration-process.home">Home</span></button>
     </mat-step>
 </mat-horizontal-stepper>

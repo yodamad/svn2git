@@ -4,21 +4,21 @@
     "relationships": [
         {
             "relationshipName": "history",
-            "otherEntityName": "migration_history",
+            "otherEntityName": "migrationHistory",
             "relationshipType": "one-to-many",
             "otherEntityRelationshipName": "migration"
         }
     ],
     "fields": [
         {
-            "fieldName": "svn_group",
+            "fieldName": "svnGroup",
             "fieldType": "String",
             "fieldValidateRules": [
                 "required"
             ]
         },
         {
-            "fieldName": "svn_project",
+            "fieldName": "svnProject",
             "fieldType": "String",
             "fieldValidateRules": [
                 "required"
@@ -36,14 +36,14 @@
             "fieldType": "LocalDate"
         },
         {
-            "fieldName": "gitlab_group",
+            "fieldName": "gitlabGroup",
             "fieldType": "String",
             "fieldValidateRules": [
                 "required"
             ]
         },
         {
-            "fieldName": "gitlab_project",
+            "fieldName": "gitlabProject",
             "fieldType": "String",
             "fieldValidateRules": [
                 "required"
@@ -51,6 +51,15 @@
         },
         {
             "fieldName": "status",
+            "fieldType": "StatusEnum",
+            "fieldValues": "WAITING,RUNNING,DONE,FAILED"
+        },
+        {
+            "fieldName": "maxFileSize",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "forbiddenFileExtensions",
             "fieldType": "String"
         }
     ],

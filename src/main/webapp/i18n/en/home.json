@@ -5,6 +5,7 @@
         "link": {
             "gitlab": "Gitlab UI"
         },
-        "start" : "Start"
+        "start" : "Start migration",
+        "check" : "Check migration"
     }
 }

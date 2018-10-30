@@ -47,4 +47,8 @@ export class HomeComponent implements OnInit {
     startStepper() {
         this.router.navigate(['/migration-process']);
     }
+
+    checkMigration() {
+        alert('Coming soon...');
+    }
 }

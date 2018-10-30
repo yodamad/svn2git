@@ -5,6 +5,7 @@
         "link": {
             "gitlab": "Gitlab"
         },
-        "start" : "Commencez"
+        "start" : "Commencer",
+        "check" : "Vérifier la migration"
     }
 }

@@ -1,7 +1,6 @@
 import './vendor.ts';
 
 import { NgModule, Injector } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgbDatepickerConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Ng2Webstorage, LocalStorageService, SessionStorageService } from 'ngx-webstorage';
@@ -21,10 +20,11 @@ import * as moment from 'moment';
 // jhipster-needle-angular-add-module-import JHipster will add new module here
 import { JhiMainComponent, NavbarComponent, FooterComponent, PageRibbonComponent, ActiveMenuDirective, ErrorComponent } from './layouts';
 import { Svn2GitMigrationModule } from 'app/migration/migation-process.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserModule } from '@angular/platform-browser';
 
 @NgModule({
     imports: [
-        BrowserModule,
         Svn2GitAppRoutingModule,
         Ng2Webstorage.forRoot({ prefix: 'jhi', separator: '-' }),
         Svn2GitSharedModule,
@@ -32,7 +32,9 @@ import { Svn2GitMigrationModule } from 'app/migration/migation-process.module';
         Svn2GitHomeModule,
         Svn2GitAccountModule,
         Svn2GitEntityModule,
-        Svn2GitMigrationModule
+        Svn2GitMigrationModule,
+        BrowserAnimationsModule,
+        BrowserModule
         // jhipster-needle-angular-add-module JHipster will add new module here
     ],
     declarations: [JhiMainComponent, NavbarComponent, ErrorComponent, PageRibbonComponent, ActiveMenuDirective, FooterComponent],

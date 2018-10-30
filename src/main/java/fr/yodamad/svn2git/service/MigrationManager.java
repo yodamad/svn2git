@@ -113,9 +113,12 @@ public class MigrationManager {
             // 3. Clean large files
             history = startStep(migration, StepEnum.GIT_CLEANING, "*.zip");
 
-            Main.main(new String[]{"--delete-files", "*.zip", "--no-blob-protection", gitWorkingDir});
+            String gitCommand = "git gc";
+            execCommand(gitWorkingDir, gitCommand);
 
-            String gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
+            Main.main(new String[]{"--strip-blobs-bigger-than", "1M", "--no-blob-protection", gitWorkingDir});
+
+            gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
             execCommand(gitWorkingDir, gitCommand);
 
             endStep(history, StatusEnum.DONE);

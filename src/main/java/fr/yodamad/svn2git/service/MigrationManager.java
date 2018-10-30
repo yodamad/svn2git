@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -31,6 +32,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -85,7 +87,7 @@ public class MigrationManager {
             Group group = gitlab.groupApi().getGroup(migration.getGitlabGroup());
             gitlab.projectApi().createProject(group.getId(), migration.getSvnProject());
 
-            endStep(history, StatusEnum.DONE);
+            endStep(history, StatusEnum.DONE, null);
 
             // 2. Checkout SVN repository : OK
             String initCommand = format("git clone %s/%s/%s.git %s",
@@ -102,7 +104,7 @@ public class MigrationManager {
             // 2.1. Clone as mirror empty repository, required for BFG
             execCommand(rootWorkingDir, initCommand);
 
-            endStep(history, StatusEnum.DONE);
+            endStep(history, StatusEnum.DONE, null);
 
             // 2.2. SVN checkout
             String cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
@@ -114,29 +116,33 @@ public class MigrationManager {
             history = startStep(migration, StepEnum.SVN_CHECKOUT, cloneCommand);
             execCommand(rootWorkingDir, cloneCommand);
 
-            endStep(history, StatusEnum.DONE);
+            endStep(history, StatusEnum.DONE, null);
 
-            // 3. Clean large files
+            // 3. Clean files
             boolean clean = false;
             String gitCommand;
 
             if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions())) {
-                history = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files with extension(s) : %s", migration.getForbiddenFileExtensions()));
-
-                Main.main(new String[]{"--delete-files", migration.getForbiddenFileExtensions(), "--no-blob-protection", gitWorkingDir});
-
-                endStep(history, StatusEnum.DONE);
+                // 3.1 Clean files based on their extensions
+                Arrays.stream(migration.getForbiddenFileExtensions().split(","))
+                    .forEach(s -> {
+                        MigrationHistory innerHistory = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files with extension : %s", s));
+                        Main.main(new String[]{"--delete-files", s, "--no-blob-protection", gitWorkingDir});
+                        endStep(innerHistory, StatusEnum.DONE, null);
+                    });
+                clean = true;
             }
 
-            if (!StringUtils.isEmpty(migration.getMaxFileSize())) {
+            if (!StringUtils.isEmpty(migration.getMaxFileSize()) && Character.isDigit(migration.getMaxFileSize().charAt(0))) {
+                // 3.2 Clean files based on size
                 history = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files bigger than %s", migration.getMaxFileSize()));
 
                 gitCommand = "git gc";
                 execCommand(gitWorkingDir, gitCommand);
 
                 Main.main(new String[]{"--strip-blobs-bigger-than", migration.getMaxFileSize(), "--no-blob-protection", gitWorkingDir});
-
-                endStep(history, StatusEnum.DONE);
+                clean = true;
+                endStep(history, StatusEnum.DONE, null);
             }
 
             if (clean) {
@@ -145,7 +151,7 @@ public class MigrationManager {
             }
 
             // 4. Git push master based on SVN trunk
-            history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master)");
+            history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
             String gitUrl = format("%s/%s/%s.git",
                 gitlabUrl,
@@ -157,7 +163,7 @@ public class MigrationManager {
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitlabSvcUser, gitlabSvcToken));
             pushCommand.call();
 
-            endStep(history, StatusEnum.DONE);
+            endStep(history, StatusEnum.DONE, null);
 
             // 5. List branches & tags
             List<Ref> svnBranches = git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
@@ -180,12 +186,21 @@ public class MigrationManager {
             gitBranches.forEach(b -> pushBranch(migration, b));
             gitTags.forEach(t -> pushTag(migration, t));
 
+            // 6. Clean work directory
+            history = startStep(migration, StepEnum.CLEANING, format("Remove %s", workingDir(migration)));
+            try {
+                FileUtils.deleteDirectory(new File(workingDir(migration)));
+                endStep(history, StatusEnum.DONE, null);
+            } catch (Exception exc) {
+                endStep(history, StatusEnum.FAILED, exc.getMessage());
+            }
+
             migration.setStatus(StatusEnum.DONE);
             migrationRepository.save(migration);
         } catch (Exception exc) {
             if (history != null) {
                 LOG.error("Failed step : " + history.getStep(), exc);
-                endStep(history, StatusEnum.FAILED);
+                endStep(history, StatusEnum.FAILED, exc.getMessage());
             }
 
             migration.setStatus(StatusEnum.FAILED);
@@ -272,7 +287,7 @@ public class MigrationManager {
      * @throws URISyntaxException
      * @throws GitAPIException
      */
-    private static void addRemote(Git git, String remoteName, String remoteUrl) throws IOException, URISyntaxException, GitAPIException {
+    private static void addRemote(Git git, String remoteName, String remoteUrl) throws URISyntaxException, GitAPIException {
         RemoteAddCommand remoteAddCommand = git.remoteAdd();
         remoteAddCommand.setName(remoteName);
         remoteAddCommand.setUri(new URIish(remoteUrl));
@@ -296,10 +311,10 @@ public class MigrationManager {
             gitCommand = format("git push -u origin %s", branchName);
             execCommand(gitWorkingDir(migration), gitCommand);
 
-            endStep(history, StatusEnum.DONE);
+            endStep(history, StatusEnum.DONE, null);
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to push branch", gitEx);
-            endStep(history, StatusEnum.FAILED);
+            endStep(history, StatusEnum.FAILED, gitEx.getMessage());
         }
     }
 
@@ -329,10 +344,10 @@ public class MigrationManager {
             gitCommand = "git branch -D tmp_tag";
             execCommand(gitWorkingDir(migration), gitCommand);
 
-            endStep(history, StatusEnum.DONE);
+            endStep(history, StatusEnum.DONE, null);
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to push branch", gitEx);
-            endStep(history, StatusEnum.FAILED);
+            endStep(history, StatusEnum.FAILED, gitEx.getMessage());
         }
     }
 
@@ -362,8 +377,9 @@ public class MigrationManager {
      * Update history
      * @param history
      */
-    private void endStep(MigrationHistory history, StatusEnum status) {
+    private void endStep(MigrationHistory history, StatusEnum status, String data) {
         history.setStatus(status);
+        if (data != null) history.setData(data);
         migrationHistoryRepository.save(history);
     }
 

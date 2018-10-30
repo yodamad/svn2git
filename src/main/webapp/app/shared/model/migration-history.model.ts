@@ -6,7 +6,8 @@ export const enum StepEnum {
     SVN_CHECKOUT = 'SVN_CHECKOUT',
     GIT_CLEANING = 'GIT_CLEANING',
     GIT_PUSH = 'GIT_PUSH',
-    GIT_CLONE = 'GIT_CLONE'
+    GIT_CLONE = 'GIT_CLONE',
+    CLEANING = 'CLEANING'
 }
 
 export const enum StatusEnum {

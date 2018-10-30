@@ -6,7 +6,8 @@
             "GIT_PUSH": "GIT_PUSH",
             "GITLAB_PROJECT_CREATION": "GITLAB_PROJECT_CREATION",
             "GIT_CLEANING": "GIT_CLEANING",
-            "GIT_CLONE": "GIT_CLONE"
+            "GIT_CLONE": "GIT_CLONE",
+            "CLEANING": "CLEANING"
         }
     }
 }

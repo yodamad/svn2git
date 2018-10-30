@@ -13,7 +13,7 @@
         {
             "fieldName": "step",
             "fieldType": "StepEnum",
-            "fieldValues": "GIT_CLONE, GITLAB_PROJECT_CREATION,SVN_CHECKOUT,GIT_CLEANING,GIT_PUSH"
+            "fieldValues": "GIT_CLONE,GITLAB_PROJECT_CREATION,SVN_CHECKOUT,GIT_CLEANING,GIT_PUSH,CLEANING"
         },
         {
             "fieldName": "status",

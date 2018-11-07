@@ -2,8 +2,10 @@ package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import fr.yodamad.svn2git.domain.Migration;
+import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.BadRequestAlertException;
 import fr.yodamad.svn2git.web.rest.util.HeaderUtil;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -41,9 +42,12 @@ public class MigrationResource {
 
     private final MigrationManager migrationManager;
 
-    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager) {
+    private final MigrationHistoryService migrationHistoryService;
+
+    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager, MigrationHistoryService migrationHistoryService) {
         this.migrationRepository = migrationRepository;
         this.migrationManager = migrationManager;
+        this.migrationHistoryService = migrationHistoryService;
     }
 
     /**
@@ -154,6 +158,20 @@ public class MigrationResource {
         log.debug("REST request to get Migration : {}", id);
         Optional<Migration> migration = migrationRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(migration);
+    }
+
+    /**
+     * GET  /migrations/:id : get the "id" migration.
+     *
+     * @param id the id of the migration to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the migration, or with status 404 (Not Found)
+     */
+    @GetMapping("/migrations/{id}/histories")
+    @Timed
+    public ResponseEntity<List<MigrationHistory>> getMigrationHistories(@PathVariable Long id) {
+        log.debug("REST request to get Migration : {}", id);
+        List<MigrationHistory> histories = migrationHistoryService.findAllForMigration(id);
+        return new ResponseEntity<>(histories, null, HttpStatus.OK);
     }
 
     /**

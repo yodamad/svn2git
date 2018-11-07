@@ -5,7 +5,8 @@ import { IMigration } from 'app/shared/model/migration.model';
 
 @Component({
     selector: 'jhi-migration-detail',
-    templateUrl: './migration-detail.component.html'
+    templateUrl: './migration-detail.component.html',
+    styleUrls: ['./migration-detail.component.css']
 })
 export class MigrationDetailComponent implements OnInit {
     migration: IMigration;

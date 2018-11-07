@@ -8,9 +8,11 @@ import { map } from 'rxjs/operators';
 import { SERVER_API_URL } from 'app/app.constants';
 import { createRequestOption } from 'app/shared';
 import { IMigration } from 'app/shared/model/migration.model';
+import { IMigrationHistory } from 'app/shared/model/migration-history.model';
 
 type EntityResponseType = HttpResponse<IMigration>;
 type EntityArrayResponseType = HttpResponse<IMigration[]>;
+type HistoryArrayResponseType = HttpResponse<IMigrationHistory[]>;
 
 @Injectable({ providedIn: 'root' })
 export class MigrationService {
@@ -36,6 +38,12 @@ export class MigrationService {
         return this.http
             .get<IMigration>(`${this.resourceUrl}/${id}`, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+    }
+
+    findHistories(id: number): Observable<HistoryArrayResponseType> {
+        return this.http
+            .get<IMigrationHistory[]>(`${this.resourceUrl}/${id}/histories`, { observe: 'response' })
+            .pipe(map((res: HistoryArrayResponseType) => res));
     }
 
     query(req?: any): Observable<EntityArrayResponseType> {

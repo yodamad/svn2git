@@ -42,7 +42,7 @@ export const migrationRoute: Routes = [
             migration: MigrationResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             pageTitle: 'svn2GitApp.migration.home.title'
         },
         canActivate: [UserRouteAccessService]

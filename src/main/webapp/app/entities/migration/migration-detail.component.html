@@ -5,11 +5,11 @@
             <hr>
             <mat-card class="summary-card">
                 <mat-card-header class="card-header">
-                    <mat-card-title class="my-header">{{migration.id}}. {{migration.svnProject | uppercase}}</mat-card-title>
-                    <mat-card-subtitle style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-subtitle>
+                    <mat-card-title style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-title>
                 </mat-card-header>
                 <jhi-summary-card [(migration)]="migration"></jhi-summary-card>
             </mat-card>
+            <jhi-details-card [(migration)]="migration"></jhi-details-card>
         </div>
     </div>
 </div>

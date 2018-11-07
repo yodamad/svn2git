@@ -24,6 +24,7 @@
         "next" : "Next",
         "only" : "only",
         "summary" : "Migration summary",
+        "details" : "Migration details",
         "svn" : {
             "check" : {
                 "repository" : "Check your SVN repository"

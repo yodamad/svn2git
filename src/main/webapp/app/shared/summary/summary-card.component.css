@@ -13,6 +13,11 @@
     margin: 20px;
 }
 
+.details-card {
+    max-width: 1200px;
+    margin: 20px;
+}
+
 .my-header {
     font-size: x-large;
 }
@@ -20,4 +25,18 @@
 .center-block {
     width: 50%;
     margin: 0 auto;
+}
+
+.cell-ok {
+    background-color: #28a745;
+    color: white;
+    border: 5px solid white;
+    padding: 10px;
+}
+
+.cell-ko {
+    background-color: darkred;
+    color: white;
+    border: 5px solid white;
+    padding: 10px;
 }

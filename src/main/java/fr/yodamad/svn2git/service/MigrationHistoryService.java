@@ -48,6 +48,16 @@ public class MigrationHistoryService {
         return migrationHistoryRepository.findAll();
     }
 
+    /**
+     * Get all the migrationHistories for a given migration.
+     *
+     * @return the list of entities
+     */
+    @Transactional(readOnly = true)
+    public List<MigrationHistory> findAllForMigration(Long migrationId) {
+        log.debug("Request to get all MigrationHistories for migration {}", migrationId);
+        return migrationHistoryRepository.findAllByMigration_Id(migrationId);
+    }
 
     /**
      * Get one migrationHistory by id.

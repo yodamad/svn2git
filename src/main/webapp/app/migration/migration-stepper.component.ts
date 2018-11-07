@@ -121,7 +121,9 @@ export class MigrationStepperComponent implements OnInit {
      * @param project
      */
     initMigration(project: string): IMigration {
-        if (project === null) project = this.selectedSvnDirectories.toString();
+        if (project === null) {
+            project = this.selectedSvnDirectories.toString();
+        }
 
         this.mig = new Migration();
         this.mig.gitlabGroup = this.groupFormGroup.controls['gitlabGroup'].value;

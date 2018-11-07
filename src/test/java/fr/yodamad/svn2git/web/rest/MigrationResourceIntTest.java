@@ -5,6 +5,7 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 
@@ -87,10 +88,13 @@ public class MigrationResourceIntTest {
 
     private Migration migration;
 
+    @Autowired
+    private MigrationHistoryService migrationHistoryService;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager);
+        final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService);
         this.restMigrationMockMvc = MockMvcBuilders.standaloneSetup(migrationResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

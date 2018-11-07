@@ -22,6 +22,7 @@
                 <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="maxFileSize"><span jhiTranslate="svn2GitApp.migration.maxFileSize">Max File Size</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="forbiddenFileExtensions"><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th></th>
             </tr>
             </thead>
             <tbody infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
@@ -36,6 +37,16 @@
                 <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
                 <td>{{migration.maxFileSize}}</td>
                 <td>{{migration.forbiddenFileExtensions}}</td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['/migration', migration.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                    </div>
+                </td>
             </tr>
             </tbody>
         </table>

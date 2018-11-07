@@ -23,15 +23,12 @@ export class MigrationStepperComponent implements OnInit {
     selectedExtensions: string[];
     migrationStarted = false;
     fileUnit = 'M';
-
-    svnUrl: string;
-    gitlabUrl: string;
+    mig: IMigration;
 
     constructor(
         private _formBuilder: FormBuilder,
         private _migrationProcessService: MigrationProcessService,
-        private _migrationService: MigrationService,
-        private _configurationService: ConfigurationService
+        private _migrationService: MigrationService
     ) {}
 
     ngOnInit() {
@@ -47,9 +44,6 @@ export class MigrationStepperComponent implements OnInit {
         this.cleaningFormGroup = this._formBuilder.group({
             fileMaxSize: ['']
         });
-
-        this._configurationService.gitlab().subscribe(res => (this.gitlabUrl = res));
-        this._configurationService.svn().subscribe(res => (this.svnUrl = res));
     }
 
     /**
@@ -127,18 +121,20 @@ export class MigrationStepperComponent implements OnInit {
      * @param project
      */
     initMigration(project: string): IMigration {
-        const mig: IMigration = new Migration();
-        mig.gitlabGroup = this.groupFormGroup.controls['gitlabGroup'].value;
-        mig.gitlabProject = project;
-        mig.svnGroup = this.svnFormGroup.controls['svnRepository'].value;
-        mig.svnProject = project;
-        mig.user = this.userFormGroup.controls['gitlabUser'].value;
+        if (project === null) project = this.selectedSvnDirectories.toString();
+
+        this.mig = new Migration();
+        this.mig.gitlabGroup = this.groupFormGroup.controls['gitlabGroup'].value;
+        this.mig.gitlabProject = project;
+        this.mig.svnGroup = this.svnFormGroup.controls['svnRepository'].value;
+        this.mig.svnProject = project;
+        this.mig.user = this.userFormGroup.controls['gitlabUser'].value;
         if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
-            mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
+            this.mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
         }
         if (this.selectedExtensions !== undefined && this.selectedExtensions.length > 0) {
-            mig.forbiddenFileExtensions = this.selectedExtensions.toString();
+            this.mig.forbiddenFileExtensions = this.selectedExtensions.toString();
         }
-        return mig;
+        return this.mig;
     }
 }

@@ -1,0 +1,28 @@
+<mat-card-content *ngIf="migration != undefined">
+    <mat-list>
+        <mat-list-item>
+            <mat-icon mat-list-icon>face</mat-icon>
+            <p mat-line>{{migration.user}}</p>
+        </mat-list-item>
+        <mat-list-item>
+            <mat-icon mat-list-icon>flight_takeoff</mat-icon>
+            <p mat-line>{{svnUrl}}{{migration.svnGroup}}</p>
+        </mat-list-item>
+        <mat-list-item>
+            <mat-icon mat-list-icon>flight_land</mat-icon>
+            <p mat-line>{{gitlabUrl}}{{migration.gitlabGroup}}</p>
+        </mat-list-item>
+        <mat-list-item>
+            <mat-icon mat-list-icon>format_list_bulleted</mat-icon>
+            <p mat-line>{{migration.svnProject}}</p>
+        </mat-list-item>
+        <mat-list-item *ngIf="migration.forbiddenFileExtensions != undefined && migration.forbiddenFileExtensions.length > 0">
+            <mat-icon mat-list-icon>layers_clear</mat-icon>
+            <p mat-line>{{migration.forbiddenFileExtensions}}</p>
+        </mat-list-item>
+        <mat-list-item *ngIf="migration.maxFileSize != undefined">
+            <mat-icon mat-list-icon>unfold_less</mat-icon>
+            <p mat-line>{{migration.maxFileSize}}</p>
+        </mat-list-item>
+    </mat-list>
+</mat-card-content>

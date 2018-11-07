@@ -85,7 +85,7 @@
             <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO" (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
@@ -98,34 +98,7 @@
                 <mat-card-title class="my-header">{{svnFormGroup.controls['svnRepository'].value | uppercase}}</mat-card-title>
                 <mat-card-subtitle style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-subtitle>
             </mat-card-header>
-            <mat-card-content>
-                <mat-list>
-                    <mat-list-item>
-                        <mat-icon mat-list-icon>face</mat-icon>
-                        <p mat-line>{{userFormGroup.controls['gitlabUser'].value}}</p>
-                    </mat-list-item>
-                    <mat-list-item>
-                        <mat-icon mat-list-icon>flight_takeoff</mat-icon>
-                        <p mat-line>{{svnUrl}}{{svnFormGroup.controls['svnRepository'].value}}</p>
-                    </mat-list-item>
-                    <mat-list-item>
-                        <mat-icon mat-list-icon>flight_land</mat-icon>
-                        <p mat-line>{{gitlabUrl}}{{groupFormGroup.controls['gitlabGroup'].value}}</p>
-                    </mat-list-item>
-                    <mat-list-item>
-                        <mat-icon mat-list-icon>format_list_bulleted</mat-icon>
-                        <p mat-line>{{selectedSvnDirectories}}</p>
-                    </mat-list-item>
-                    <mat-list-item *ngIf="selectedExtensions != undefined && selectedExtensions.length > 0">
-                        <mat-icon mat-list-icon>layers_clear</mat-icon>
-                        <p mat-line>{{selectedExtensions}}</p>
-                    </mat-list-item>
-                    <mat-list-item *ngIf="cleaningFormGroup.controls['fileMaxSize'] != undefined">
-                        <mat-icon mat-list-icon>unfold_less</mat-icon>
-                        <p mat-line>{{cleaningFormGroup.controls['fileMaxSize'].value}}{{fileUnit}}</p>
-                    </mat-list-item>
-                </mat-list>
-            </mat-card-content>
+            <jhi-summary-card [migration]="mig"></jhi-summary-card>
             <mat-card-actions class="center-block">
                 <button mat-stroked-button (click)="go()" class="ok" *ngIf="!migrationStarted"><i class="material-icons">power_settings_new</i> <span jhiTranslate="migration-process.migration.start">Start migration</span></button>
                 <button mat-stroked-button *ngIf="migrationStarted" disabled><i class="material-icons">check</i> <span jhiTranslate="migration-process.migration.planned">Migration planned</span></button>

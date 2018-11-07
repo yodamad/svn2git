@@ -33,7 +33,7 @@
                 <td>{{migration.date | date:'mediumDate'}}</td>
                 <td>{{migration.gitlabGroup}}</td>
                 <td>{{migration.gitlabProject}}</td>
-                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}">{{migration.status}}</td>
+                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
                 <td>{{migration.maxFileSize}}</td>
                 <td>{{migration.forbiddenFileExtensions}}</td>
             </tr>

@@ -1,10 +1,13 @@
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
-import { IMigration } from 'app/shared/model/migration.model';
+import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { JhiParseLinks } from 'ng-jhipster';
 
+/**
+ * Page to check migrations status
+ */
 @Component({
     selector: 'jhi-migration-check.component',
     templateUrl: 'migration-check.component.html',
@@ -28,6 +31,9 @@ export class MigrationCheckComponent implements OnInit {
         };
     }
 
+    /**
+     * Search migration according to criteria
+     */
     search() {
         this.migrations = [];
         if (this.searchFormGroup.controls['userCriteria'].value !== '') {
@@ -50,5 +56,21 @@ export class MigrationCheckComponent implements OnInit {
             this.migrations.push(data[i]);
         }
         console.log(this.migrations);
+    }
+
+    /**
+     * Add class according to status
+     * @param status
+     */
+    cssClass(status: StatusEnum) {
+        if (status === StatusEnum.DONE) {
+            return 'badge-success';
+        }
+        if (status === StatusEnum.FAILED) {
+            return 'badge-danger';
+        }
+        if (status === StatusEnum.RUNNING) {
+            return 'badge-primary';
+        }
     }
 }

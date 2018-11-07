@@ -41,8 +41,12 @@ import static java.lang.String.format;
 @Service
 public class MigrationManager {
 
+    /** Default ref origin for tags. */
     public static final String REFS_REMOTES_ORIGIN_TAGS = "refs/remotes/origin/tags/";
+    /** Temp directory. */
     public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+
+    // Configuration
     @Value("${svn.url}") String svnUrl;
     @Value("${gitlab.url}") String gitlabUrl;
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
@@ -50,7 +54,9 @@ public class MigrationManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
 
+    /** Gitlab API. */
     private final GitlabAdmin gitlab;
+    // Repositories
     private final MigrationRepository migrationRepository;
     private final MigrationHistoryRepository migrationHistoryRepository;
 
@@ -64,6 +70,10 @@ public class MigrationManager {
         this.migrationHistoryRepository = migrationHistoryRepository;
     }
 
+    /**
+     * Start a migration in a dedicated thread
+     * @param migrationId ID for migration to start
+     */
     @Async
     public void startMigration(final long migrationId) {
         Migration migration = migrationRepository.findById(migrationId).get();

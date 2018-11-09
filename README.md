@@ -22,17 +22,29 @@ Just click on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/mast
 
 You have to check several information before starting the migration :
 
-your gitlab account : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_gitlab.png)
+your gitlab account
+ 
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_gitlab.png)
 
-your gitlab group : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_group.png)
+your gitlab group
+ 
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_group.png)
 
-your svn repository : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_svn.png)
+your svn repository
+ 
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_svn.png)
 
-Then, chose which project(s) to migration : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/choose_svn.png)
+Then, chose which project(s) to migration
+ 
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/choose_svn.png)
 
-Optionnaly, add some cleaning options based on files size or/and extensions : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/cleaning_options.png)
+Optionnaly, add some cleaning options based on files size or/and extensions
 
-Check the summary : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/summary.png)
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/cleaning_options.png)
+
+Check the summary
+ 
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/summary.png)
 
 You're good to go !!
 
@@ -42,9 +54,13 @@ It is possible to check status of migrations and associated details.
 
 Just click on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_migration.png)
 
-Then search migrations with your gitlab account name or svn group : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/search_migration.png)
+Then search migrations with your gitlab account name or svn group
+ 
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/search_migration.png)
 
-The migrations founded are display : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/migrations_list.png)
+The migrations founded are display
+ 
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/migrations_list.png)
 
 You can check details of a migration by clicking on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/view.png)
 

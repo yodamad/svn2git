@@ -1,0 +1,26 @@
+{
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "relationships": [],
+    "fields": [
+        {
+            "fieldName": "svnDirectory",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "regex",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "gitDirectory",
+            "fieldType": "String"
+        }
+    ],
+    "changelogDate": "20181109153011",
+    "dto": "no",
+    "searchEngine": false,
+    "service": "serviceClass",
+    "entityTableName": "mapping",
+    "jpaMetamodelFiltering": false,
+    "pagination": "no"
+}

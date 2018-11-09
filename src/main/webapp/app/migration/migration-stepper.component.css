@@ -21,3 +21,8 @@
     width: 50%;
     margin: 0 auto;
 }
+
+.large-table {
+    width: 100%;
+    margin-bottom: 20px;
+}

@@ -5,6 +5,7 @@ import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.BadRequestAlertException;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -44,10 +46,13 @@ public class MigrationResource {
 
     private final MigrationHistoryService migrationHistoryService;
 
-    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager, MigrationHistoryService migrationHistoryService) {
+    private final MappingService mappingService;
+
+    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager, MigrationHistoryService migrationHistoryService, MappingService mappingService) {
         this.migrationRepository = migrationRepository;
         this.migrationManager = migrationManager;
         this.migrationHistoryService = migrationHistoryService;
+        this.mappingService = mappingService;
     }
 
     /**
@@ -69,6 +74,10 @@ public class MigrationResource {
         migration.setStatus(StatusEnum.WAITING);
 
         Migration result = migrationRepository.save(migration);
+
+        if (!CollectionUtils.isEmpty(migration.getMappings())) {
+            migration.getMappings().forEach(mapping -> mappingService.save(mapping.migration(result)));
+        }
 
         migrationManager.startMigration(result.getId());
 

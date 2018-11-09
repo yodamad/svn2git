@@ -3,7 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
-import { ConfigurationService } from 'app/shared/service/configuration-service';
+import { IMapping } from 'app/shared/model/mapping.model';
+import { SelectionModel } from '@angular/cdk/collections';
+import { StaticMappingService } from 'app/entities/static-mapping';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -11,27 +13,46 @@ import { ConfigurationService } from 'app/shared/service/configuration-service';
     styleUrls: ['migration-stepper.component.css']
 })
 export class MigrationStepperComponent implements OnInit {
+    // Form groups
     userFormGroup: FormGroup;
     groupFormGroup: FormGroup;
     svnFormGroup: FormGroup;
     cleaningFormGroup: FormGroup;
+    mappingFormGroup: FormGroup;
+    displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping'];
+
+    // Controls
     gitlabUserKO = true;
     gitlabGroupKO = true;
     svnRepoKO = true;
+    mappings: IMapping[] = [];
+
+    // Input for migrations
     svnDirectories: string[] = null;
     selectedSvnDirectories: string[];
     selectedExtensions: string[];
     migrationStarted = false;
     fileUnit = 'M';
     mig: IMigration;
+    /// Mapping selections
+    initialSelection = [];
+    allowMultiSelect = true;
+    selection: SelectionModel<IMapping>;
 
     constructor(
         private _formBuilder: FormBuilder,
         private _migrationProcessService: MigrationProcessService,
-        private _migrationService: MigrationService
+        private _migrationService: MigrationService,
+        private _mappingService: StaticMappingService
     ) {}
 
     ngOnInit() {
+        this._mappingService.query().subscribe(res => {
+            this.mappings = res.body;
+            this.initialSelection = this.mappings;
+            this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
+        });
+
         this.userFormGroup = this._formBuilder.group({
             gitlabUser: ['', Validators.required]
         });
@@ -44,6 +65,7 @@ export class MigrationStepperComponent implements OnInit {
         this.cleaningFormGroup = this._formBuilder.group({
             fileMaxSize: ['']
         });
+        this.mappingFormGroup = this._formBuilder.group({});
     }
 
     /**
@@ -137,6 +159,21 @@ export class MigrationStepperComponent implements OnInit {
         if (this.selectedExtensions !== undefined && this.selectedExtensions.length > 0) {
             this.mig.forbiddenFileExtensions = this.selectedExtensions.toString();
         }
+        if (this.selection !== undefined && !this.selection.isEmpty()) {
+            this.mig.mappings = this.selection.selected;
+        }
         return this.mig;
+    }
+
+    /** Whether the number of selected elements matches the total number of rows. */
+    isAllSelected() {
+        const numSelected = this.selection.selected.length;
+        const numRows = this.mappings.length;
+        return numSelected === numRows;
+    }
+
+    /** Selects all rows if they are not all selected; otherwise clear selection. */
+    masterToggle() {
+        this.isAllSelected() ? this.selection.clear() : this.mappings.forEach(row => this.selection.select(row));
     }
 }

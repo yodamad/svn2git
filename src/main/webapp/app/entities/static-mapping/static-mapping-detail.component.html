@@ -1,0 +1,35 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="staticMapping">
+            <h2><span jhiTranslate="svn2GitApp.staticMapping.detail.title">Static Mapping</span> {{staticMapping.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="svn2GitApp.staticMapping.svnDirectory">Svn Directory</span></dt>
+                <dd>
+                    <span>{{staticMapping.svnDirectory}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.staticMapping.regex">Regex</span></dt>
+                <dd>
+                    <span>{{staticMapping.regex}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.staticMapping.gitDirectory">Git Directory</span></dt>
+                <dd>
+                    <span>{{staticMapping.gitDirectory}}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/static-mapping', staticMapping.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="mapping">
+            <h2><span jhiTranslate="svn2GitApp.mapping.detail.title">Mapping</span> {{mapping.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="svn2GitApp.mapping.svnDirectory">Svn Directory</span></dt>
+                <dd>
+                    <span>{{mapping.svnDirectory}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.mapping.regex">Regex</span></dt>
+                <dd>
+                    <span>{{mapping.regex}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.mapping.gitDirectory">Git Directory</span></dt>
+                <dd>
+                    <span>{{mapping.gitDirectory}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.mapping.migrationId">Migration ID</span></dt>
+                <dd>
+                    <span>{{mapping.migration.id}}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/mapping', mapping.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

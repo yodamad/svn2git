@@ -41,6 +41,18 @@
                             <span jhiTranslate="global.menu.entities.migrationHistory">Migration History</span>
                         </a>
                     </li>
+                    <li>
+                        <a class="dropdown-item" routerLink="mapping" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                            <fa-icon [icon]="'asterisk'" [fixedWidth]="true"></fa-icon>
+                            <span jhiTranslate="global.menu.entities.mapping">Mapping</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" routerLink="static-mapping" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                            <fa-icon [icon]="'asterisk'" [fixedWidth]="true"></fa-icon>
+                            <span jhiTranslate="global.menu.entities.staticMapping">Static Mapping</span>
+                        </a>
+                    </li>
                     <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
                 </ul>
             </li>

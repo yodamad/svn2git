@@ -17,6 +17,7 @@
             }
         },
         "home" : "Home",
+        "mapping": "Mapping",
         "migration" : {
             "planned" : "Migration planned",
             "start" : "Start migration"

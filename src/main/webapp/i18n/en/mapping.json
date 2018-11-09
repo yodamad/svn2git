@@ -1,0 +1,25 @@
+
+{
+    "svn2GitApp": {
+        "mapping" : {
+            "home": {
+                "title": "Mappings",
+                "createLabel": "Create a new Mapping",
+                "createOrEditLabel": "Create or edit a Mapping"
+            },
+            "created": "A new Mapping is created with identifier {{ param }}",
+            "updated": "A Mapping is updated with identifier {{ param }}",
+            "deleted": "A Mapping is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Mapping {{ id }}?"
+            },
+            "detail": {
+                "title": "Mapping"
+            },
+            "svnDirectory": "Svn Directory",
+            "regex": "Regex",
+            "gitDirectory": "Git Directory",
+            "migrationId": "Migration"
+        }
+    }
+}

@@ -9,6 +9,8 @@
                 "main": "Entités",
                 "migration": "Migration",
                 "migrationHistory": "Migration History",
+                "mapping": "Mapping",
+                "staticMapping": "Static Mapping",
                 "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
             },
             "account": {

@@ -2,6 +2,8 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { Svn2GitMigrationModule } from './migration/migration.module';
 import { Svn2GitMigrationHistoryModule } from './migration-history/migration-history.module';
+import { Svn2GitMappingModule } from './mapping/mapping.module';
+import { Svn2GitStaticMappingModule } from './static-mapping/static-mapping.module';
 /* jhipster-needle-add-entity-module-import - JHipster will add entity modules imports here */
 
 @NgModule({
@@ -9,6 +11,8 @@ import { Svn2GitMigrationHistoryModule } from './migration-history/migration-his
     imports: [
         Svn2GitMigrationModule,
         Svn2GitMigrationHistoryModule,
+        Svn2GitMappingModule,
+        Svn2GitStaticMappingModule,
         /* jhipster-needle-add-entity-module - JHipster will add entity modules here */
     ],
     declarations: [],

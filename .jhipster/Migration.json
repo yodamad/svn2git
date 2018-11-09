@@ -7,6 +7,12 @@
             "otherEntityName": "migrationHistory",
             "relationshipType": "one-to-many",
             "otherEntityRelationshipName": "migration"
+        },
+        {
+            "relationshipName": "mappings",
+            "otherEntityName": "mapping",
+            "relationshipType": "one-to-many",
+            "otherEntityRelationshipName": "migration"
         }
     ],
     "fields": [

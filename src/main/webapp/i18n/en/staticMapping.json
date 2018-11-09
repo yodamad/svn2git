@@ -1,0 +1,24 @@
+
+{
+    "svn2GitApp": {
+        "staticMapping" : {
+            "home": {
+                "title": "Static Mappings",
+                "createLabel": "Create a new Static Mapping",
+                "createOrEditLabel": "Create or edit a Static Mapping"
+            },
+            "created": "A new Static Mapping is created with identifier {{ param }}",
+            "updated": "A Static Mapping is updated with identifier {{ param }}",
+            "deleted": "A Static Mapping is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Static Mapping {{ id }}?"
+            },
+            "detail": {
+                "title": "Static Mapping"
+            },
+            "svnDirectory": "Svn Directory",
+            "regex": "Regex",
+            "gitDirectory": "Git Directory"
+        }
+    }
+}

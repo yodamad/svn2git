@@ -1,5 +1,6 @@
 import { Moment } from 'moment';
 import { IMigrationHistory } from 'app/shared/model//migration-history.model';
+import { IMapping } from 'app/shared/model//mapping.model';
 
 export const enum StatusEnum {
     WAITING = 'WAITING',
@@ -20,6 +21,7 @@ export interface IMigration {
     maxFileSize?: string;
     forbiddenFileExtensions?: string;
     histories?: IMigrationHistory[];
+    mappings?: IMapping[];
 }
 
 export class Migration implements IMigration {
@@ -34,6 +36,7 @@ export class Migration implements IMigration {
         public status?: StatusEnum,
         public maxFileSize?: string,
         public forbiddenFileExtensions?: string,
-        public histories?: IMigrationHistory[]
+        public histories?: IMigrationHistory[],
+        public mappings?: IMapping[]
     ) {}
 }

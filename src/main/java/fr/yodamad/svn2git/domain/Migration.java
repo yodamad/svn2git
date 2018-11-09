@@ -1,17 +1,14 @@
 package fr.yodamad.svn2git.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
-
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
-
-import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
+import java.util.Set;
 
 /**
  * A Migration.
@@ -61,6 +58,8 @@ public class Migration implements Serializable {
 
     @OneToMany(mappedBy = "migration")
     private Set<MigrationHistory> histories = new HashSet<>();
+    @OneToMany(mappedBy = "migration")
+    private Set<Mapping> mappings = new HashSet<>();
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;
@@ -210,6 +209,31 @@ public class Migration implements Serializable {
 
     public void setHistories(Set<MigrationHistory> migrationHistories) {
         this.histories = migrationHistories;
+    }
+
+    public Set<Mapping> getMappings() {
+        return mappings;
+    }
+
+    public Migration mappings(Set<Mapping> mappings) {
+        this.mappings = mappings;
+        return this;
+    }
+
+    public Migration addMappings(Mapping mapping) {
+        this.mappings.add(mapping);
+        mapping.setMigration(this);
+        return this;
+    }
+
+    public Migration removeMappings(Mapping mapping) {
+        this.mappings.remove(mapping);
+        mapping.setMigration(null);
+        return this;
+    }
+
+    public void setMappings(Set<Mapping> mappings) {
+        this.mappings = mappings;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

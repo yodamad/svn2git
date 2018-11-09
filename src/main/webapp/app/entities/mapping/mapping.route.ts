@@ -8,8 +8,6 @@ import { Mapping } from 'app/shared/model/mapping.model';
 import { MappingService } from './mapping.service';
 import { MappingComponent } from './mapping.component';
 import { MappingDetailComponent } from './mapping-detail.component';
-import { MappingUpdateComponent } from './mapping-update.component';
-import { MappingDeletePopupComponent } from './mapping-delete-dialog.component';
 import { IMapping } from 'app/shared/model/mapping.model';
 
 @Injectable({ providedIn: 'root' })
@@ -46,45 +44,5 @@ export const mappingRoute: Routes = [
             pageTitle: 'svn2GitApp.mapping.home.title'
         },
         canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'mapping/new',
-        component: MappingUpdateComponent,
-        resolve: {
-            mapping: MappingResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'svn2GitApp.mapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'mapping/:id/edit',
-        component: MappingUpdateComponent,
-        resolve: {
-            mapping: MappingResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'svn2GitApp.mapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
-    }
-];
-
-export const mappingPopupRoute: Routes = [
-    {
-        path: 'mapping/:id/delete',
-        component: MappingDeletePopupComponent,
-        resolve: {
-            mapping: MappingResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'svn2GitApp.mapping.home.title'
-        },
-        canActivate: [UserRouteAccessService],
-        outlet: 'popup'
     }
 ];

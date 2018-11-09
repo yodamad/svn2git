@@ -8,8 +8,6 @@ import { MigrationHistory } from 'app/shared/model/migration-history.model';
 import { MigrationHistoryService } from './migration-history.service';
 import { MigrationHistoryComponent } from './migration-history.component';
 import { MigrationHistoryDetailComponent } from './migration-history-detail.component';
-import { MigrationHistoryUpdateComponent } from './migration-history-update.component';
-import { MigrationHistoryDeletePopupComponent } from './migration-history-delete-dialog.component';
 import { IMigrationHistory } from 'app/shared/model/migration-history.model';
 
 @Injectable({ providedIn: 'root' })
@@ -46,45 +44,5 @@ export const migrationHistoryRoute: Routes = [
             pageTitle: 'svn2GitApp.migrationHistory.home.title'
         },
         canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'migration-history/new',
-        component: MigrationHistoryUpdateComponent,
-        resolve: {
-            migrationHistory: MigrationHistoryResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'svn2GitApp.migrationHistory.home.title'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'migration-history/:id/edit',
-        component: MigrationHistoryUpdateComponent,
-        resolve: {
-            migrationHistory: MigrationHistoryResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'svn2GitApp.migrationHistory.home.title'
-        },
-        canActivate: [UserRouteAccessService]
-    }
-];
-
-export const migrationHistoryPopupRoute: Routes = [
-    {
-        path: 'migration-history/:id/delete',
-        component: MigrationHistoryDeletePopupComponent,
-        resolve: {
-            migrationHistory: MigrationHistoryResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'svn2GitApp.migrationHistory.home.title'
-        },
-        canActivate: [UserRouteAccessService],
-        outlet: 'popup'
     }
 ];

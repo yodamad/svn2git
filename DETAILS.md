@@ -1,34 +1,154 @@
 # svn2git
-This application helps you to migrate from SVN to Gitlab.
 
-This application was generated using JHipster 5.4.2, you can find documentation and help at [jhipster](https://www.jhipster.tech/documentation-archive/v5.4.2).
+### Service workers
 
-## Development
+Service workers are commented by default, to enable them please uncomment the following code.
 
-To install dependences : `yarn install`
+* The service worker registering script in index.html
 
-To run UI : `yarn start`
+```html
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+        .register('./service-worker.js')
+        .then(function() { console.log('Service Worker Registered'); });
+    }
+</script>
+```
 
-To run server : `mvn spring-boot:run`
+Note: workbox creates the respective service worker and dynamically generate the `service-worker.js`
 
-## Use cases
-### Migration initialisation
+### Managing dependencies
 
-***// Todo***
+For example, to add [Leaflet][] library as a runtime dependency of your application, you would run following command:
 
-### Migration check
+    npm install --save --save-exact leaflet
 
-It is possible to check status of migrations and associated details.
+To benefit from TypeScript type definitions from [DefinitelyTyped][] repository in development, you would run following command:
 
-Just click on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_migration.png)
+    npm install --save-dev --save-exact @types/leaflet
 
-Then search migrations with your gitlab account name or svn group : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/img.png)
+Then you would import the JS and CSS files specified in library's installation instructions so that [Webpack][] knows about them:
+Edit [src/main/webapp/app/vendor.ts](src/main/webapp/app/vendor.ts) file:
+~~~
+import 'leaflet/dist/leaflet.js';
+~~~
 
-The migrations founded are display : ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/img.png)
+Edit [src/main/webapp/content/css/vendor.css](src/main/webapp/content/css/vendor.css) file:
+~~~
+@import '~leaflet/dist/leaflet.css';
+~~~
+Note: there are still few other things remaining to do for Leaflet that we won't detail here.
 
-You can check details of a migration by clicking on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/img.png)
+For further instructions on how to develop with JHipster, have a look at [Using JHipster in development][].
 
-You are routed to migration details page resuming migration and steps
+### Using angular-cli
 
-![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/img.png)
+You can also use [Angular CLI][] to generate some custom client code.
 
+For example, the following command:
+
+    ng generate component my-component
+
+will generate few files:
+
+    create src/main/webapp/app/my-component/my-component.component.html
+    create src/main/webapp/app/my-component/my-component.component.ts
+    update src/main/webapp/app/app.module.ts
+
+
+## Building for production
+
+To optimize the svn2git application for production, run:
+
+    ./mvnw -Pprod clean package
+
+This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
+To ensure everything worked, run:
+
+    java -jar target/*.war
+
+Then navigate to [http://localhost:8080](http://localhost:8080) in your browser.
+
+Refer to [Using JHipster in production][] for more details.
+
+## Testing
+
+To launch your application's tests, run:
+
+    ./mvnw clean test
+
+### Client tests
+
+Unit tests are run by [Jest][] and written with [Jasmine][]. They're located in [src/test/javascript/](src/test/javascript/) and can be run with:
+
+    npm test
+
+
+
+For more information, refer to the [Running tests page][].
+
+### Code quality
+
+Sonar is used to analyse code quality. You can start a local Sonar server (accessible on http://localhost:9001) with:
+
+```
+docker-compose -f src/main/docker/sonar.yml up -d
+```
+
+Then, run a Sonar analysis:
+
+```
+./mvnw -Pprod clean test sonar:sonar
+```
+
+For more information, refer to the [Code quality page][].
+
+## Using Docker to simplify development (optional)
+
+You can use Docker to improve your JHipster development experience. A number of docker-compose configuration are available in the [src/main/docker](src/main/docker) folder to launch required third party services.
+
+For example, to start a mysql database in a docker container, run:
+
+    docker-compose -f src/main/docker/mysql.yml up -d
+
+To stop it and remove the container, run:
+
+    docker-compose -f src/main/docker/mysql.yml down
+
+You can also fully dockerize your application and all the services that it depends on.
+To achieve this, first build a docker image of your app by running:
+
+    ./mvnw package -Pprod jib:dockerBuild
+
+Then run:
+
+    docker-compose -f src/main/docker/app.yml up -d
+
+For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the docker-compose sub-generator (`jhipster docker-compose`), which is able to generate docker configurations for one or several JHipster applications.
+
+## Continuous Integration (optional)
+
+To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
+
+[JHipster Homepage and latest documentation]: https://www.jhipster.tech
+[JHipster 5.4.2 archive]: https://www.jhipster.tech/documentation-archive/v5.4.2
+
+[Using JHipster in development]: https://www.jhipster.tech/documentation-archive/v5.4.2/development/
+[Using Docker and Docker-Compose]: https://www.jhipster.tech/documentation-archive/v5.4.2/docker-compose
+[Using JHipster in production]: https://www.jhipster.tech/documentation-archive/v5.4.2/production/
+[Running tests page]: https://www.jhipster.tech/documentation-archive/v5.4.2/running-tests/
+[Code quality page]: https://www.jhipster.tech/documentation-archive/v5.4.2/code-quality/
+[Setting up Continuous Integration]: https://www.jhipster.tech/documentation-archive/v5.4.2/setting-up-ci/
+
+
+[Node.js]: https://nodejs.org/
+[Yarn]: https://yarnpkg.org/
+[Webpack]: https://webpack.github.io/
+[Angular CLI]: https://cli.angular.io/
+[BrowserSync]: http://www.browsersync.io/
+[Jest]: https://facebook.github.io/jest/
+[Jasmine]: http://jasmine.github.io/2.0/introduction.html
+[Protractor]: https://angular.github.io/protractor/
+[Leaflet]: http://leafletjs.com/
+[DefinitelyTyped]: http://definitelytyped.org/

@@ -165,8 +165,13 @@ export class MigrationStepperComponent implements OnInit {
         }
 
         this.mig = new Migration();
+        this.mig.gitlabUrl = this.gitlabFormGroup.controls['gitlabURL'].value;
+        if (this.gitlabFormGroup.controls['gitlabToken'] !== undefined && this.gitlabFormGroup.controls['gitlabToken'].value !== '') {
+            this.mig.gitlabToken = this.gitlabFormGroup.controls['gitlabToken'].value;
+        }
         this.mig.gitlabGroup = this.gitlabFormGroup.controls['gitlabGroup'].value;
         this.mig.gitlabProject = project;
+        this.mig.svnUrl = this.svnFormGroup.controls['svnURL'].value;
         this.mig.svnGroup = this.svnFormGroup.controls['svnRepository'].value;
         this.mig.svnProject = project;
         this.mig.user = this.gitlabFormGroup.controls['gitlabUser'].value;

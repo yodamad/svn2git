@@ -56,6 +56,15 @@ public class Migration implements Serializable {
     @Column(name = "forbidden_file_extensions")
     private String forbiddenFileExtensions;
 
+    @Column(name = "gitlab_url")
+    private String gitlabUrl;
+
+    @Column(name = "gitlab_token")
+    private String gitlabToken;
+
+    @Column(name = "svn_url")
+    private String svnUrl;
+
     @OneToMany(mappedBy = "migration")
     private Set<MigrationHistory> histories = new HashSet<>();
     @OneToMany(mappedBy = "migration")
@@ -186,6 +195,45 @@ public class Migration implements Serializable {
         this.forbiddenFileExtensions = forbiddenFileExtensions;
     }
 
+    public String getGitlabUrl() {
+        return gitlabUrl;
+    }
+
+    public Migration gitlabUrl(String gitlabUrl) {
+        this.gitlabUrl = gitlabUrl;
+        return this;
+    }
+
+    public void setGitlabUrl(String gitlabUrl) {
+        this.gitlabUrl = gitlabUrl;
+    }
+
+    public String getGitlabToken() {
+        return gitlabToken;
+    }
+
+    public Migration gitlabToken(String gitlabToken) {
+        this.gitlabToken = gitlabToken;
+        return this;
+    }
+
+    public void setGitlabToken(String gitlabToken) {
+        this.gitlabToken = gitlabToken;
+    }
+
+    public String getSvnUrl() {
+        return svnUrl;
+    }
+
+    public Migration svnUrl(String svnUrl) {
+        this.svnUrl = svnUrl;
+        return this;
+    }
+
+    public void setSvnUrl(String svnUrl) {
+        this.svnUrl = svnUrl;
+    }
+
     public Set<MigrationHistory> getHistories() {
         return histories;
     }
@@ -270,6 +318,9 @@ public class Migration implements Serializable {
             ", status='" + getStatus() + "'" +
             ", maxFileSize='" + getMaxFileSize() + "'" +
             ", forbiddenFileExtensions='" + getForbiddenFileExtensions() + "'" +
+            ", gitlabUrl='" + getGitlabUrl() + "'" +
+            ", gitlabToken='" + getGitlabToken() + "'" +
+            ", svnUrl='" + getSvnUrl() + "'" +
             "}";
     }
 }

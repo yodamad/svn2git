@@ -20,6 +20,9 @@ export interface IMigration {
     status?: StatusEnum;
     maxFileSize?: string;
     forbiddenFileExtensions?: string;
+    gitlabUrl?: string;
+    gitlabToken?: string;
+    svnUrl?: string;
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
 }
@@ -36,6 +39,9 @@ export class Migration implements IMigration {
         public status?: StatusEnum,
         public maxFileSize?: string,
         public forbiddenFileExtensions?: string,
+        public gitlabUrl?: string,
+        public gitlabToken?: string,
+        public svnUrl?: string,
         public histories?: IMigrationHistory[],
         public mappings?: IMapping[]
     ) {}

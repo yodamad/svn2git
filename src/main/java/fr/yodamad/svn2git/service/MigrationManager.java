@@ -47,8 +47,6 @@ public class MigrationManager {
     public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
 
     // Configuration
-    @Value("${svn.url}") String svnUrl;
-    @Value("${gitlab.url}") String gitlabUrl;
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
     @Value("${gitlab.token}") String gitlabSvcToken;
 
@@ -90,7 +88,7 @@ public class MigrationManager {
             migrationRepository.save(migration);
 
             // 1. Create project on gitlab : OK
-            history = startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, gitlabUrl + migration.getGitlabGroup());
+            history = startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
             Group group = gitlab.groupApi().getGroup(migration.getGitlabGroup());
             gitlab.projectApi().createProject(group.getId(), migration.getSvnProject());
@@ -99,7 +97,7 @@ public class MigrationManager {
 
             // 2. Checkout SVN repository : OK
             String initCommand = format("git clone %s/%s/%s.git %s",
-                gitlabUrl,
+                migration.getGitlabUrl(),
                 migration.getGitlabGroup(),
                 migration.getSvnProject(),
                 migration.getGitlabGroup());
@@ -119,7 +117,7 @@ public class MigrationManager {
                 migration.getSvnProject(),
                 migration.getSvnProject(),
                 migration.getSvnProject(),
-                svnUrl,
+                migration.getSvnUrl(),
                 migration.getSvnGroup());
             history = startStep(migration, StepEnum.SVN_CHECKOUT, cloneCommand);
             execCommand(rootWorkingDir, cloneCommand);
@@ -166,13 +164,22 @@ public class MigrationManager {
             history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
             String gitUrl = format("%s/%s/%s.git",
-                gitlabUrl,
+                migration.getGitlabUrl(),
                 migration.getGitlabGroup(),
                 migration.getSvnProject());
             addRemote(git,"origin", gitUrl);
 
             PushCommand pushCommand = git.push();
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitlabSvcUser, gitlabSvcToken));
+
+            String gitUser = gitlabSvcUser;
+            String gitToken = gitlabSvcToken;
+
+            if (!StringUtils.isEmpty(migration.getGitlabToken())) {
+                gitUser = migration.getUser();
+                gitToken = migration.getGitlabToken();
+            }
+
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitToken));
             pushCommand.call();
 
             endStep(history, StatusEnum.DONE, null);

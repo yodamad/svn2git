@@ -67,6 +67,19 @@
         {
             "fieldName": "forbiddenFileExtensions",
             "fieldType": "String"
+        },
+        {
+            "fieldName": "gitlabUrl",
+            "fieldType": "String",
+            "fieldValidateRules": []
+        },
+        {
+            "fieldName": "gitlabToken",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "svnUrl",
+            "fieldType": "String"
         }
     ],
     "changelogDate": "20181009153343",

@@ -14,6 +14,9 @@
             "check" : {
                 "account" : "Check your Gitlab account",
                 "group" : "Check your Gitlab group"
+            },
+            "use" : {
+                "default" : "Use default URL"
             }
         },
         "home" : "Home",
@@ -30,7 +33,10 @@
             "check" : {
                 "repository" : "Check your SVN repository"
             },
-            "directories" : "Choose directories to migrate"
+            "directories" : "Choose directories to migrate",
+            "use" : {
+                "default" : "Use default URL"
+            }
         }
     }
 }

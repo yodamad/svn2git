@@ -1,14 +1,13 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import fr.yodamad.svn2git.domain.GitlabInfo;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -21,6 +20,7 @@ public class GitlabResource {
 
     /** Gitlab API wrapper. */
     private final GitlabAdmin gitlabAdmin;
+    @Value("${gitlab.url}") String gitlabUrl;
 
     public GitlabResource(GitlabAdmin gitlabAdmin) {
         this.gitlabAdmin = gitlabAdmin;
@@ -31,10 +31,14 @@ public class GitlabResource {
      * @param userName User ID search
      * @return if user found
      */
-    @GetMapping("user/{username}")
+    @PostMapping("user/{username}")
     @Timed
-    public ResponseEntity<Boolean> checkUser(@PathVariable("username") String userName) {
-        Optional<User> user = gitlabAdmin.userApi().getOptionalUser(userName);
+    public ResponseEntity<Boolean> checkUser(@PathVariable("username") String userName, @RequestBody GitlabInfo gitlabInfo) {
+        GitlabAdmin gitlab = gitlabAdmin;
+        if (!gitlabUrl.equalsIgnoreCase(gitlabInfo.url)) {
+            gitlab = new GitlabAdmin(gitlabInfo.url, gitlabInfo.token);
+        }
+        Optional<User> user = gitlab.userApi().getOptionalUser(userName);
 
         return ResponseEntity.ok()
                 .body(user.isPresent());
@@ -45,10 +49,14 @@ public class GitlabResource {
      * @param groupName Group name search
      * @return if group found
      */
-    @GetMapping("group/{groupName}")
+    @PostMapping("group/{groupName}")
     @Timed
-    public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName) {
-        Optional<Group> group = gitlabAdmin.groupApi().getOptionalGroup(groupName);
+    public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
+        GitlabAdmin gitlab = gitlabAdmin;
+        if (!gitlabUrl.equalsIgnoreCase(gitlabInfo.url)) {
+            gitlab = new GitlabAdmin(gitlabInfo.url, gitlabInfo.token);
+        }
+        Optional<Group> group = gitlab.groupApi().getOptionalGroup(groupName);
 
         return ResponseEntity.ok()
             .body(group.isPresent());

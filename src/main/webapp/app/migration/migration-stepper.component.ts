@@ -6,6 +6,7 @@ import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
+import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -14,8 +15,7 @@ import { StaticMappingService } from 'app/entities/static-mapping';
 })
 export class MigrationStepperComponent implements OnInit {
     // Form groups
-    userFormGroup: FormGroup;
-    groupFormGroup: FormGroup;
+    gitlabFormGroup: FormGroup;
     svnFormGroup: FormGroup;
     cleaningFormGroup: FormGroup;
     mappingFormGroup: FormGroup;
@@ -26,6 +26,8 @@ export class MigrationStepperComponent implements OnInit {
     gitlabGroupKO = true;
     svnRepoKO = true;
     mappings: IMapping[] = [];
+    useDefaultGitlab = true;
+    useDefaultSvn = true;
 
     // Input for migrations
     svnDirectories: string[] = null;
@@ -34,6 +36,8 @@ export class MigrationStepperComponent implements OnInit {
     migrationStarted = false;
     fileUnit = 'M';
     mig: IMigration;
+    svnUrl: string;
+    gitlabUrl: string;
     /// Mapping selections
     initialSelection = [];
     allowMultiSelect = true;
@@ -52,18 +56,21 @@ export class MigrationStepperComponent implements OnInit {
             this.initialSelection = this.mappings;
             this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
         });
+        this.gitlabUrl = localStorage.getItem(GITLAB_URL);
+        this.svnUrl = localStorage.getItem(SVN_URL);
 
-        this.userFormGroup = this._formBuilder.group({
-            gitlabUser: ['', Validators.required]
-        });
-        this.groupFormGroup = this._formBuilder.group({
-            gitlabGroup: ['', Validators.required]
+        this.gitlabFormGroup = this._formBuilder.group({
+            gitlabUser: ['', Validators.required],
+            gitlabGroup: ['', Validators.required],
+            gitlabURL: [{ value: this.gitlabUrl, disabled: true }, Validators.required],
+            gitlabToken: ['']
         });
         this.svnFormGroup = this._formBuilder.group({
-            svnRepository: ['', Validators.required]
+            svnRepository: ['', Validators.required],
+            svnURL: [{ value: this.svnUrl, disabled: true }, Validators.required]
         });
         this.cleaningFormGroup = this._formBuilder.group({
-            fileMaxSize: ['']
+            fileMaxSize: ['', Validators.min(1)]
         });
         this.mappingFormGroup = this._formBuilder.group({});
     }
@@ -73,7 +80,11 @@ export class MigrationStepperComponent implements OnInit {
      */
     checkGitlabUser() {
         this._migrationProcessService
-            .checkUser(this.userFormGroup.controls['gitlabUser'].value)
+            .checkUser(
+                this.gitlabFormGroup.controls['gitlabUser'].value,
+                this.gitlabFormGroup.controls['gitlabURL'].value,
+                this.gitlabFormGroup.controls['gitlabToken'].value
+            )
             .subscribe(res => (this.gitlabUserKO = !res.body));
     }
 
@@ -82,7 +93,11 @@ export class MigrationStepperComponent implements OnInit {
      */
     checkGitlabGroup() {
         this._migrationProcessService
-            .checkGroup(this.groupFormGroup.controls['gitlabGroup'].value)
+            .checkGroup(
+                this.gitlabFormGroup.controls['gitlabGroup'].value,
+                this.gitlabFormGroup.controls['gitlabURL'].value,
+                this.gitlabFormGroup.controls['gitlabToken'].value
+            )
             .subscribe(res => (this.gitlabGroupKO = !res.body));
     }
 
@@ -90,9 +105,11 @@ export class MigrationStepperComponent implements OnInit {
      * Check if SVN repository exists
      */
     checkSvnRepository() {
-        this._migrationProcessService.checkSvn(this.svnFormGroup.controls['svnRepository'].value).subscribe(res => {
-            this.svnDirectories = res.body;
-        });
+        this._migrationProcessService
+            .checkSvn(this.svnFormGroup.controls['svnRepository'].value, this.svnFormGroup.controls['svnURL'].value)
+            .subscribe(res => {
+                this.svnDirectories = res.body;
+            });
     }
 
     /**
@@ -148,11 +165,11 @@ export class MigrationStepperComponent implements OnInit {
         }
 
         this.mig = new Migration();
-        this.mig.gitlabGroup = this.groupFormGroup.controls['gitlabGroup'].value;
+        this.mig.gitlabGroup = this.gitlabFormGroup.controls['gitlabGroup'].value;
         this.mig.gitlabProject = project;
         this.mig.svnGroup = this.svnFormGroup.controls['svnRepository'].value;
         this.mig.svnProject = project;
-        this.mig.user = this.userFormGroup.controls['gitlabUser'].value;
+        this.mig.user = this.gitlabFormGroup.controls['gitlabUser'].value;
         if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
             this.mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
         }
@@ -175,5 +192,35 @@ export class MigrationStepperComponent implements OnInit {
     /** Selects all rows if they are not all selected; otherwise clear selection. */
     masterToggle() {
         this.isAllSelected() ? this.selection.clear() : this.mappings.forEach(row => this.selection.select(row));
+    }
+
+    /** Reverse flag for gitlab default url. */
+    reverseGitlab() {
+        this.useDefaultGitlab = !this.useDefaultGitlab;
+        if (this.useDefaultGitlab) {
+            this.gitlabFormGroup.get('gitlabURL').disable();
+            this.gitlabFormGroup.get('gitlabURL').setValue(this.gitlabUrl);
+            this.gitlabFormGroup.controls['gitlabToken'].reset();
+        } else {
+            this.gitlabFormGroup.get('gitlabURL').enable();
+        }
+        // Force recheck
+        this.gitlabUserKO = true;
+        this.gitlabGroupKO = true;
+    }
+
+    /** Reverse flag for svn default url. */
+    reverseSvn() {
+        this.useDefaultSvn = !this.useDefaultSvn;
+        if (this.useDefaultSvn) {
+            this.svnFormGroup.get('svnURL').disable();
+            this.svnFormGroup.get('svnURL').setValue(this.svnUrl);
+        } else {
+            this.svnFormGroup.get('svnURL').enable();
+        }
+        // Force recheck
+        this.svnRepoKO = true;
+        this.svnDirectories = [];
+        this.selectedSvnDirectories = [];
     }
 }

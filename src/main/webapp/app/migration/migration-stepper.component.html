@@ -1,24 +1,26 @@
 <mat-horizontal-stepper [linear]="true" #stepper>
     <!-- Check Gitlab account step -->
-    <mat-step [stepControl]="userFormGroup">
-        <form [formGroup]="userFormGroup">
+    <mat-step [stepControl]="gitlabFormGroup">
+        <form [formGroup]="gitlabFormGroup">
             <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Create your Gitlab account</span></ng-template>
+            <div style="margin-bottom: 10px">
+                <span jhiTranslate="migration-process.gitlab.use.default">Use default URL</span>
+                <mat-checkbox [checked]="useDefaultGitlab" (change)="reverseGitlab()"></mat-checkbox>
+            </div>
+            <div>
+                <mat-form-field>
+                    <input matInput placeholder="Gitlab URL" [(disabled)]="useDefaultGitlab" formControlName="gitlabURL" required>
+                </mat-form-field>
+                <mat-form-field *ngIf="!useDefaultGitlab">
+                    <input matInput placeholder="Gitlab Token" formControlName="gitlabToken">
+                </mat-form-field>
+            </div>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="Gitlab username" formControlName="gitlabUser" required>
                 </mat-form-field>
                 <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)"><span jhiTranslate="migration-process.check">Check</span></button>
             </div>
-            <div>
-                <button mat-stroked-button matStepperNext [disabled]="gitlabUserKO"><i class="material-icons">navigate_next</i> <span jhiTranslate="migration-process.next">Next</span></button>
-            </div>
-        </form>
-    </mat-step>
-
-    <!-- Check Gitlab group step -->
-    <mat-step [stepControl]="groupFormGroup">
-        <form [formGroup]="groupFormGroup">
-            <ng-template matStepLabel matStepperIcon="done"><span jhiTranslate="migration-process.gitlab.check.group">Create your group on Gitlab</span></ng-template>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="Gitlab group name" formControlName="gitlabGroup" required>
@@ -27,7 +29,7 @@
             </div>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO || gitlabUserKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
@@ -36,6 +38,15 @@
     <mat-step [stepControl]="svnFormGroup">
         <form [formGroup]="svnFormGroup">
             <ng-template matStepLabel><span jhiTranslate="migration-process.svn.check.repository">Check your SVN repository</span></ng-template>
+            <div style="margin-bottom: 10px">
+                <span jhiTranslate="migration-process.svn.use.default">Use default URL</span>
+                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()"></mat-checkbox>
+            </div>
+            <div>
+                <mat-form-field>
+                    <input matInput placeholder="SVN URL" formControlName="svnURL">
+                </mat-form-field>
+            </div>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="SVN repository name" formControlName="svnRepository" required>
@@ -106,7 +117,7 @@
             <br/>
             <div><b><span jhiTranslate="migration-process.file.size">Max size authorized for a file</span></b>:</div>
             <mat-form-field style="max-width: 35px;">
-                <input matInput type="number" formControlName="fileMaxSize" />
+                <input matInput type="number" formControlName="fileMaxSize" min="1" />
             </mat-form-field>
             <mat-select (selectionChange)="fileSizeUnit($event)" style="max-width: 35px" value="M">
                 <mat-option value="K">K</mat-option>

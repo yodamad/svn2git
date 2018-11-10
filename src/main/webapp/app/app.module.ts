@@ -1,6 +1,6 @@
 import './vendor.ts';
 
-import { NgModule, Injector } from '@angular/core';
+import { NgModule, Injector, APP_INITIALIZER } from '@angular/core';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgbDatepickerConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Ng2Webstorage, LocalStorageService, SessionStorageService } from 'ngx-webstorage';
@@ -22,6 +22,11 @@ import { JhiMainComponent, NavbarComponent, FooterComponent, PageRibbonComponent
 import { Svn2GitMigrationModule } from 'app/migration/migation-process.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
+import { ConfigurationService } from 'app/shared/service/configuration-service';
+
+export function configInit(configService: ConfigurationService) {
+    return () => configService.init();
+}
 
 @NgModule({
     imports: [
@@ -62,6 +67,12 @@ import { BrowserModule } from '@angular/platform-browser';
             useClass: NotificationInterceptor,
             multi: true,
             deps: [Injector]
+        },
+        {
+            provide: APP_INITIALIZER,
+            useFactory: configInit,
+            multi: true,
+            deps: [ConfigurationService]
         }
     ],
     bootstrap: [JhiMainComponent]

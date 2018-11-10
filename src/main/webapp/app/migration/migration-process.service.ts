@@ -23,17 +23,23 @@ export class MigrationProcessService {
 
     constructor(private http: HttpClient) {}
 
-    checkUser(name: string): Observable<EntityResponseType> {
-        return this.http.get<boolean>(`${this.userUrl}/${name}`, { observe: 'response' }).pipe(map((res: EntityResponseType) => res));
-    }
-
-    checkGroup(name: string): Observable<EntityResponseType> {
-        return this.http.get<Boolean>(`${this.groupUrl}/${name}`, { observe: 'response' }).pipe(map((res: EntityResponseType) => res));
-    }
-
-    checkSvn(name: string): Observable<EntityArrayResponseType> {
+    checkUser(name: string, url: string, token?: string): Observable<EntityResponseType> {
+        const gitlabInfo = new GitlabInfo(url, token);
         return this.http
-            .get<string[]>(`${this.repositoryUrl}/${name}`, { observe: 'response' })
+            .post<boolean>(`${this.userUrl}/${name}`, gitlabInfo, { observe: 'response' })
+            .pipe(map((res: EntityResponseType) => res));
+    }
+
+    checkGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
+        const gitlabInfo = new GitlabInfo(url, token);
+        return this.http
+            .post<Boolean>(`${this.groupUrl}/${name}`, gitlabInfo, { observe: 'response' })
+            .pipe(map((res: EntityResponseType) => res));
+    }
+
+    checkSvn(name: string, url: string): Observable<EntityArrayResponseType> {
+        return this.http
+            .post<string[]>(`${this.repositoryUrl}/${name}`, url, { observe: 'response' })
             .pipe(map((res: EntityArrayResponseType) => res));
     }
 
@@ -48,4 +54,8 @@ export class MigrationProcessService {
             .get<IMigration[]>(`${this.groupMigrationUrl}${group}`, { observe: 'response' })
             .pipe(map((res: MigrationArrayResponseType) => res));
     }
+}
+
+class GitlabInfo {
+    constructor(public url: string, public token: string) {}
 }

@@ -4,9 +4,9 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>war</packaging>
-    <name>Svn 2 Git</name>
+    <name>Svn 2 GitLab</name>
 
     <repositories>
         <!-- jhipster-needle-maven-repository -->

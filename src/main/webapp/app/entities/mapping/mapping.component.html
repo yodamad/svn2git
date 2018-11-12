@@ -30,7 +30,7 @@
                 <td>{{mapping.gitDirectory}}</td>
                 <td>
                     <div *ngIf="mapping.migration">
-                        <a [routerLink]="['../migration', mapping.migration?.id, 'view' ]" >{{mapping.migration?.id}}</a>
+                        <a [routerLink]="['../migration', mapping.migration, 'view' ]" >{{mapping.migration}}</a>
                     </div>
                 </td>
                 <td class="text-right">

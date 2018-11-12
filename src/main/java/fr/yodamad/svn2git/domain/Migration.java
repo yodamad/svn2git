@@ -270,7 +270,7 @@ public class Migration implements Serializable {
 
     public Migration addMappings(Mapping mapping) {
         this.mappings.add(mapping);
-        mapping.setMigration(this);
+        mapping.setMigration(this.getId());
         return this;
     }
 

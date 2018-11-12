@@ -5,7 +5,7 @@ export interface IMapping {
     svnDirectory?: string;
     regex?: string;
     gitDirectory?: string;
-    migration?: IMigration;
+    migration?: number;
 }
 
 export class Mapping implements IMapping {
@@ -14,6 +14,6 @@ export class Mapping implements IMapping {
         public svnDirectory?: string,
         public regex?: string,
         public gitDirectory?: string,
-        public migration?: IMigration
+        public migration?: number
     ) {}
 }

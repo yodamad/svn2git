@@ -1,8 +1,6 @@
 package fr.yodamad.svn2git.domain;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -29,9 +27,8 @@ public class Mapping implements Serializable {
     @Column(name = "git_directory")
     private String gitDirectory;
 
-    @ManyToOne
-    @JsonIgnoreProperties("")
-    private Migration migration;
+    @Column(name = "migration_id")
+    private Long migration;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -81,14 +78,14 @@ public class Mapping implements Serializable {
         this.gitDirectory = gitDirectory;
     }
 
-    public Migration getMigration() { return migration; }
+    public Long getMigration() { return migration; }
 
-    public Mapping migration(Migration migration) {
+    public Mapping migration(Long migration) {
         this.migration = migration;
         return this;
     }
 
-    public void setMigration(Migration migration) {
+    public void setMigration(Long migration) {
         this.migration = migration;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove

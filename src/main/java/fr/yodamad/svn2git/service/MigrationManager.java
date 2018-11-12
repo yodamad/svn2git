@@ -22,6 +22,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -159,7 +161,7 @@ public class MigrationManager {
 
             // 4. Git push master based on SVN trunk
             history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
-            
+
             gitCommand = "git push";
             execCommand(gitWorkingDir, gitCommand);
 
@@ -244,18 +246,6 @@ public class MigrationManager {
     }
 
     /**
-     * Get git directory
-     * @param workingDir
-     * @return
-     */
-    private static String gitDir(String workingDir) {
-        if (isWindows) {
-            return workingDir + "\\.git";
-        }
-        return workingDir + "/.git";
-    }
-
-    /**
      * Execute a commmand through process
      * @param directory Directory in which running command
      * @param command command to execute
@@ -309,18 +299,45 @@ public class MigrationManager {
      * @param mapping Mapping to apply
      */
     private void mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping) {
-        String gitCommand = format("git mv %s %s", mapping.getSvnDirectory(), mapping.getGitDirectory());
-        MigrationHistory history = startStep(migration, StepEnum.GIT_MV, gitCommand);
+        MigrationHistory history = null;
         try {
-            // git mv
-            execCommand(gitWorkingDir, gitCommand);
+            if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
+                // For root directory, we need to loop for subdirectory
+                Files.newDirectoryStream(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
+                    .forEach(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString()));
+            } else {
+                mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
+            }
+
+            history = startStep(migration, StepEnum.GIT_PUSH, "Push moved elements");
             // git commit
-            gitCommand = "git add .";
+            String gitCommand = "git add .";
             execCommand(gitWorkingDir, gitCommand);
             gitCommand = format("git commit -m \"Move from %s to %s\"", mapping.getSvnDirectory(), mapping.getGitDirectory());
             execCommand(gitWorkingDir, gitCommand);
             // git push
             gitCommand = "git push";
+            execCommand(gitWorkingDir, gitCommand);
+            endStep(history, StatusEnum.DONE, null);
+        } catch (IOException | InterruptedException gitEx) {
+            LOG.error("Failed to mv directory", gitEx);
+            if (history != null) endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+        }
+    }
+
+    /**
+     * Apply git mv
+     * @param gitWorkingDir Current working directory
+     * @param migration Migration in progress
+     * @param svnDir Origin SVN element
+     * @param gitDir Target Git element
+     */
+    private void mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir) {
+        MigrationHistory history = null;
+        try {
+            String gitCommand = format("git mv %s %s", svnDir, gitDir);
+            history = startStep(migration, StepEnum.GIT_MV, gitCommand);
+            // git mv
             execCommand(gitWorkingDir, gitCommand);
 
             endStep(history, StatusEnum.DONE, null);

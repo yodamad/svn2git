@@ -76,6 +76,8 @@ public class MigrationResource {
 
         if (migration.getMappings() != null && !migration.getMappings().isEmpty()) {
             migration.getMappings().forEach(mapping -> {
+                // Remove ID from static mapping
+                mapping.setId(0L);
                 mapping.setMigration(result.getId());
                 mappingService.save(mapping);
             });

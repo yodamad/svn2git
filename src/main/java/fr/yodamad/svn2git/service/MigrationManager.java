@@ -310,6 +310,10 @@ public class MigrationManager {
                     .map(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString()))
                     .collect(Collectors.toList());
                 workDone =  results.contains(true);
+                if (results.isEmpty()) {
+                    history = startStep(migration, StepEnum.GIT_MV, format("git mv %s %s", mapping.getSvnDirectory(), mapping.getGitDirectory()));
+                    endStep(history, StatusEnum.IGNORED, null);
+                }
             } else {
                 workDone = mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
             }

@@ -10,6 +10,7 @@ import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.models.Group;
@@ -128,8 +129,9 @@ public class MigrationManager {
                     migration.getSvnUrl(),
                     migration.getSvnGroup());
             } else {
+                String escapedPassword = StringEscapeUtils.escapeJava(migration.getSvnPassword());
                 cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
-                    migration.getSvnPassword(),
+                    escapedPassword,
                     migration.getSvnUser(),
                     migration.getSvnProject(),
                     migration.getSvnProject(),

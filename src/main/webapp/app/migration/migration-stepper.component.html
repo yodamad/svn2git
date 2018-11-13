@@ -28,7 +28,6 @@
                 <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)"><span jhiTranslate="migration-process.check">Check</span></button>
             </div>
             <div>
-                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
                 <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO || gitlabUserKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>

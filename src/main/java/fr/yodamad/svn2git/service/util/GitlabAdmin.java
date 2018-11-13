@@ -15,6 +15,7 @@ public class GitlabAdmin {
 
     public GitlabAdmin(@Value("${gitlab.url}") String gitlabUrl, @Value("${gitlab.token}") String gitlabToken) {
         gitLabApi = new GitLabApi(gitlabUrl, gitlabToken);
+        gitLabApi.setIgnoreCertificateErrors(true);
     }
 
     public GitLabApi api() {

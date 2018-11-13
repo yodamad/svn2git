@@ -10,6 +10,7 @@ import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.models.Group;
@@ -39,20 +40,22 @@ import static java.lang.String.format;
 public class MigrationManager {
 
     /** Default ref origin for tags. */
-    public static final String ORIGIN_TAGS = "origin/tags/";
+    private static final String ORIGIN_TAGS = "origin/tags/";
     /** Temp directory. */
-    public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+    private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
     /** Default branch. */
-    public static final String MASTER = "master";
+    private static final String MASTER = "master";
+    /** Git push command. */
+    private static final String GIT_PUSH = "git push";
 
     // Configuration
+    @Value("${gitlab.url}") String gitlabUrl;
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
-    @Value("${gitlab.token}") String gitlabSvcToken;
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
 
     /** Gitlab API. */
-    private final GitlabAdmin gitlab;
+    private GitlabAdmin gitlab;
     // Repositories
     private final MigrationRepository migrationRepository;
     private final MigrationHistoryRepository migrationHistoryRepository;
@@ -90,8 +93,12 @@ public class MigrationManager {
             // 1. Create project on gitlab : OK
             history = startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
-            Group group = gitlab.groupApi().getGroup(migration.getGitlabGroup());
-            gitlab.projectApi().createProject(group.getId(), migration.getSvnProject());
+            GitlabAdmin gitlabAdmin = gitlab;
+            if (!gitlabUrl.equalsIgnoreCase(migration.getGitlabUrl())) {
+                gitlabAdmin = new GitlabAdmin(migration.getGitlabUrl(), migration.getGitlabToken());
+            }
+            Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
+            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnProject());
 
             endStep(history, StatusEnum.DONE, null);
 
@@ -113,12 +120,26 @@ public class MigrationManager {
             endStep(history, StatusEnum.DONE, null);
 
             // 2.2. SVN checkout
-            String cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
-                migration.getSvnProject(),
-                migration.getSvnProject(),
-                migration.getSvnProject(),
-                migration.getSvnUrl(),
-                migration.getSvnGroup());
+            String cloneCommand;
+            if (StringUtils.isEmpty(migration.getSvnUser())) {
+                cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnUrl(),
+                    migration.getSvnGroup());
+            } else {
+                String escapedPassword = StringEscapeUtils.escapeJava(migration.getSvnPassword());
+                cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                    escapedPassword,
+                    migration.getSvnUser(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnUrl(),
+                    migration.getSvnGroup());
+            }
+
             history = startStep(migration, StepEnum.SVN_CHECKOUT, cloneCommand);
             execCommand(rootWorkingDir, cloneCommand);
 
@@ -163,8 +184,7 @@ public class MigrationManager {
             // 4. Git push master based on SVN trunk
             history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
-            gitCommand = "git push";
-            execCommand(gitWorkingDir, gitCommand);
+            execCommand(gitWorkingDir, GIT_PUSH);
 
             endStep(history, StatusEnum.DONE, null);
 
@@ -289,8 +309,29 @@ public class MigrationManager {
      */
     private void applyMapping(String gitWorkingDir, Migration migration, String branch) {
         List<Mapping> mappings = mappingRepository.findAllByMigration(migration.getId());
+        boolean workDone = false;
         if (!CollectionUtils.isEmpty(mappings)) {
-            mappings.forEach(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch));
+            List<Boolean> results = mappings.stream()
+                .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping))
+                .collect(Collectors.toList());
+            workDone = results.contains(true);
+        }
+
+        if (workDone) {
+            MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, format("Push moved elements on %s", branch));
+            try {
+                // git commit
+                String gitCommand = "git add .";
+                execCommand(gitWorkingDir, gitCommand);
+                gitCommand = format("git commit -m \"Apply mappings on %s\"", branch);
+                execCommand(gitWorkingDir, gitCommand);
+                // git push
+                execCommand(gitWorkingDir, GIT_PUSH);
+
+                endStep(history, StatusEnum.DONE, null);
+            } catch (IOException | InterruptedException iEx) {
+                endStep(history, StatusEnum.FAILED, iEx.getMessage());
+            }
         }
     }
 
@@ -300,8 +341,8 @@ public class MigrationManager {
      * @param migration Current migration
      * @param mapping Mapping to apply
      */
-    private void mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
-        MigrationHistory history = null;
+    private boolean mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping) {
+        MigrationHistory history;
         try {
             boolean workDone;
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
@@ -317,23 +358,10 @@ public class MigrationManager {
             } else {
                 workDone = mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
             }
-
-            if (workDone) {
-                history = startStep(migration, StepEnum.GIT_PUSH, format("Push moved elements on %s", branch));
-                // git commit
-                String gitCommand = "git add .";
-                execCommand(gitWorkingDir, gitCommand);
-                gitCommand = format("git commit -m \"Move from %s to %s on %s\"", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
-                execCommand(gitWorkingDir, gitCommand);
-                // git push
-                gitCommand = "git push";
-                execCommand(gitWorkingDir, gitCommand);
-
-                endStep(history, StatusEnum.DONE, null);
-            }
-        } catch (IOException | InterruptedException gitEx) {
+            return workDone;
+        } catch (IOException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
-            if (history != null) endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            return false;
         }
     }
 
@@ -409,8 +437,7 @@ public class MigrationManager {
 
             String gitCommand = format("git checkout -b %s %s", branchName, branch);
             execCommand(gitWorkingDir, gitCommand);
-            gitCommand = "git push";
-            execCommand(gitWorkingDir, gitCommand);
+            execCommand(gitWorkingDir, GIT_PUSH);
 
             applyMapping(gitWorkingDir, migration, branch);
         } catch (IOException | InterruptedException iEx) {
@@ -491,7 +518,7 @@ public class MigrationManager {
         private InputStream inputStream;
         private Consumer<String> consumer;
 
-        public StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
+        StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
             this.inputStream = inputStream;
             this.consumer = consumer;
         }

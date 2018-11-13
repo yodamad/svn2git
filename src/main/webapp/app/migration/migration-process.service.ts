@@ -37,9 +37,10 @@ export class MigrationProcessService {
             .pipe(map((res: EntityResponseType) => res));
     }
 
-    checkSvn(name: string, url: string): Observable<EntityArrayResponseType> {
+    checkSvn(name: string, url: string, user: string, password: string): Observable<EntityArrayResponseType> {
+        const svnInfo = new SvnInfo(url, user, password);
         return this.http
-            .post<string[]>(`${this.repositoryUrl}/${name}`, url, { observe: 'response' })
+            .post<string[]>(`${this.repositoryUrl}/${name}`, svnInfo, { observe: 'response' })
             .pipe(map((res: EntityArrayResponseType) => res));
     }
 
@@ -58,4 +59,8 @@ export class MigrationProcessService {
 
 class GitlabInfo {
     constructor(public url: string, public token: string) {}
+}
+
+class SvnInfo {
+    constructor(public url: string, public user: string, public password: string) {}
 }

@@ -67,7 +67,9 @@ export class MigrationStepperComponent implements OnInit {
         });
         this.svnFormGroup = this._formBuilder.group({
             svnRepository: ['', Validators.required],
-            svnURL: [{ value: this.svnUrl, disabled: true }, Validators.required]
+            svnURL: [{ value: this.svnUrl, disabled: true }, Validators.required],
+            svnUser: [''],
+            svnPwd: ['']
         });
         this.cleaningFormGroup = this._formBuilder.group({
             fileMaxSize: ['', Validators.min(1)]
@@ -106,7 +108,12 @@ export class MigrationStepperComponent implements OnInit {
      */
     checkSvnRepository() {
         this._migrationProcessService
-            .checkSvn(this.svnFormGroup.controls['svnRepository'].value, this.svnFormGroup.controls['svnURL'].value)
+            .checkSvn(
+                this.svnFormGroup.controls['svnRepository'].value,
+                this.svnFormGroup.controls['svnURL'].value,
+                this.svnFormGroup.controls['svnUser'].value,
+                this.svnFormGroup.controls['svnPwd'].value
+            )
             .subscribe(res => {
                 this.svnDirectories = res.body;
             });
@@ -165,22 +172,36 @@ export class MigrationStepperComponent implements OnInit {
         }
 
         this.mig = new Migration();
+
+        // Gitlab
         this.mig.gitlabUrl = this.gitlabFormGroup.controls['gitlabURL'].value;
         if (this.gitlabFormGroup.controls['gitlabToken'] !== undefined && this.gitlabFormGroup.controls['gitlabToken'].value !== '') {
             this.mig.gitlabToken = this.gitlabFormGroup.controls['gitlabToken'].value;
         }
+        this.mig.user = this.gitlabFormGroup.controls['gitlabUser'].value;
         this.mig.gitlabGroup = this.gitlabFormGroup.controls['gitlabGroup'].value;
         this.mig.gitlabProject = project;
+
+        // SVN
         this.mig.svnUrl = this.svnFormGroup.controls['svnURL'].value;
         this.mig.svnGroup = this.svnFormGroup.controls['svnRepository'].value;
         this.mig.svnProject = project;
-        this.mig.user = this.gitlabFormGroup.controls['gitlabUser'].value;
+        if (this.svnFormGroup.controls['svnUser'] !== undefined && this.svnFormGroup.controls['svnUser'].value !== '') {
+            this.mig.svnUser = this.svnFormGroup.controls['svnUser'].value;
+        }
+        if (this.svnFormGroup.controls['svnPwd'] !== undefined && this.svnFormGroup.controls['svnPwd'].value !== '') {
+            this.mig.svnPassword = this.svnFormGroup.controls['svnPwd'].value;
+        }
+
+        // Cleaning
         if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
             this.mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
         }
         if (this.selectedExtensions !== undefined && this.selectedExtensions.length > 0) {
             this.mig.forbiddenFileExtensions = this.selectedExtensions.toString();
         }
+
+        // Mappings
         if (this.selection !== undefined && !this.selection.isEmpty()) {
             this.mig.mappings = this.selection.selected;
         }
@@ -220,6 +241,8 @@ export class MigrationStepperComponent implements OnInit {
         if (this.useDefaultSvn) {
             this.svnFormGroup.get('svnURL').disable();
             this.svnFormGroup.get('svnURL').setValue(this.svnUrl);
+            this.svnFormGroup.controls['svnUser'].reset();
+            this.svnFormGroup.controls['svnPwd'].reset();
         } else {
             this.svnFormGroup.get('svnURL').enable();
         }

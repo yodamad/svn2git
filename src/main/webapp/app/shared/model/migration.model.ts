@@ -24,6 +24,8 @@ export interface IMigration {
     gitlabUrl?: string;
     gitlabToken?: string;
     svnUrl?: string;
+    svnUser?: string;
+    svnPassword?: string;
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
 }
@@ -43,6 +45,8 @@ export class Migration implements IMigration {
         public gitlabUrl?: string,
         public gitlabToken?: string,
         public svnUrl?: string,
+        public svnUser?: string,
+        public svnPassword?: string,
         public histories?: IMigrationHistory[],
         public mappings?: IMapping[]
     ) {}

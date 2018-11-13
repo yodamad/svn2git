@@ -3,7 +3,7 @@ import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/ht
 import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 
-import { IMigration } from 'app/shared/model/migration.model';
+import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
 import { Principal } from 'app/core';
 
 import { ITEMS_PER_PAGE } from 'app/shared';
@@ -11,7 +11,8 @@ import { MigrationService } from './migration.service';
 
 @Component({
     selector: 'jhi-migration',
-    templateUrl: './migration.component.html'
+    templateUrl: './migration.component.html',
+    styleUrls: ['./migration.component.css']
 })
 export class MigrationComponent implements OnInit, OnDestroy {
     migrations: IMigration[];
@@ -92,6 +93,25 @@ export class MigrationComponent implements OnInit, OnDestroy {
             result.push('id');
         }
         return result;
+    }
+
+    /**
+     * Add class according to status
+     * @param status
+     */
+    cssClass(status: StatusEnum) {
+        if (status === StatusEnum.DONE) {
+            return 'cell-ok';
+        }
+        if (status === StatusEnum.FAILED) {
+            return 'cell-ko';
+        }
+        if (status === StatusEnum.RUNNING) {
+            return 'badge-primary';
+        }
+        if (status === StatusEnum.IGNORED) {
+            return 'cell-ignored';
+        }
     }
 
     private paginateMigrations(data: IMigration[], headers: HttpHeaders) {

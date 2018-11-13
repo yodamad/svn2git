@@ -40,3 +40,10 @@
     border: 5px solid white;
     padding: 10px;
 }
+
+.cell-ignored {
+    background-color: grey;
+    color: white;
+    border: 5px solid white;
+    padding: 10px;
+}

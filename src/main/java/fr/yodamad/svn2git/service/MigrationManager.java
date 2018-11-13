@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -43,6 +42,8 @@ public class MigrationManager {
     public static final String ORIGIN_TAGS = "origin/tags/";
     /** Temp directory. */
     public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+    /** Default branch. */
+    public static final String MASTER = "master";
 
     // Configuration
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
@@ -172,23 +173,22 @@ public class MigrationManager {
             execCommand(gitWorkingDir, gitCommand);
 
             // 5. Apply mappings if some
-            List<Mapping> mappings = mappingRepository.findAllByMigration(migrationId);
-            if (!CollectionUtils.isEmpty(mappings)) {
-                mappings.forEach(mapping -> mvDirectory(gitWorkingDir, migration, mapping));
-            }
+            applyMapping(gitWorkingDir, migration, MASTER);
 
             // 6. List branches & tags
             List<String> remotes = svnList(gitWorkingDir);
             // Extract branches
             List<String> gitBranches = remotes.stream()
+                .map(String::trim)
                 // Remove tags
                 .filter(b -> !b.startsWith(ORIGIN_TAGS))
                 // Remove master/trunk
-                .filter(b -> !b.contains("master"))
+                .filter(b -> !b.contains(MASTER))
                 .filter(b -> !b.contains("trunk"))
                 .collect(Collectors.toList());
             // Extract tags
             List<String> gitTags = remotes.stream()
+                .map(String::trim)
                 // Only tags
                 .filter(b -> b.startsWith(ORIGIN_TAGS))
                 // Remove temp tags
@@ -252,7 +252,7 @@ public class MigrationManager {
      * @throws InterruptedException
      * @throws IOException
      */
-    private static void execCommand(String directory, String command) throws InterruptedException, IOException {
+    private static int execCommand(String directory, String command) throws InterruptedException, IOException {
         ProcessBuilder builder = new ProcessBuilder();
         if (isWindows) {
             builder.command("cmd.exe", "/c", command);
@@ -276,20 +276,22 @@ public class MigrationManager {
         LOG.debug(format("Exit : %d", exitCode));
 
         assert exitCode == 0;
+
+        return exitCode;
     }
 
     // Tasks
     /**
-     * Add remote url to git config
-     * @param gitWorkingDir Working directory
-     * @param remoteName Remote name for repository
-     * @param remoteUrl Remote URL
-     * @throws IOException
-     * @throws URISyntaxException
+     * Apply mappings configured
+     * @param gitWorkingDir Current working directory
+     * @param migration Migration in progress
+     * @param branch Branch to process
      */
-    private static void addRemote(String gitWorkingDir, String remoteName, String remoteUrl) throws IOException, InterruptedException {
-        String gitCommand = format("git remote add %s %s", remoteName, remoteUrl);
-        execCommand(gitWorkingDir, gitCommand);
+    private void applyMapping(String gitWorkingDir, Migration migration, String branch) {
+        List<Mapping> mappings = mappingRepository.findAllByMigration(migration.getId());
+        if (!CollectionUtils.isEmpty(mappings)) {
+            mappings.forEach(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch));
+        }
     }
 
     /**
@@ -298,27 +300,33 @@ public class MigrationManager {
      * @param migration Current migration
      * @param mapping Mapping to apply
      */
-    private void mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping) {
+    private void mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
         MigrationHistory history = null;
         try {
+            boolean workDone;
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
                 // For root directory, we need to loop for subdirectory
-                Files.newDirectoryStream(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
-                    .forEach(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString()));
+                List<Boolean> results = Files.list(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
+                    .map(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString()))
+                    .collect(Collectors.toList());
+                workDone =  results.contains(true);
             } else {
-                mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
+                workDone = mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
             }
 
-            history = startStep(migration, StepEnum.GIT_PUSH, "Push moved elements");
-            // git commit
-            String gitCommand = "git add .";
-            execCommand(gitWorkingDir, gitCommand);
-            gitCommand = format("git commit -m \"Move from %s to %s\"", mapping.getSvnDirectory(), mapping.getGitDirectory());
-            execCommand(gitWorkingDir, gitCommand);
-            // git push
-            gitCommand = "git push";
-            execCommand(gitWorkingDir, gitCommand);
-            endStep(history, StatusEnum.DONE, null);
+            if (workDone) {
+                history = startStep(migration, StepEnum.GIT_PUSH, format("Push moved elements on %s", branch));
+                // git commit
+                String gitCommand = "git add .";
+                execCommand(gitWorkingDir, gitCommand);
+                gitCommand = format("git commit -m \"Move from %s to %s on %s\"", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
+                execCommand(gitWorkingDir, gitCommand);
+                // git push
+                gitCommand = "git push";
+                execCommand(gitWorkingDir, gitCommand);
+
+                endStep(history, StatusEnum.DONE, null);
+            }
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
             if (history != null) endStep(history, StatusEnum.FAILED, gitEx.getMessage());
@@ -332,18 +340,25 @@ public class MigrationManager {
      * @param svnDir Origin SVN element
      * @param gitDir Target Git element
      */
-    private void mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir) {
+    private boolean mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir) {
         MigrationHistory history = null;
         try {
             String gitCommand = format("git mv %s %s", svnDir, gitDir);
             history = startStep(migration, StepEnum.GIT_MV, gitCommand);
             // git mv
-            execCommand(gitWorkingDir, gitCommand);
+            int exitCode = execCommand(gitWorkingDir, gitCommand);
 
-            endStep(history, StatusEnum.DONE, null);
+            if (128 == exitCode) {
+                endStep(history, StatusEnum.IGNORED, null);
+                return false;
+            } else {
+                endStep(history, StatusEnum.DONE, null);
+                return true;
+            }
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
             endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            return false;
         }
     }
 
@@ -382,22 +397,20 @@ public class MigrationManager {
      * @param migration Migration object
      * @param branch Branch to migrate
      */
-    private void pushBranch(String gitWorkingDir, Migration migration, String branch) {
-        MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, branch);
+    private void pushBranch(String gitWorkingDir, Migration migration, String branch) throws RuntimeException {
         try {
             String branchName = branch.replaceFirst("refs/remotes/origin/", "");
+            branchName = branchName.replaceFirst("origin/", "");
             LOG.debug(format("Branch %s", branchName));
 
             String gitCommand = format("git checkout -b %s %s", branchName, branch);
             execCommand(gitWorkingDir, gitCommand);
-
-            gitCommand = format("git push -u origin %s", branchName);
+            gitCommand = "git push";
             execCommand(gitWorkingDir, gitCommand);
 
-            endStep(history, StatusEnum.DONE, null);
-        } catch (IOException | InterruptedException gitEx) {
-            LOG.error("Failed to push branch", gitEx);
-            endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            applyMapping(gitWorkingDir, migration, branch);
+        } catch (IOException | InterruptedException iEx) {
+            throw new RuntimeException();
         }
     }
 

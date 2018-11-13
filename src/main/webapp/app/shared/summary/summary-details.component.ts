@@ -38,5 +38,8 @@ export class DetailsCardComponent implements OnInit {
         if (status === StatusEnum.RUNNING) {
             return 'badge-primary';
         }
+        if (status === StatusEnum.IGNORED) {
+            return 'cell-ignored';
+        }
     }
 }

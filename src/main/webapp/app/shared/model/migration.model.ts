@@ -6,7 +6,8 @@ export const enum StatusEnum {
     WAITING = 'WAITING',
     RUNNING = 'RUNNING',
     DONE = 'DONE',
-    FAILED = 'FAILED'
+    FAILED = 'FAILED',
+    IGNORED = 'IGNORED'
 }
 
 export interface IMigration {

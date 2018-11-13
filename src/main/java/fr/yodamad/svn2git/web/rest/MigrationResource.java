@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -75,15 +74,20 @@ public class MigrationResource {
 
         Migration result = migrationRepository.save(migration);
 
-        if (!CollectionUtils.isEmpty(migration.getMappings())) {
-            migration.getMappings().forEach(mapping -> mappingService.save(mapping.migration(result)));
+        if (migration.getMappings() != null && !migration.getMappings().isEmpty()) {
+            migration.getMappings().forEach(mapping -> {
+                // Remove ID from static mapping
+                mapping.setId(0L);
+                mapping.setMigration(result.getId());
+                mappingService.save(mapping);
+            });
         }
 
         migrationManager.startMigration(result.getId());
 
         return ResponseEntity.created(new URI("/api/migrations/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
-            .body(result);
+            .body(migration);
     }
 
     /**

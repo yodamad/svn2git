@@ -1,35 +1,32 @@
 package fr.yodamad.svn2git.service;
 
 import com.madgag.git.bfg.cli.Main;
+import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
+import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.RemoteAddCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.gitlab4j.api.models.Group;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.*;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -42,9 +39,11 @@ import static java.lang.String.format;
 public class MigrationManager {
 
     /** Default ref origin for tags. */
-    public static final String REFS_REMOTES_ORIGIN_TAGS = "refs/remotes/origin/tags/";
+    public static final String ORIGIN_TAGS = "origin/tags/";
     /** Temp directory. */
     public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+    /** Default branch. */
+    public static final String MASTER = "master";
 
     // Configuration
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
@@ -57,15 +56,18 @@ public class MigrationManager {
     // Repositories
     private final MigrationRepository migrationRepository;
     private final MigrationHistoryRepository migrationHistoryRepository;
+    private final MappingRepository mappingRepository;
 
     private static final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
     public MigrationManager(final GitlabAdmin gitlabAdmin,
                             final MigrationRepository migrationRepository,
-                            final MigrationHistoryRepository migrationHistoryRepository) {
+                            final MigrationHistoryRepository migrationHistoryRepository,
+                            final MappingRepository mappingRepository) {
         this.gitlab = gitlabAdmin;
         this.migrationRepository = migrationRepository;
         this.migrationHistoryRepository = migrationHistoryRepository;
+        this.mappingRepository = mappingRepository;
     }
 
     /**
@@ -79,9 +81,7 @@ public class MigrationManager {
         String rootWorkingDir = workingDir(migration);
         String gitWorkingDir = gitWorkingDir(migration);
 
-        try (
-            Repository localRepo = new FileRepository(gitDir(gitWorkingDir));
-            Git git = new Git(localRepo)) {
+        try {
 
             // Start migration
             migration.setStatus(StatusEnum.RUNNING);
@@ -163,49 +163,42 @@ public class MigrationManager {
             // 4. Git push master based on SVN trunk
             history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
-            String gitUrl = format("%s/%s/%s.git",
-                migration.getGitlabUrl(),
-                migration.getGitlabGroup(),
-                migration.getSvnProject());
-            addRemote(git,"origin", gitUrl);
-
-            PushCommand pushCommand = git.push();
-
-            String gitUser = gitlabSvcUser;
-            String gitToken = gitlabSvcToken;
-
-            if (!StringUtils.isEmpty(migration.getGitlabToken())) {
-                gitUser = migration.getUser();
-                gitToken = migration.getGitlabToken();
-            }
-
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitToken));
-            pushCommand.call();
+            gitCommand = "git push";
+            execCommand(gitWorkingDir, gitCommand);
 
             endStep(history, StatusEnum.DONE, null);
 
-            // 5. List branches & tags
-            List<Ref> svnBranches = git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
+            // Clean pending file(s) removed by BFG
+            gitCommand = "git reset --hard origin/master";
+            execCommand(gitWorkingDir, gitCommand);
+
+            // 5. Apply mappings if some
+            applyMapping(gitWorkingDir, migration, MASTER);
+
+            // 6. List branches & tags
+            List<String> remotes = svnList(gitWorkingDir);
             // Extract branches
-            List<String> gitBranches = svnBranches.stream()
+            List<String> gitBranches = remotes.stream()
+                .map(String::trim)
                 // Remove tags
-                .filter(b -> !b.getName().startsWith(REFS_REMOTES_ORIGIN_TAGS))
+                .filter(b -> !b.startsWith(ORIGIN_TAGS))
                 // Remove master/trunk
-                .filter(b -> !b.getName().contains("master"))
-                .filter(b -> !b.getName().contains("trunk"))
-                .map(Ref::getName).collect(Collectors.toList());
+                .filter(b -> !b.contains(MASTER))
+                .filter(b -> !b.contains("trunk"))
+                .collect(Collectors.toList());
             // Extract tags
-            List<String> gitTags = svnBranches.stream()
+            List<String> gitTags = remotes.stream()
+                .map(String::trim)
                 // Only tags
-                .filter(b -> b.getName().startsWith(REFS_REMOTES_ORIGIN_TAGS))
+                .filter(b -> b.startsWith(ORIGIN_TAGS))
                 // Remove temp tags
-                .filter(b -> !b.getName().contains("@"))
-                .map(Ref::getName).collect(Collectors.toList());
+                .filter(b -> !b.contains("@"))
+                .collect(Collectors.toList());
 
-            gitBranches.forEach(b -> pushBranch(migration, b));
-            gitTags.forEach(t -> pushTag(migration, t));
+            gitBranches.forEach(b -> pushBranch(gitWorkingDir, migration, b));
+            gitTags.forEach(t -> pushTag(gitWorkingDir, migration, t));
 
-            // 6. Clean work directory
+            // 7. Clean work directory
             history = startStep(migration, StepEnum.CLEANING, format("Remove %s", workingDir(migration)));
             try {
                 FileUtils.deleteDirectory(new File(workingDir(migration)));
@@ -233,15 +226,16 @@ public class MigrationManager {
      * @return
      */
     private static String workingDir(Migration mig) {
+        String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         if (isWindows) {
-            return System.getProperty(JAVA_IO_TMPDIR) + "\\" + mig.getId();
+            return System.getProperty(JAVA_IO_TMPDIR) + "\\" + today + "_" + mig.getId();
         }
-        return System.getProperty(JAVA_IO_TMPDIR) + "/" + mig.getId();
+        return System.getProperty(JAVA_IO_TMPDIR) + "/" + today + "_" + mig.getId();
     }
 
     /**
      * Get git working directory
-     * @param migration
+     * @param migration Migration to process
      * @return
      */
     private static String gitWorkingDir(Migration migration) {
@@ -252,25 +246,13 @@ public class MigrationManager {
     }
 
     /**
-     * Get git directory
-     * @param workingDir
-     * @return
-     */
-    private static String gitDir(String workingDir) {
-        if (isWindows) {
-            return workingDir + "\\.git";
-        }
-        return workingDir + "/.git";
-    }
-
-    /**
      * Execute a commmand through process
      * @param directory Directory in which running command
      * @param command command to execute
      * @throws InterruptedException
      * @throws IOException
      */
-    private static void execCommand(String directory, String command) throws InterruptedException, IOException {
+    private static int execCommand(String directory, String command) throws InterruptedException, IOException {
         ProcessBuilder builder = new ProcessBuilder();
         if (isWindows) {
             builder.command("cmd.exe", "/c", command);
@@ -294,74 +276,175 @@ public class MigrationManager {
         LOG.debug(format("Exit : %d", exitCode));
 
         assert exitCode == 0;
+
+        return exitCode;
     }
 
     // Tasks
     /**
-     * Add remote url to git config
-     * @param git Git instance
-     * @param remoteName Remote name for repository
-     * @param remoteUrl Remote URL
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws GitAPIException
+     * Apply mappings configured
+     * @param gitWorkingDir Current working directory
+     * @param migration Migration in progress
+     * @param branch Branch to process
      */
-    private static void addRemote(Git git, String remoteName, String remoteUrl) throws URISyntaxException, GitAPIException {
-        RemoteAddCommand remoteAddCommand = git.remoteAdd();
-        remoteAddCommand.setName(remoteName);
-        remoteAddCommand.setUri(new URIish(remoteUrl));
-        remoteAddCommand.call();
+    private void applyMapping(String gitWorkingDir, Migration migration, String branch) {
+        List<Mapping> mappings = mappingRepository.findAllByMigration(migration.getId());
+        if (!CollectionUtils.isEmpty(mappings)) {
+            mappings.forEach(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch));
+        }
+    }
+
+    /**
+     * Apply git mv
+     * @param gitWorkingDir Working directory
+     * @param migration Current migration
+     * @param mapping Mapping to apply
+     */
+    private void mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
+        MigrationHistory history = null;
+        try {
+            boolean workDone;
+            if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
+                // For root directory, we need to loop for subdirectory
+                List<Boolean> results = Files.list(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
+                    .map(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString()))
+                    .collect(Collectors.toList());
+                workDone =  results.contains(true);
+                if (results.isEmpty()) {
+                    history = startStep(migration, StepEnum.GIT_MV, format("git mv %s %s", mapping.getSvnDirectory(), mapping.getGitDirectory()));
+                    endStep(history, StatusEnum.IGNORED, null);
+                }
+            } else {
+                workDone = mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
+            }
+
+            if (workDone) {
+                history = startStep(migration, StepEnum.GIT_PUSH, format("Push moved elements on %s", branch));
+                // git commit
+                String gitCommand = "git add .";
+                execCommand(gitWorkingDir, gitCommand);
+                gitCommand = format("git commit -m \"Move from %s to %s on %s\"", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
+                execCommand(gitWorkingDir, gitCommand);
+                // git push
+                gitCommand = "git push";
+                execCommand(gitWorkingDir, gitCommand);
+
+                endStep(history, StatusEnum.DONE, null);
+            }
+        } catch (IOException | InterruptedException gitEx) {
+            LOG.error("Failed to mv directory", gitEx);
+            if (history != null) endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+        }
+    }
+
+    /**
+     * Apply git mv
+     * @param gitWorkingDir Current working directory
+     * @param migration Migration in progress
+     * @param svnDir Origin SVN element
+     * @param gitDir Target Git element
+     */
+    private boolean mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir) {
+        MigrationHistory history = null;
+        try {
+            String gitCommand = format("git mv %s %s", svnDir, gitDir);
+            history = startStep(migration, StepEnum.GIT_MV, gitCommand);
+            // git mv
+            int exitCode = execCommand(gitWorkingDir, gitCommand);
+
+            if (128 == exitCode) {
+                endStep(history, StatusEnum.IGNORED, null);
+                return false;
+            } else {
+                endStep(history, StatusEnum.DONE, null);
+                return true;
+            }
+        } catch (IOException | InterruptedException gitEx) {
+            LOG.error("Failed to mv directory", gitEx);
+            endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * List SVN branches & tags cloned
+     * @param directory working directory
+     * @return
+     * @throws InterruptedException
+     * @throws IOException
+     */
+    private List<String> svnList(String directory) throws InterruptedException, IOException {
+        String command = "git branch -r";
+        ProcessBuilder builder = new ProcessBuilder();
+        if (isWindows) {
+            builder.command("cmd.exe", "/c", command);
+        } else {
+            builder.command("sh", "-c", command);
+        }
+        builder.directory(new File(directory));
+
+        Process p = builder.start();
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+        List<String> remotes = new ArrayList<>();
+        reader.lines().iterator().forEachRemaining(remotes::add);
+
+        p.waitFor();
+        p.destroy();
+
+        return remotes;
     }
 
     /**
      * Push a branch
+     * @param gitWorkingDir Working directory
      * @param migration Migration object
      * @param branch Branch to migrate
      */
-    private void pushBranch(Migration migration, String branch) {
-        MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, branch);
+    private void pushBranch(String gitWorkingDir, Migration migration, String branch) throws RuntimeException {
         try {
             String branchName = branch.replaceFirst("refs/remotes/origin/", "");
+            branchName = branchName.replaceFirst("origin/", "");
             LOG.debug(format("Branch %s", branchName));
 
             String gitCommand = format("git checkout -b %s %s", branchName, branch);
-            execCommand(gitWorkingDir(migration), gitCommand);
+            execCommand(gitWorkingDir, gitCommand);
+            gitCommand = "git push";
+            execCommand(gitWorkingDir, gitCommand);
 
-            gitCommand = format("git push -u origin %s", branchName);
-            execCommand(gitWorkingDir(migration), gitCommand);
-
-            endStep(history, StatusEnum.DONE, null);
-        } catch (IOException | InterruptedException gitEx) {
-            LOG.error("Failed to push branch", gitEx);
-            endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            applyMapping(gitWorkingDir, migration, branch);
+        } catch (IOException | InterruptedException iEx) {
+            throw new RuntimeException();
         }
     }
 
     /**
      * Push a tag
+     * @param gitWorkingDir Current working directory
      * @param migration Migration object
      * @param tag Tag to migrate
      */
-    private void pushTag(Migration migration, String tag) {
+    private void pushTag(String gitWorkingDir, Migration migration, String tag) {
         MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, tag);
         try {
-            String tagName = tag.replaceFirst(REFS_REMOTES_ORIGIN_TAGS, "");
+            String tagName = tag.replaceFirst(ORIGIN_TAGS, "");
             LOG.debug(format("Tag %s", tagName));
 
             String gitCommand = format("git checkout -b tmp_tag %s", tag);
-            execCommand(gitWorkingDir(migration), gitCommand);
+            execCommand(gitWorkingDir, gitCommand);
 
             gitCommand = "git checkout master";
-            execCommand(gitWorkingDir(migration), gitCommand);
+            execCommand(gitWorkingDir, gitCommand);
 
             gitCommand = format("git tag %s tmp_tag", tagName);
-            execCommand(gitWorkingDir(migration), gitCommand);
+
+            execCommand(gitWorkingDir, gitCommand);
 
             gitCommand = format("git push -u origin %s", tagName);
-            execCommand(gitWorkingDir(migration), gitCommand);
+            execCommand(gitWorkingDir, gitCommand);
 
             gitCommand = "git branch -D tmp_tag";
-            execCommand(gitWorkingDir(migration), gitCommand);
+            execCommand(gitWorkingDir, gitCommand);
 
             endStep(history, StatusEnum.DONE, null);
         } catch (IOException | InterruptedException gitEx) {

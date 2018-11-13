@@ -70,6 +70,14 @@
                 <constraints nullable="true" />
             </column>
 
+            <column name="svn_user" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="svn_password" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
         </createTable>
         

@@ -80,6 +80,14 @@
         {
             "fieldName": "svnUrl",
             "fieldType": "String"
+        },
+        {
+            "fieldName": "svnUser",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "svnPassword",
+            "fieldType": "String"
         }
     ],
     "changelogDate": "20181009153343",

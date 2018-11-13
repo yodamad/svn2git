@@ -25,9 +25,13 @@
             "status": "Status",
             "maxFileSize": "Max File Size",
             "forbiddenFileExtensions": "Forbidden File Extensions",
+            "gitlabUrl": "Gitlab Url",
+            "gitlabToken": "Gitlab Token",
+            "svnUrl": "Svn Url",
+            "svnUser": "Svn User",
+            "svnPassword": "Svn Password",
             "history": "History",
-            "title": "Migration",
-            "check": "Vérifier le(s) migration(s)"
+            "mappings": "Mappings"
         }
     }
 }

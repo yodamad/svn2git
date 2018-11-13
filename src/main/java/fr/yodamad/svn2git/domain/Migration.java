@@ -65,6 +65,12 @@ public class Migration implements Serializable {
     @Column(name = "svn_url")
     private String svnUrl;
 
+    @Column(name = "svn_user")
+    private String svnUser;
+
+    @Column(name = "svn_password")
+    private String svnPassword;
+
     @OneToMany(mappedBy = "migration")
     private Set<MigrationHistory> histories = new HashSet<>();
     @OneToMany(mappedBy = "migration")
@@ -234,6 +240,32 @@ public class Migration implements Serializable {
         this.svnUrl = svnUrl;
     }
 
+    public String getSvnUser() {
+        return svnUser;
+    }
+
+    public Migration svnUser(String svnUser) {
+        this.svnUser = svnUser;
+        return this;
+    }
+
+    public void setSvnUser(String svnUser) {
+        this.svnUser = svnUser;
+    }
+
+    public String getSvnPassword() {
+        return svnPassword;
+    }
+
+    public Migration svnPassword(String svnPassword) {
+        this.svnPassword = svnPassword;
+        return this;
+    }
+
+    public void setSvnPassword(String svnPassword) {
+        this.svnPassword = svnPassword;
+    }
+
     public Set<MigrationHistory> getHistories() {
         return histories;
     }
@@ -321,6 +353,8 @@ public class Migration implements Serializable {
             ", gitlabUrl='" + getGitlabUrl() + "'" +
             ", gitlabToken='" + getGitlabToken() + "'" +
             ", svnUrl='" + getSvnUrl() + "'" +
+            ", svnUser='" + getSvnUser() + "'" +
+            ", svnPassword='" + getSvnPassword() + "'" +
             "}";
     }
 }

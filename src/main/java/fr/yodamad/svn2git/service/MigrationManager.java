@@ -48,13 +48,13 @@ public class MigrationManager {
     private static final String GIT_PUSH = "git push";
 
     // Configuration
+    @Value("${gitlab.url}") String gitlabUrl;
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
-    @Value("${gitlab.token}") String gitlabSvcToken;
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
 
     /** Gitlab API. */
-    private final GitlabAdmin gitlab;
+    private GitlabAdmin gitlab;
     // Repositories
     private final MigrationRepository migrationRepository;
     private final MigrationHistoryRepository migrationHistoryRepository;
@@ -92,8 +92,12 @@ public class MigrationManager {
             // 1. Create project on gitlab : OK
             history = startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
-            Group group = gitlab.groupApi().getGroup(migration.getGitlabGroup());
-            gitlab.projectApi().createProject(group.getId(), migration.getSvnProject());
+            GitlabAdmin gitlabAdmin = gitlab;
+            if (!gitlabUrl.equalsIgnoreCase(migration.getGitlabUrl())) {
+                gitlabAdmin = new GitlabAdmin(migration.getGitlabUrl(), migration.getGitlabToken());
+            }
+            Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
+            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnProject());
 
             endStep(history, StatusEnum.DONE, null);
 
@@ -115,12 +119,25 @@ public class MigrationManager {
             endStep(history, StatusEnum.DONE, null);
 
             // 2.2. SVN checkout
-            String cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
-                migration.getSvnProject(),
-                migration.getSvnProject(),
-                migration.getSvnProject(),
-                migration.getSvnUrl(),
-                migration.getSvnGroup());
+            String cloneCommand;
+            if (StringUtils.isEmpty(migration.getSvnUser())) {
+                cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnUrl(),
+                    migration.getSvnGroup());
+            } else {
+                cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                    migration.getSvnPassword(),
+                    migration.getSvnUser(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnUrl(),
+                    migration.getSvnGroup());
+            }
+
             history = startStep(migration, StepEnum.SVN_CHECKOUT, cloneCommand);
             execCommand(rootWorkingDir, cloneCommand);
 

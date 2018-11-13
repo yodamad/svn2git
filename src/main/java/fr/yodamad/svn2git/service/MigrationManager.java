@@ -289,8 +289,30 @@ public class MigrationManager {
      */
     private void applyMapping(String gitWorkingDir, Migration migration, String branch) {
         List<Mapping> mappings = mappingRepository.findAllByMigration(migration.getId());
+        boolean workDone = false;
         if (!CollectionUtils.isEmpty(mappings)) {
-            mappings.forEach(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch));
+            List<Boolean> results = mappings.stream()
+                .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping))
+                .collect(Collectors.toList());
+            workDone = results.contains(true);
+        }
+
+        if (workDone) {
+            MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, format("Push moved elements on %s", branch));
+            try {
+                // git commit
+                String gitCommand = "git add .";
+                execCommand(gitWorkingDir, gitCommand);
+                gitCommand = format("git commit -m \"Apply mappings on %s\"", branch);
+                execCommand(gitWorkingDir, gitCommand);
+                // git push
+                gitCommand = "git push";
+                execCommand(gitWorkingDir, gitCommand);
+
+                endStep(history, StatusEnum.DONE, null);
+            } catch (IOException | InterruptedException iEx) {
+                endStep(history, StatusEnum.FAILED, iEx.getMessage());
+            }
         }
     }
 
@@ -300,8 +322,8 @@ public class MigrationManager {
      * @param migration Current migration
      * @param mapping Mapping to apply
      */
-    private void mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
-        MigrationHistory history = null;
+    private boolean mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping) {
+        MigrationHistory history;
         try {
             boolean workDone;
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
@@ -317,23 +339,10 @@ public class MigrationManager {
             } else {
                 workDone = mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
             }
-
-            if (workDone) {
-                history = startStep(migration, StepEnum.GIT_PUSH, format("Push moved elements on %s", branch));
-                // git commit
-                String gitCommand = "git add .";
-                execCommand(gitWorkingDir, gitCommand);
-                gitCommand = format("git commit -m \"Move from %s to %s on %s\"", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
-                execCommand(gitWorkingDir, gitCommand);
-                // git push
-                gitCommand = "git push";
-                execCommand(gitWorkingDir, gitCommand);
-
-                endStep(history, StatusEnum.DONE, null);
-            }
-        } catch (IOException | InterruptedException gitEx) {
+            return workDone;
+        } catch (IOException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
-            if (history != null) endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            return false;
         }
     }
 

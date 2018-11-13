@@ -1,0 +1,20 @@
+.cell-ok {
+    background-color: #28a745;
+    color: white;
+    border: 5px solid white;
+    padding: 10px;
+}
+
+.cell-ko {
+    background-color: darkred;
+    color: white;
+    border: 5px solid white;
+    padding: 10px;
+}
+
+.cell-ignored {
+    background-color: grey;
+    color: white;
+    border: 5px solid white;
+    padding: 10px;
+}

@@ -39,11 +39,13 @@ import static java.lang.String.format;
 public class MigrationManager {
 
     /** Default ref origin for tags. */
-    public static final String ORIGIN_TAGS = "origin/tags/";
+    private static final String ORIGIN_TAGS = "origin/tags/";
     /** Temp directory. */
-    public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+    private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
     /** Default branch. */
-    public static final String MASTER = "master";
+    private static final String MASTER = "master";
+    /** Git push command. */
+    private static final String GIT_PUSH = "git push";
 
     // Configuration
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
@@ -163,8 +165,7 @@ public class MigrationManager {
             // 4. Git push master based on SVN trunk
             history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
-            gitCommand = "git push";
-            execCommand(gitWorkingDir, gitCommand);
+            execCommand(gitWorkingDir, GIT_PUSH);
 
             endStep(history, StatusEnum.DONE, null);
 
@@ -306,8 +307,7 @@ public class MigrationManager {
                 gitCommand = format("git commit -m \"Apply mappings on %s\"", branch);
                 execCommand(gitWorkingDir, gitCommand);
                 // git push
-                gitCommand = "git push";
-                execCommand(gitWorkingDir, gitCommand);
+                execCommand(gitWorkingDir, GIT_PUSH);
 
                 endStep(history, StatusEnum.DONE, null);
             } catch (IOException | InterruptedException iEx) {
@@ -418,8 +418,7 @@ public class MigrationManager {
 
             String gitCommand = format("git checkout -b %s %s", branchName, branch);
             execCommand(gitWorkingDir, gitCommand);
-            gitCommand = "git push";
-            execCommand(gitWorkingDir, gitCommand);
+            execCommand(gitWorkingDir, GIT_PUSH);
 
             applyMapping(gitWorkingDir, migration, branch);
         } catch (IOException | InterruptedException iEx) {
@@ -500,7 +499,7 @@ public class MigrationManager {
         private InputStream inputStream;
         private Consumer<String> consumer;
 
-        public StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
+        StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
             this.inputStream = inputStream;
             this.consumer = consumer;
         }

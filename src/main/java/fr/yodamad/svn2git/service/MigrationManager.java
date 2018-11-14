@@ -47,6 +47,8 @@ public class MigrationManager {
     private static final String MASTER = "master";
     /** Git push command. */
     private static final String GIT_PUSH = "git push";
+    /** Stars to hide sensitive data. */
+    private static final String STARS = "******";
 
     // Configuration
     @Value("${gitlab.url}") String gitlabUrl;
@@ -121,6 +123,7 @@ public class MigrationManager {
 
             // 2.2. SVN checkout
             String cloneCommand;
+            String safeCommand;
             if (StringUtils.isEmpty(migration.getSvnUser())) {
                 cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
                     migration.getSvnProject(),
@@ -128,6 +131,7 @@ public class MigrationManager {
                     migration.getSvnProject(),
                     migration.getSvnUrl(),
                     migration.getSvnGroup());
+                safeCommand = cloneCommand;
             } else {
                 String escapedPassword = StringEscapeUtils.escapeJava(migration.getSvnPassword());
                 cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
@@ -138,10 +142,18 @@ public class MigrationManager {
                     migration.getSvnProject(),
                     migration.getSvnUrl(),
                     migration.getSvnGroup());
+                safeCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                    STARS,
+                    migration.getSvnUser(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnProject(),
+                    migration.getSvnUrl(),
+                    migration.getSvnGroup());
             }
 
-            history = startStep(migration, StepEnum.SVN_CHECKOUT, cloneCommand);
-            execCommand(rootWorkingDir, cloneCommand);
+            history = startStep(migration, StepEnum.SVN_CHECKOUT, safeCommand);
+            execCommand(rootWorkingDir, cloneCommand, safeCommand);
 
             endStep(history, StatusEnum.DONE, null);
 
@@ -273,6 +285,18 @@ public class MigrationManager {
      * @throws IOException
      */
     private static int execCommand(String directory, String command) throws InterruptedException, IOException {
+        return execCommand(directory, command, command);
+    }
+
+    /**
+     * Execute a commmand through process without an alternative command to print in history
+     * @param directory Directory in which running command
+     * @param command command to execute
+     * @param securedCommandToPrint command to print in history without password/token/...
+     * @throws InterruptedException
+     * @throws IOException
+     */
+    private static int execCommand(String directory, String command, String securedCommandToPrint) throws InterruptedException, IOException {
         ProcessBuilder builder = new ProcessBuilder();
         if (isWindows) {
             builder.command("cmd.exe", "/c", command);
@@ -282,7 +306,7 @@ public class MigrationManager {
 
         builder.directory(new File(directory));
 
-        LOG.debug(format("Exec command : %s", command));
+        LOG.debug(format("Exec command : %s", securedCommandToPrint));
         LOG.debug(format("in %s", directory));
 
         Process process = builder.start();

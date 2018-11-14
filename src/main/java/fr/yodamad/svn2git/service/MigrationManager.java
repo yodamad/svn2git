@@ -125,7 +125,7 @@ public class MigrationManager {
             String cloneCommand;
             String safeCommand;
             if (StringUtils.isEmpty(migration.getSvnUser())) {
-                cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
                     migration.getSvnProject(),
                     migration.getSvnProject(),
                     migration.getSvnProject(),
@@ -134,7 +134,7 @@ public class MigrationManager {
                 safeCommand = cloneCommand;
             } else {
                 String escapedPassword = StringEscapeUtils.escapeJava(migration.getSvnPassword());
-                cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
                     escapedPassword,
                     migration.getSvnUser(),
                     migration.getSvnProject(),
@@ -142,7 +142,7 @@ public class MigrationManager {
                     migration.getSvnProject(),
                     migration.getSvnUrl(),
                     migration.getSvnGroup());
-                safeCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s%s",
+                safeCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
                     STARS,
                     migration.getSvnUser(),
                     migration.getSvnProject(),

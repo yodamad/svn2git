@@ -38,10 +38,16 @@ export class MigrationStepperComponent implements OnInit {
     mig: IMigration;
     svnUrl: string;
     gitlabUrl: string;
+
     /// Mapping selections
     initialSelection = [];
     allowMultiSelect = true;
     selection: SelectionModel<IMapping>;
+
+    // Waiting flag
+    checkingGitlabUser = false;
+    checkingGitlabGroup = false;
+    checkingSvnRepo = false;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -81,32 +87,41 @@ export class MigrationStepperComponent implements OnInit {
      * Check if user exists
      */
     checkGitlabUser() {
+        this.checkingGitlabUser = true;
         this._migrationProcessService
             .checkUser(
                 this.gitlabFormGroup.controls['gitlabUser'].value,
                 this.gitlabFormGroup.controls['gitlabURL'].value,
                 this.gitlabFormGroup.controls['gitlabToken'].value
             )
-            .subscribe(res => (this.gitlabUserKO = !res.body));
+            .subscribe(res => {
+                this.gitlabUserKO = !res.body;
+                this.checkingGitlabUser = false;
+            });
     }
 
     /**
      * Check if group exists
      */
     checkGitlabGroup() {
+        this.checkingGitlabGroup = true;
         this._migrationProcessService
             .checkGroup(
                 this.gitlabFormGroup.controls['gitlabGroup'].value,
                 this.gitlabFormGroup.controls['gitlabURL'].value,
                 this.gitlabFormGroup.controls['gitlabToken'].value
             )
-            .subscribe(res => (this.gitlabGroupKO = !res.body));
+            .subscribe(res => {
+                this.gitlabGroupKO = !res.body;
+                this.checkingGitlabGroup = false;
+            });
     }
 
     /**
      * Check if SVN repository exists
      */
     checkSvnRepository() {
+        this.checkingSvnRepo = true;
         this._migrationProcessService
             .checkSvn(
                 this.svnFormGroup.controls['svnRepository'].value,
@@ -116,6 +131,7 @@ export class MigrationStepperComponent implements OnInit {
             )
             .subscribe(res => {
                 this.svnDirectories = res.body;
+                this.checkingSvnRepo = false;
             });
     }
 

@@ -19,13 +19,19 @@
                 <mat-form-field>
                     <input matInput placeholder="Gitlab username" formControlName="gitlabUser" required>
                 </mat-form-field>
-                <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)"><span jhiTranslate="migration-process.check">Check</span></button>
+                <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)" [disabled]="checkingGitlabUser">
+                    <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabUser">Check</span>
+                    <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabUser">Checking</span>
+                </button>
             </div>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="Gitlab group name" formControlName="gitlabGroup" required>
                 </mat-form-field>
-                <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)"><span jhiTranslate="migration-process.check">Check</span></button>
+                <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)" [disabled]="checkingGitlabGroup">
+                    <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabGroup">Check</span>
+                    <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabGroup">Checking</span>
+                </button>
             </div>
             <div>
                 <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO || gitlabUserKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
@@ -56,7 +62,10 @@
                 <mat-form-field>
                     <input matInput placeholder="SVN repository name" formControlName="svnRepository" required>
                 </mat-form-field>
-                <button type="button" mat-raised-button (click)="checkSvnRepository()" [ngClass]="cssClass(svnRepoKO)"><span jhiTranslate="migration-process.check">Check</span></button>
+                <button type="button" mat-raised-button (click)="checkSvnRepository()" [ngClass]="cssClass(svnRepoKO)" [disabled]="checkingSvnRepo">
+                    <span jhiTranslate="migration-process.check" *ngIf="!checkingSvnRepo">Check</span>
+                    <span jhiTranslate="migration-process.checking" *ngIf="checkingSvnRepo">Checking</span>
+                </button>
             </div>
             <div *ngIf="svnDirectories !== null && svnDirectories.length > 0">
                 <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :

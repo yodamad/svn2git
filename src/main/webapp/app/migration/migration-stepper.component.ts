@@ -97,7 +97,7 @@ export class MigrationStepperComponent implements OnInit {
             .subscribe(res => {
                 this.gitlabUserKO = !res.body;
                 this.checkingGitlabUser = false;
-            });
+            }, () => (this.checkingGitlabUser = false));
     }
 
     /**
@@ -114,7 +114,7 @@ export class MigrationStepperComponent implements OnInit {
             .subscribe(res => {
                 this.gitlabGroupKO = !res.body;
                 this.checkingGitlabGroup = false;
-            });
+            }, () => (this.checkingGitlabGroup = false));
     }
 
     /**
@@ -132,7 +132,7 @@ export class MigrationStepperComponent implements OnInit {
             .subscribe(res => {
                 this.svnDirectories = res.body;
                 this.checkingSvnRepo = false;
-            });
+            }, () => (this.checkingSvnRepo = false));
     }
 
     /**

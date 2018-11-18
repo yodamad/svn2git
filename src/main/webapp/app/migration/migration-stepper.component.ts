@@ -1,12 +1,16 @@
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
-import { IMapping } from 'app/shared/model/mapping.model';
+import { IMapping, Mapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
+import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { MatDialog } from '@angular/material';
+import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
+import { StaticMapping } from 'app/shared/model/static-mapping.model';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -49,16 +53,22 @@ export class MigrationStepperComponent implements OnInit {
     checkingGitlabGroup = false;
     checkingSvnRepo = false;
 
+    // Modals
+    modalRef: NgbModalRef;
+
     constructor(
         private _formBuilder: FormBuilder,
         private _migrationProcessService: MigrationProcessService,
         private _migrationService: MigrationService,
-        private _mappingService: StaticMappingService
+        private _mappingService: StaticMappingService,
+        private _matDialog: MatDialog,
+        private _changeDetectorRefs: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
         this._mappingService.query().subscribe(res => {
             this.mappings = res.body;
+            this.mappings.push(new Mapping());
             this.initialSelection = this.mappings;
             this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
         });
@@ -266,5 +276,25 @@ export class MigrationStepperComponent implements OnInit {
         this.svnRepoKO = true;
         this.svnDirectories = [];
         this.selectedSvnDirectories = [];
+    }
+
+    /** Add a custom mapping. */
+    addMapping() {
+        const dialog = this._matDialog.open(JhiAddMappingModalComponent, {
+            data: { staticMapping: new StaticMapping() }
+        });
+
+        const currentMappings = this.mappings;
+        // Remove "fake" mapping
+        currentMappings.splice(currentMappings.length - 1, 1);
+
+        dialog.afterClosed().subscribe(result => {
+            this.mappings = [];
+            currentMappings.forEach(mp => this.mappings.push(mp));
+            this.mappings.push(result);
+            this.mappings.push(new Mapping());
+            console.log(this.mappings);
+            this._changeDetectorRefs.detectChanges();
+        });
     }
 }

@@ -2,6 +2,7 @@
     "migration-process" : {
         "back" : " Back",
         "check" : "Check",
+        "checking" : "Checking",
         "cleaning" : {
             "options" : "Cleaning options"
         },

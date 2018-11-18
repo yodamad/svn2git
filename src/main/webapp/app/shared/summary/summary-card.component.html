@@ -20,7 +20,7 @@
             <mat-icon mat-list-icon>layers_clear</mat-icon>
             <p mat-line>{{migration.forbiddenFileExtensions}}</p>
         </mat-list-item>
-        <mat-list-item *ngIf="migration.maxFileSize != undefined">
+        <mat-list-item *ngIf="displayMaxSize()">
             <mat-icon mat-list-icon>unfold_less</mat-icon>
             <p mat-line>{{migration.maxFileSize}}</p>
         </mat-list-item>

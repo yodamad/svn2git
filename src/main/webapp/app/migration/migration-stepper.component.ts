@@ -1,12 +1,16 @@
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
-import { IMapping } from 'app/shared/model/mapping.model';
+import { IMapping, Mapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
+import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { MatDialog } from '@angular/material';
+import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
+import { StaticMapping } from 'app/shared/model/static-mapping.model';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -38,21 +42,33 @@ export class MigrationStepperComponent implements OnInit {
     mig: IMigration;
     svnUrl: string;
     gitlabUrl: string;
+
     /// Mapping selections
     initialSelection = [];
     allowMultiSelect = true;
     selection: SelectionModel<IMapping>;
 
+    // Waiting flag
+    checkingGitlabUser = false;
+    checkingGitlabGroup = false;
+    checkingSvnRepo = false;
+
+    // Modals
+    modalRef: NgbModalRef;
+
     constructor(
         private _formBuilder: FormBuilder,
         private _migrationProcessService: MigrationProcessService,
         private _migrationService: MigrationService,
-        private _mappingService: StaticMappingService
+        private _mappingService: StaticMappingService,
+        private _matDialog: MatDialog,
+        private _changeDetectorRefs: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
         this._mappingService.query().subscribe(res => {
             this.mappings = res.body;
+            this.mappings.push(new Mapping());
             this.initialSelection = this.mappings;
             this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
         });
@@ -81,32 +97,41 @@ export class MigrationStepperComponent implements OnInit {
      * Check if user exists
      */
     checkGitlabUser() {
+        this.checkingGitlabUser = true;
         this._migrationProcessService
             .checkUser(
                 this.gitlabFormGroup.controls['gitlabUser'].value,
                 this.gitlabFormGroup.controls['gitlabURL'].value,
                 this.gitlabFormGroup.controls['gitlabToken'].value
             )
-            .subscribe(res => (this.gitlabUserKO = !res.body));
+            .subscribe(res => {
+                this.gitlabUserKO = !res.body;
+                this.checkingGitlabUser = false;
+            }, () => (this.checkingGitlabUser = false));
     }
 
     /**
      * Check if group exists
      */
     checkGitlabGroup() {
+        this.checkingGitlabGroup = true;
         this._migrationProcessService
             .checkGroup(
                 this.gitlabFormGroup.controls['gitlabGroup'].value,
                 this.gitlabFormGroup.controls['gitlabURL'].value,
                 this.gitlabFormGroup.controls['gitlabToken'].value
             )
-            .subscribe(res => (this.gitlabGroupKO = !res.body));
+            .subscribe(res => {
+                this.gitlabGroupKO = !res.body;
+                this.checkingGitlabGroup = false;
+            }, () => (this.checkingGitlabGroup = false));
     }
 
     /**
      * Check if SVN repository exists
      */
     checkSvnRepository() {
+        this.checkingSvnRepo = true;
         this._migrationProcessService
             .checkSvn(
                 this.svnFormGroup.controls['svnRepository'].value,
@@ -116,7 +141,8 @@ export class MigrationStepperComponent implements OnInit {
             )
             .subscribe(res => {
                 this.svnDirectories = res.body;
-            });
+                this.checkingSvnRepo = false;
+            }, () => (this.checkingSvnRepo = false));
     }
 
     /**
@@ -250,5 +276,25 @@ export class MigrationStepperComponent implements OnInit {
         this.svnRepoKO = true;
         this.svnDirectories = [];
         this.selectedSvnDirectories = [];
+    }
+
+    /** Add a custom mapping. */
+    addMapping() {
+        const dialog = this._matDialog.open(JhiAddMappingModalComponent, {
+            data: { staticMapping: new StaticMapping() }
+        });
+
+        const currentMappings = this.mappings;
+        // Remove "fake" mapping
+        currentMappings.splice(currentMappings.length - 1, 1);
+
+        dialog.afterClosed().subscribe(result => {
+            this.mappings = [];
+            currentMappings.forEach(mp => this.mappings.push(mp));
+            this.mappings.push(result);
+            this.mappings.push(new Mapping());
+            console.log(this.mappings);
+            this._changeDetectorRefs.detectChanges();
+        });
     }
 }

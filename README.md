@@ -22,21 +22,29 @@ Just click on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/mast
 
 You have to check several information before starting the migration :
 
-your gitlab account
+your gitlab account and group
  
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_gitlab.png)
 
-your gitlab group
- 
-![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_group.png)
+*You can override gitlab URL & token if necessary*
+
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/override_gitlab.png)
 
 your svn repository
  
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_svn.png)
 
+*You can override SVN URL, user & password if necessary*
+
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/override_svn.png)
+
 Then, chose which project(s) to migration
  
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/choose_svn.png)
+
+If some static mappings are configured, you can enable/disable which on to apply
+
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/mappings.png)
 
 Optionnaly, add some cleaning options based on files size or/and extensions
 

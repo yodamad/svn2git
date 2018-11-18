@@ -12,6 +12,7 @@ import fr.yodamad.svn2git.web.rest.errors.BadRequestAlertException;
 import fr.yodamad.svn2git.web.rest.util.HeaderUtil;
 import fr.yodamad.svn2git.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -75,11 +76,13 @@ public class MigrationResource {
         Migration result = migrationRepository.save(migration);
 
         if (migration.getMappings() != null && !migration.getMappings().isEmpty()) {
-            migration.getMappings().forEach(mapping -> {
-                // Remove ID from static mapping
-                mapping.setId(0L);
-                mapping.setMigration(result.getId());
-                mappingService.save(mapping);
+            migration.getMappings().stream()
+                .filter(mp -> !StringUtils.isEmpty(mp.getGitDirectory()))
+                .forEach(mapping -> {
+                    // Remove ID from static mapping
+                    mapping.setId(0L);
+                    mapping.setMigration(result.getId());
+                    mappingService.save(mapping);
             });
         }
 

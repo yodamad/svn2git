@@ -480,9 +480,12 @@ public class MigrationManager {
             branchName = branchName.replaceFirst("origin/", "");
             LOG.debug(format("Branch %s", branchName));
 
+            MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, branchName);
             String gitCommand = format("git checkout -b %s %s", branchName, branch);
             execCommand(gitWorkingDir, gitCommand);
             execCommand(gitWorkingDir, GIT_PUSH);
+
+            endStep(history, StatusEnum.DONE, null);
 
             applyMapping(gitWorkingDir, migration, branch);
         } catch (IOException | InterruptedException iEx) {

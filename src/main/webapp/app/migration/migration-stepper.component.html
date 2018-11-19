@@ -33,6 +33,7 @@
                     <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabGroup">Checking</span>
                 </button>
             </div>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO || gitlabUserKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
@@ -69,16 +70,29 @@
                 </button>
             </div>
             <div *ngIf="svnDirectories !== null && svnDirectories.length > 0">
-                <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
-                <mat-selection-list #dirs [ngModel]="selectedSvnDirectories" (ngModelChange)="onSelectedOptionsChange($event)" [ngModelOptions]="{standalone: true}">
-                    <mat-list-option *ngFor="let directory of svnDirectories" [value]="directory">
-                        {{directory}}
-                    </mat-list-option>
-                </mat-selection-list>
+                <ul class="fa-ul">
+                    <li>
+                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                        <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
+                        <mat-selection-list #dirs [ngModel]="selectedSvnDirectories" (ngModelChange)="onSelectedOptionsChange($event)" [ngModelOptions]="{standalone: true}">
+                            <mat-list-option *ngFor="let directory of svnDirectories" [value]="directory">
+                                {{directory}}
+                            </mat-list-option>
+                        </mat-selection-list>
+                    </li>
+                    <li>
+                        <span class="fa-li"><fa-icon [icon]="'check'"></fa-icon></span>
+                        <span>
+                            <span jhiTranslate="migration-process.svn.root-directory">Or use root folder</span>
+                            <mat-checkbox [checked]="useSvnRootFolder" (change)="onSelectionChange($event)"></mat-checkbox>
+                        </span>
+                    </li>
+                </ul>
             </div>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
@@ -121,6 +135,7 @@
             </table>
 
             <ng-template matStepLabel><span jhiTranslate="migration-process.mapping">Mapping</span></ng-template>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
                 <button mat-stroked-button matStepperNext><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
@@ -154,6 +169,7 @@
             </mat-selection-list>
 
             <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
                 <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>

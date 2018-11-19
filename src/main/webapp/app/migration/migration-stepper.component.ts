@@ -7,8 +7,7 @@ import { IMapping, Mapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
-import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { MatDialog } from '@angular/material';
+import { MatCheckboxChange, MatDialog } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 
@@ -47,14 +46,12 @@ export class MigrationStepperComponent implements OnInit {
     initialSelection = [];
     allowMultiSelect = true;
     selection: SelectionModel<IMapping>;
+    useSvnRootFolder = false;
 
     // Waiting flag
     checkingGitlabUser = false;
     checkingGitlabGroup = false;
     checkingSvnRepo = false;
-
-    // Modals
-    modalRef: NgbModalRef;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -152,6 +149,7 @@ export class MigrationStepperComponent implements OnInit {
     onSelectedOptionsChange(values: string[]) {
         this.selectedSvnDirectories = values;
         this.svnRepoKO = this.selectedSvnDirectories.length === 0;
+        this.useSvnRootFolder = values.length === 0;
     }
 
     /**
@@ -183,9 +181,15 @@ export class MigrationStepperComponent implements OnInit {
      */
     go() {
         this.migrationStarted = true;
-        this.selectedSvnDirectories
-            .map(dir => this.initMigration(dir))
-            .forEach(mig => this._migrationService.create(mig).subscribe(res => console.log(res)));
+
+        if (this.useSvnRootFolder) {
+            const mig = this.initMigration('');
+            this._migrationService.create(mig).subscribe(res => console.log(res));
+        } else {
+            this.selectedSvnDirectories
+                .map(dir => this.initMigration(dir))
+                .forEach(mig => this._migrationService.create(mig).subscribe(res => console.log(res)));
+        }
     }
 
     /**
@@ -194,7 +198,11 @@ export class MigrationStepperComponent implements OnInit {
      */
     initMigration(project: string): IMigration {
         if (project === null) {
-            project = this.selectedSvnDirectories.toString();
+            if (this.useSvnRootFolder) {
+                project = this.svnFormGroup.controls['svnRepository'].value;
+            } else {
+                project = this.selectedSvnDirectories.toString();
+            }
         }
 
         this.mig = new Migration();
@@ -211,6 +219,7 @@ export class MigrationStepperComponent implements OnInit {
         // SVN
         this.mig.svnUrl = this.svnFormGroup.controls['svnURL'].value;
         this.mig.svnGroup = this.svnFormGroup.controls['svnRepository'].value;
+
         this.mig.svnProject = project;
         if (this.svnFormGroup.controls['svnUser'] !== undefined && this.svnFormGroup.controls['svnUser'].value !== '') {
             this.mig.svnUser = this.svnFormGroup.controls['svnUser'].value;
@@ -296,5 +305,10 @@ export class MigrationStepperComponent implements OnInit {
             console.log(this.mappings);
             this._changeDetectorRefs.detectChanges();
         });
+    }
+
+    onSelectionChange(event: MatCheckboxChange) {
+        this.useSvnRootFolder = event.checked;
+        this.selectedSvnDirectories = [];
     }
 }

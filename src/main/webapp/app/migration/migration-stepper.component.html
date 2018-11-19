@@ -33,6 +33,7 @@
                     <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabGroup">Checking</span>
                 </button>
             </div>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO || gitlabUserKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
@@ -134,6 +135,7 @@
             </table>
 
             <ng-template matStepLabel><span jhiTranslate="migration-process.mapping">Mapping</span></ng-template>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
                 <button mat-stroked-button matStepperNext><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
@@ -167,6 +169,7 @@
             </mat-selection-list>
 
             <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
                 <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>

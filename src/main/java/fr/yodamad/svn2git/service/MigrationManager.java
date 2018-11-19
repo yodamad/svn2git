@@ -100,15 +100,22 @@ public class MigrationManager {
                 gitlabAdmin = new GitlabAdmin(migration.getGitlabUrl(), migration.getGitlabToken());
             }
             Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
-            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnProject());
+
+            // If no svn project specified, use svn group instead
+            if (StringUtils.isEmpty(migration.getSvnProject())) {
+                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
+            } else {
+                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnProject());
+            }
 
             endStep(history, StatusEnum.DONE, null);
 
             // 2. Checkout SVN repository : OK
+            String svn = StringUtils.isEmpty(migration.getSvnProject()) ? migration.getSvnGroup(): migration.getSvnProject();
             String initCommand = format("git clone %s/%s/%s.git %s",
                 migration.getGitlabUrl(),
                 migration.getGitlabGroup(),
-                migration.getSvnProject(),
+                svn,
                 migration.getGitlabGroup());
 
             history = startStep(migration, StepEnum.GIT_CLONE, initCommand);
@@ -196,7 +203,21 @@ public class MigrationManager {
             // 4. Git push master based on SVN trunk
             history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
-            execCommand(gitWorkingDir, GIT_PUSH);
+            // if using root, additional step
+            if (StringUtils.isEmpty(migration.getSvnProject())) {
+                // Set origin
+                String remoteCommand = format("git remote add origin %s/%s/%s.git",
+                    migration.getGitlabUrl(),
+                    migration.getGitlabGroup(),
+                    svn);
+                execCommand(gitWorkingDir, remoteCommand);
+
+                // Push with upstream
+                gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                execCommand(gitWorkingDir, gitCommand);
+            } else {
+                execCommand(gitWorkingDir, GIT_PUSH);
+            }
 
             endStep(history, StatusEnum.DONE, null);
 

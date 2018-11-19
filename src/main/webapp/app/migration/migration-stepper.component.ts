@@ -7,8 +7,7 @@ import { IMapping, Mapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
-import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { MatDialog } from '@angular/material';
+import { MatCheckboxChange, MatDialog } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 
@@ -47,14 +46,12 @@ export class MigrationStepperComponent implements OnInit {
     initialSelection = [];
     allowMultiSelect = true;
     selection: SelectionModel<IMapping>;
+    useSvnRootFolder = false;
 
     // Waiting flag
     checkingGitlabUser = false;
     checkingGitlabGroup = false;
     checkingSvnRepo = false;
-
-    // Modals
-    modalRef: NgbModalRef;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -152,6 +149,7 @@ export class MigrationStepperComponent implements OnInit {
     onSelectedOptionsChange(values: string[]) {
         this.selectedSvnDirectories = values;
         this.svnRepoKO = this.selectedSvnDirectories.length === 0;
+        this.useSvnRootFolder = values.length === 0;
     }
 
     /**
@@ -296,5 +294,10 @@ export class MigrationStepperComponent implements OnInit {
             console.log(this.mappings);
             this._changeDetectorRefs.detectChanges();
         });
+    }
+
+    onSelectionChange(event: MatCheckboxChange) {
+        this.useSvnRootFolder = event.checked;
+        this.selectedSvnDirectories = [];
     }
 }

@@ -35,6 +35,7 @@
                 "repository" : "Check your SVN repository"
             },
             "directories" : "Choose directories to migrate",
+            "root-directory": "Or migrate full repository (assuming trunk, branches & tags are directly in root folder)",
             "use" : {
                 "default" : "Use default URL"
             }

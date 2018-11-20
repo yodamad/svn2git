@@ -375,7 +375,7 @@ public class MigrationManager {
         List<StatusEnum> results = null;
         if (!CollectionUtils.isEmpty(mappings)) {
             results = mappings.stream()
-                .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping))
+                .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch))
                 .collect(Collectors.toList());
             workDone = results.contains(StatusEnum.DONE);
         }
@@ -411,15 +411,16 @@ public class MigrationManager {
      * @param gitWorkingDir Working directory
      * @param migration Current migration
      * @param mapping Mapping to apply
+     * @param branch Current branch
      */
-    private StatusEnum mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping) {
+    private StatusEnum mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
         MigrationHistory history;
         try {
             boolean workDone;
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
                 // For root directory, we need to loop for subdirectory
                 List<StatusEnum> results = Files.list(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
-                    .map(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString()))
+                    .map(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString(), branch))
                     .collect(Collectors.toList());
 
                 if (results.isEmpty()) {
@@ -434,7 +435,7 @@ public class MigrationManager {
                 return StatusEnum.DONE;
 
             } else {
-                return mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
+                return mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
             }
         } catch (IOException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
@@ -448,11 +449,12 @@ public class MigrationManager {
      * @param migration Migration in progress
      * @param svnDir Origin SVN element
      * @param gitDir Target Git element
+     * @param branch Current branch
      */
-    private StatusEnum mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir) {
+    private StatusEnum mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir, String branch) {
         MigrationHistory history = null;
         try {
-            String gitCommand = format("git mv %s %s", svnDir, gitDir);
+            String gitCommand = format("git mv %s %s on %s", svnDir, gitDir, branch);
             history = startStep(migration, StepEnum.GIT_MV, gitCommand);
             // git mv
             int exitCode = execCommand(gitWorkingDir, gitCommand);

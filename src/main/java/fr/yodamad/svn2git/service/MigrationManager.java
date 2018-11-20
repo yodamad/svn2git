@@ -253,13 +253,13 @@ public class MigrationManager {
                 .collect(Collectors.toList());
 
             gitBranches.forEach(b -> {
-                    final boolean warning = pushBranch(gitWorkingDir, migration, b);
-                    withWarnings.set(withWarnings.get() || warning);
+                    final boolean warn = pushBranch(gitWorkingDir, migration, b);
+                    withWarnings.set(withWarnings.get() || warn);
                 }
             );
             gitTags.forEach(t -> {
-                    final boolean warning = pushTag(gitWorkingDir, migration, t);
-                    withWarnings.set(withWarnings.get() || warning);
+                    final boolean warn = pushTag(gitWorkingDir, migration, t);
+                    withWarnings.set(withWarnings.get() || warn);
                 }
             );
 

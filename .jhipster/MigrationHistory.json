@@ -18,7 +18,7 @@
         {
             "fieldName": "status",
             "fieldType": "StatusEnum",
-            "fieldValues": "WAITING,RUNNING,DONE,FAILED"
+            "fieldValues": "WAITING,RUNNING,DONE,FAILED,DONE_WITH_WARNINGS"
         },
         {
             "fieldName": "date",

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
-import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
+import { JhiAlertService, JhiEventManager, JhiParseLinks } from 'ng-jhipster';
 
 import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
 import { Principal } from 'app/core';
@@ -111,6 +111,9 @@ export class MigrationComponent implements OnInit, OnDestroy {
         }
         if (status === StatusEnum.IGNORED) {
             return 'cell-ignored';
+        }
+        if (status === StatusEnum.DONE_WITH_WARNINGS) {
+            return 'cell-warning';
         }
     }
 

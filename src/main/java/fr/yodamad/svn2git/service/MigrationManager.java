@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -85,6 +86,7 @@ public class MigrationManager {
         MigrationHistory history = null;
         String rootWorkingDir = workingDir(migration);
         String gitWorkingDir = gitWorkingDir(migration);
+        AtomicBoolean withWarnings = new AtomicBoolean(false);
 
         try {
 
@@ -178,6 +180,7 @@ public class MigrationManager {
                             endStep(innerHistory, StatusEnum.DONE, null);
                         } catch (Exception exc) {
                             endStep(innerHistory, StatusEnum.FAILED, exc.getMessage());
+                            withWarnings.set(true);
                         }
                     });
                 clean = true;
@@ -226,7 +229,8 @@ public class MigrationManager {
             execCommand(gitWorkingDir, gitCommand);
 
             // 5. Apply mappings if some
-            applyMapping(gitWorkingDir, migration, MASTER);
+            boolean warning = applyMapping(gitWorkingDir, migration, MASTER);
+            withWarnings.set(withWarnings.get() || warning);
 
             // 6. List branches & tags
             List<String> remotes = svnList(gitWorkingDir);
@@ -248,8 +252,16 @@ public class MigrationManager {
                 .filter(b -> !b.contains("@"))
                 .collect(Collectors.toList());
 
-            gitBranches.forEach(b -> pushBranch(gitWorkingDir, migration, b));
-            gitTags.forEach(t -> pushTag(gitWorkingDir, migration, t));
+            gitBranches.forEach(b -> {
+                    final boolean warning = pushBranch(gitWorkingDir, migration, b);
+                    withWarnings.set(withWarnings.get() || warning);
+                }
+            );
+            gitTags.forEach(t -> {
+                    final boolean warning = pushTag(gitWorkingDir, migration, t);
+                    withWarnings.set(withWarnings.get() || warning);
+                }
+            );
 
             // 7. Clean work directory
             history = startStep(migration, StepEnum.CLEANING, format("Remove %s", workingDir(migration)));
@@ -258,9 +270,14 @@ public class MigrationManager {
                 endStep(history, StatusEnum.DONE, null);
             } catch (Exception exc) {
                 endStep(history, StatusEnum.FAILED, exc.getMessage());
+                withWarnings.set(true);
             }
 
-            migration.setStatus(StatusEnum.DONE);
+            if (withWarnings.get()) {
+                migration.setStatus(StatusEnum.DONE_WITH_WARNINGS);
+            } else{
+                migration.setStatus(StatusEnum.DONE);
+            }
             migrationRepository.save(migration);
         } catch (Exception exc) {
             if (history != null) {
@@ -352,14 +369,15 @@ public class MigrationManager {
      * @param migration Migration in progress
      * @param branch Branch to process
      */
-    private void applyMapping(String gitWorkingDir, Migration migration, String branch) {
+    private boolean applyMapping(String gitWorkingDir, Migration migration, String branch) {
         List<Mapping> mappings = mappingRepository.findAllByMigration(migration.getId());
         boolean workDone = false;
+        List<StatusEnum> results = null;
         if (!CollectionUtils.isEmpty(mappings)) {
-            List<Boolean> results = mappings.stream()
+            results = mappings.stream()
                 .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping))
                 .collect(Collectors.toList());
-            workDone = results.contains(true);
+            workDone = results.contains(StatusEnum.DONE);
         }
 
         if (workDone) {
@@ -376,8 +394,16 @@ public class MigrationManager {
                 endStep(history, StatusEnum.DONE, null);
             } catch (IOException | InterruptedException iEx) {
                 endStep(history, StatusEnum.FAILED, iEx.getMessage());
+                return false;
             }
         }
+
+        // No mappings, OK
+        if (results == null) {
+            return true;
+        }
+        // Some errors, WARNING to be set
+        return results.contains(StatusEnum.DONE_WITH_WARNINGS);
     }
 
     /**
@@ -386,27 +412,33 @@ public class MigrationManager {
      * @param migration Current migration
      * @param mapping Mapping to apply
      */
-    private boolean mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping) {
+    private StatusEnum mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping) {
         MigrationHistory history;
         try {
             boolean workDone;
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
                 // For root directory, we need to loop for subdirectory
-                List<Boolean> results = Files.list(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
+                List<StatusEnum> results = Files.list(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
                     .map(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString()))
                     .collect(Collectors.toList());
-                workDone =  results.contains(true);
+
                 if (results.isEmpty()) {
                     history = startStep(migration, StepEnum.GIT_MV, format("git mv %s %s", mapping.getSvnDirectory(), mapping.getGitDirectory()));
                     endStep(history, StatusEnum.IGNORED, null);
+                    return StatusEnum.IGNORED;
                 }
+
+                if (results.contains(StatusEnum.DONE_WITH_WARNINGS)) {
+                    return StatusEnum.DONE_WITH_WARNINGS;
+                }
+                return StatusEnum.DONE;
+
             } else {
-                workDone = mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
+                return mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory());
             }
-            return workDone;
         } catch (IOException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
-            return false;
+            return StatusEnum.DONE_WITH_WARNINGS;
         }
     }
 
@@ -417,7 +449,7 @@ public class MigrationManager {
      * @param svnDir Origin SVN element
      * @param gitDir Target Git element
      */
-    private boolean mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir) {
+    private StatusEnum mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir) {
         MigrationHistory history = null;
         try {
             String gitCommand = format("git mv %s %s", svnDir, gitDir);
@@ -427,15 +459,15 @@ public class MigrationManager {
 
             if (128 == exitCode) {
                 endStep(history, StatusEnum.IGNORED, null);
-                return false;
+                return StatusEnum.IGNORED;
             } else {
                 endStep(history, StatusEnum.DONE, null);
-                return true;
+                return StatusEnum.DONE;
             }
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
             endStep(history, StatusEnum.FAILED, gitEx.getMessage());
-            return false;
+            return StatusEnum.DONE_WITH_WARNINGS;
         }
     }
 
@@ -474,22 +506,24 @@ public class MigrationManager {
      * @param migration Migration object
      * @param branch Branch to migrate
      */
-    private void pushBranch(String gitWorkingDir, Migration migration, String branch) throws RuntimeException {
-        try {
-            String branchName = branch.replaceFirst("refs/remotes/origin/", "");
-            branchName = branchName.replaceFirst("origin/", "");
-            LOG.debug(format("Branch %s", branchName));
+    private boolean pushBranch(String gitWorkingDir, Migration migration, String branch) throws RuntimeException {
+        String branchName = branch.replaceFirst("refs/remotes/origin/", "");
+        branchName = branchName.replaceFirst("origin/", "");
+        LOG.debug(format("Branch %s", branchName));
 
-            MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, branchName);
+        MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, branchName);
+        try {
             String gitCommand = format("git checkout -b %s %s", branchName, branch);
             execCommand(gitWorkingDir, gitCommand);
             execCommand(gitWorkingDir, GIT_PUSH);
 
             endStep(history, StatusEnum.DONE, null);
 
-            applyMapping(gitWorkingDir, migration, branch);
+            return applyMapping(gitWorkingDir, migration, branch);
         } catch (IOException | InterruptedException iEx) {
-            throw new RuntimeException();
+            LOG.error("Failed to push branch", iEx);
+            endStep(history, StatusEnum.FAILED, iEx.getMessage());
+            return false;
         }
     }
 
@@ -499,7 +533,7 @@ public class MigrationManager {
      * @param migration Migration object
      * @param tag Tag to migrate
      */
-    private void pushTag(String gitWorkingDir, Migration migration, String tag) {
+    private boolean pushTag(String gitWorkingDir, Migration migration, String tag) {
         MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, tag);
         try {
             String tagName = tag.replaceFirst(ORIGIN_TAGS, "");
@@ -525,7 +559,9 @@ public class MigrationManager {
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to push branch", gitEx);
             endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            return false;
         }
+        return false;
     }
 
     // History management

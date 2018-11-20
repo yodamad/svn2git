@@ -41,5 +41,8 @@ export class DetailsCardComponent implements OnInit {
         if (status === StatusEnum.IGNORED) {
             return 'cell-ignored';
         }
+        if (status === StatusEnum.DONE_WITH_WARNINGS) {
+            return 'cell-warning';
+        }
     }
 }

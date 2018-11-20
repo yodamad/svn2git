@@ -415,8 +415,8 @@ public class MigrationManager {
      */
     private StatusEnum mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
         MigrationHistory history;
+        String msg = format("git mv %s %s on %s", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
         try {
-            boolean workDone;
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
                 // For root directory, we need to loop for subdirectory
                 List<StatusEnum> results = Files.list(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
@@ -424,7 +424,7 @@ public class MigrationManager {
                     .collect(Collectors.toList());
 
                 if (results.isEmpty()) {
-                    history = startStep(migration, StepEnum.GIT_MV, format("git mv %s %s", mapping.getSvnDirectory(), mapping.getGitDirectory()));
+                    history = startStep(migration, StepEnum.GIT_MV, msg);
                     endStep(history, StatusEnum.IGNORED, null);
                     return StatusEnum.IGNORED;
                 }
@@ -438,8 +438,10 @@ public class MigrationManager {
                 return mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
             }
         } catch (IOException gitEx) {
-            LOG.error("Failed to mv directory", gitEx);
-            return StatusEnum.DONE_WITH_WARNINGS;
+            LOG.debug("Failed to mv directory", gitEx);
+            history = startStep(migration, StepEnum.GIT_MV, msg);
+            endStep(history, StatusEnum.IGNORED, null);
+            return StatusEnum.IGNORED;
         }
     }
 

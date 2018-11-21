@@ -23,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -33,9 +34,12 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.nio.file.Files.walk;
 
 @Service
 public class MigrationManager {
@@ -374,9 +378,20 @@ public class MigrationManager {
         boolean workDone = false;
         List<StatusEnum> results = null;
         if (!CollectionUtils.isEmpty(mappings)) {
-            results = mappings.stream()
-                .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch))
+            // Extract mappings with regex
+            List<Mapping> regexMappings = mappings.stream()
+                .filter(mapping -> !StringUtils.isEmpty(mapping.getRegex()) && !"*".equals(mapping.getRegex()))
                 .collect(Collectors.toList());
+            results = regexMappings.stream()
+                .map(mapping -> mvRegex(gitWorkingDir, migration, mapping, branch))
+                .collect(Collectors.toList());
+
+            // Remove regex mappings
+            mappings.removeAll(regexMappings);
+            results.addAll(
+                mappings.stream()
+                    .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch))
+                    .collect(Collectors.toList()));
             workDone = results.contains(StatusEnum.DONE);
         }
 
@@ -442,6 +457,55 @@ public class MigrationManager {
             history = startStep(migration, StepEnum.GIT_MV, msg);
             endStep(history, StatusEnum.IGNORED, null);
             return StatusEnum.IGNORED;
+        }
+    }
+
+    /**
+     * Apply git mv
+     * @param gitWorkingDir Working directory
+     * @param migration Current migration
+     * @param mapping Mapping to apply
+     * @param branch Current branch
+     */
+    private StatusEnum mvRegex(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
+        String msg = format("git mv %s %s based on regex %s on %s", mapping.getSvnDirectory(), mapping.getGitDirectory(), mapping.getRegex(), branch);
+        MigrationHistory history = startStep(migration, StepEnum.GIT_MV, msg);
+
+        String regex = mapping.getRegex();
+        if (mapping.getRegex().startsWith("*")) { regex = '.' + mapping.getRegex(); }
+
+        Pattern p = Pattern.compile(regex);
+        try {
+            Path fullPath = Paths.get(gitWorkingDir, mapping.getSvnDirectory());
+            long result = walk(fullPath)
+                .map(Path::toString)
+                .filter(s -> !s.equals(fullPath.toString()))
+                .map(s -> s.substring(gitWorkingDir.length()))
+                .map(p::matcher)
+                .filter(Matcher::find)
+                .map(matcher -> matcher.group(0))
+                .mapToInt(el -> {
+                    try {
+                        Path gitPath = Paths.get(gitWorkingDir, mapping.getGitDirectory());
+                        if (!Files.exists(gitPath)) {
+                            Files.createDirectory(gitPath);
+                        }
+                        return execCommand(gitWorkingDir, format("git mv %s %s", el, Paths.get(mapping.getGitDirectory(), el).toString()));
+                    } catch (InterruptedException | IOException e) {
+                        return 1;
+                    }
+                }).sum();
+
+            if (result > 0) {
+                endStep(history, StatusEnum.DONE_WITH_WARNINGS, null);
+                return StatusEnum.DONE_WITH_WARNINGS;
+            } else {
+                endStep(history, StatusEnum.DONE, null);
+                return StatusEnum.DONE;
+            }
+        } catch (IOException ioEx) {
+            endStep(history, StatusEnum.FAILED, ioEx.getMessage());
+            return StatusEnum.DONE_WITH_WARNINGS;
         }
     }
 

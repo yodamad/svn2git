@@ -1,5 +1,5 @@
-<mat-card-content *ngIf="migration != undefined">
-    <table mat-table [(dataSource)]="mappings" class="large-table">
+<mat-card-content *ngIf="migration != undefined && migration.mappings != undefined">
+    <table mat-table [(dataSource)]="migration.mappings" class="large-table">
         <ng-container matColumnDef="svn" style="padding-right: 50px">
             <th mat-header-cell *matHeaderCellDef style="padding-right: 50px">SVN directory</th>
             <td mat-cell *matCellDef="let mapping" style="padding-right: 50px">{{ mapping.svnDirectory }}</td>

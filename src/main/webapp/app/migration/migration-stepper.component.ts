@@ -238,7 +238,7 @@ export class MigrationStepperComponent implements OnInit {
 
         // Mappings
         if (this.selection !== undefined && !this.selection.isEmpty()) {
-            this.mig.mappings = this.selection.selected;
+            this.mig.mappings = this.selection.selected.filter(mapping => mapping.gitDirectory !== undefined);
         }
         return this.mig;
     }

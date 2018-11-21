@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { IMigration } from 'app/shared/model/migration.model';
 import { MigrationService } from 'app/entities/migration';
-import { Mapping } from 'app/shared/model/mapping.model';
 
 /**
  * Migration summary component
@@ -13,16 +12,19 @@ import { Mapping } from 'app/shared/model/mapping.model';
 })
 export class SummaryMappingsComponent implements OnInit {
     @Input() migration: IMigration;
-    mappings: Mapping[] = [];
 
     displayedColumns: string[] = ['svn', 'icon', 'git'];
 
     constructor(private _migrationService: MigrationService) {}
 
     ngOnInit() {
-        if (this.migration !== undefined && this.migration.id !== undefined) {
+        if (
+            this.migration !== undefined &&
+            this.migration.id !== undefined &&
+            (this.migration.mappings === undefined || this.migration.mappings === null || this.migration.mappings.length === 0)
+        ) {
             console.log('Loading mappings for migration ' + this.migration.id);
-            this._migrationService.findMappings(this.migration.id).subscribe(res => (this.mappings = res.body));
+            this._migrationService.findMappings(this.migration.id).subscribe(res => (this.migration.mappings = res.body));
         }
     }
 }

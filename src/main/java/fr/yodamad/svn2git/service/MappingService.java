@@ -70,4 +70,16 @@ public class MappingService {
         log.debug("Request to delete Mapping : {}", id);
         mappingRepository.deleteById(id);
     }
+
+
+    /**
+     * Get all the migrationMappings for a given migration.
+     *
+     * @return the list of entities
+     */
+    @Transactional(readOnly = true)
+    public List<Mapping> findAllForMigration(Long migrationId) {
+        log.debug("Request to get all Mappings for migration {}", migrationId);
+        return mappingRepository.findAllByMigration(migrationId);
+    }
 }

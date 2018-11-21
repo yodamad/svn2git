@@ -3,12 +3,24 @@
         <div *ngIf="migration">
             <h2><span jhiTranslate="svn2GitApp.migration.detail.title">Migration</span> {{migration.id}}. {{migration.svnProject | uppercase }}</h2>
             <hr>
-            <mat-card class="summary-card">
-                <mat-card-header class="card-header">
-                    <mat-card-title style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-title>
-                </mat-card-header>
-                <jhi-summary-card [(migration)]="migration"></jhi-summary-card>
-            </mat-card>
+            <mat-grid-list cols="2" rowHeight="420px">
+                <mat-grid-tile>
+                    <mat-card class="summary-card">
+                        <mat-card-header class="card-header">
+                            <mat-card-title style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-title>
+                        </mat-card-header>
+                        <jhi-summary-card [(migration)]="migration"></jhi-summary-card>
+                    </mat-card>
+                </mat-grid-tile>
+                <mat-grid-tile>
+                    <mat-card class="summary-card">
+                        <mat-card-header class="card-header">
+                            <mat-card-title style="margin: 0" jhiTranslate="migration-process.mappings">Migration mappings</mat-card-title>
+                        </mat-card-header>
+                        <jhi-summary-mappings [(migration)]="migration"></jhi-summary-mappings>
+                    </mat-card>
+                </mat-grid-tile>
+            </mat-grid-list>
             <jhi-details-card [(migration)]="migration"></jhi-details-card>
         </div>
     </div>

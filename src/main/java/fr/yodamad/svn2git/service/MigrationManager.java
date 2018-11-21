@@ -54,6 +54,8 @@ public class MigrationManager {
     private static final String GIT_PUSH = "git push";
     /** Stars to hide sensitive data. */
     private static final String STARS = "******";
+    /** Execution error. */
+    private static final int ERROR_CODE = 128;
 
     // Configuration
     @Value("${gitlab.url}") String gitlabUrl;
@@ -486,13 +488,19 @@ public class MigrationManager {
                 .map(matcher -> matcher.group(0))
                 .mapToInt(el -> {
                     try {
-                        Path gitPath = Paths.get(gitWorkingDir, mapping.getGitDirectory());
+                        Path gitPath;
+                        if (new File(el).getParentFile() == null) {
+                            gitPath = Paths.get(gitWorkingDir, mapping.getGitDirectory());
+                        } else {
+                            gitPath = Paths.get(gitWorkingDir, mapping.getGitDirectory(), new File(el).getParent());
+                        }
+
                         if (!Files.exists(gitPath)) {
-                            Files.createDirectory(gitPath);
+                            Files.createDirectories(gitPath);
                         }
                         return execCommand(gitWorkingDir, format("git mv %s %s", el, Paths.get(mapping.getGitDirectory(), el).toString()));
                     } catch (InterruptedException | IOException e) {
-                        return 1;
+                        return ERROR_CODE;
                     }
                 }).sum();
 
@@ -525,7 +533,7 @@ public class MigrationManager {
             // git mv
             int exitCode = execCommand(gitWorkingDir, gitCommand);
 
-            if (128 == exitCode) {
+            if (ERROR_CODE == exitCode) {
                 endStep(history, StatusEnum.IGNORED, null);
                 return StatusEnum.IGNORED;
             } else {

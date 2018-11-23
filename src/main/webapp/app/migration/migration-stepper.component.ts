@@ -23,6 +23,7 @@ export class MigrationStepperComponent implements OnInit {
     cleaningFormGroup: FormGroup;
     mappingFormGroup: FormGroup;
     displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping'];
+    svnDisplayedColumns: string[] = ['svnDir', 'selectSvn'];
 
     // Controls
     gitlabUserKO = true;
@@ -34,13 +35,15 @@ export class MigrationStepperComponent implements OnInit {
 
     // Input for migrations
     svnDirectories: string[] = null;
-    selectedSvnDirectories: string[];
     selectedExtensions: string[];
     migrationStarted = false;
     fileUnit = 'M';
     mig: IMigration;
     svnUrl: string;
     gitlabUrl: string;
+
+    /// Svn selections
+    svnSelection: SelectionModel<string>;
 
     /// Mapping selections
     initialSelection = [];
@@ -84,6 +87,7 @@ export class MigrationStepperComponent implements OnInit {
             svnUser: [''],
             svnPwd: ['']
         });
+        this.svnSelection = new SelectionModel<string>(this.allowMultiSelect, []);
         this.cleaningFormGroup = this._formBuilder.group({
             fileMaxSize: ['', Validators.min(1)]
         });
@@ -143,16 +147,6 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     /**
-     * Get selected projects to migrate
-     * @param values
-     */
-    onSelectedOptionsChange(values: string[]) {
-        this.selectedSvnDirectories = values;
-        this.svnRepoKO = this.selectedSvnDirectories.length === 0;
-        this.useSvnRootFolder = values.length === 0;
-    }
-
-    /**
      * Get selected extensions to clean
      * @param values
      */
@@ -186,7 +180,7 @@ export class MigrationStepperComponent implements OnInit {
             const mig = this.initMigration('');
             this._migrationService.create(mig).subscribe(res => console.log(res));
         } else {
-            this.selectedSvnDirectories
+            this.svnSelection.selected
                 .map(dir => this.initMigration(dir))
                 .forEach(mig => this._migrationService.create(mig).subscribe(res => console.log(res)));
         }
@@ -201,7 +195,7 @@ export class MigrationStepperComponent implements OnInit {
             if (this.useSvnRootFolder) {
                 project = this.svnFormGroup.controls['svnRepository'].value;
             } else {
-                project = this.selectedSvnDirectories.toString();
+                project = this.svnSelection.selected.toString();
             }
         }
 
@@ -284,7 +278,48 @@ export class MigrationStepperComponent implements OnInit {
         // Force recheck
         this.svnRepoKO = true;
         this.svnDirectories = [];
-        this.selectedSvnDirectories = [];
+        this.svnSelection.clear();
+    }
+
+    /** Whether the number of selected elements matches the total number of rows. */
+    isAllSvnSelected() {
+        const numSelected = this.svnSelection.selected.length;
+        const numRows = this.svnDirectories.length;
+        return numSelected === numRows;
+    }
+
+    /** Selects all rows if they are not all selected; otherwise clear selection. */
+    masterSvnToggle() {
+        if (this.isAllSvnSelected()) {
+            this.svnSelection.clear();
+            this.svnRepoKO = true;
+        } else {
+            this.svnDirectories.forEach(row => this.svnSelection.select(row));
+            this.useSvnRootFolder = false;
+            this.svnRepoKO = false;
+        }
+    }
+
+    /**
+     * Toggle svn directory selection change
+     * @param event
+     * @param directory
+     */
+    svnToggle(event: any, directory: string) {
+        if (event) {
+            this.useSvnRootFolder = false;
+            return this.svnSelection.toggle(directory);
+        }
+        return null;
+    }
+
+    /**
+     * When check/uncheck svn directory
+     * @param directory
+     */
+    svnChecked(directory: string) {
+        this.svnRepoKO = this.svnSelection.selected.length === 0;
+        return this.svnSelection.isSelected(directory);
     }
 
     /** Add a custom mapping. */
@@ -307,8 +342,10 @@ export class MigrationStepperComponent implements OnInit {
         });
     }
 
+    /** Root svn directory use selection change. */
     onSelectionChange(event: MatCheckboxChange) {
         this.useSvnRootFolder = event.checked;
-        this.selectedSvnDirectories = [];
+        this.svnSelection.clear();
+        this.svnRepoKO = !event.checked;
     }
 }

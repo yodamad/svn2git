@@ -63,8 +63,8 @@
                 <mat-form-field>
                     <input matInput placeholder="SVN repository name" formControlName="svnRepository" required>
                 </mat-form-field>
-                <button type="button" mat-raised-button (click)="checkSvnRepository()" [ngClass]="cssClass(svnRepoKO)" [disabled]="checkingSvnRepo
-">
+                <button type="button" mat-raised-button (click)="checkSvnRepository()"
+                        [ngClass]="cssClass(svnRepoKO)" [disabled]="checkingSvnRepo">
                     <span jhiTranslate="migration-process.check" *ngIf="!checkingSvnRepo">Check</span>
                     <span jhiTranslate="migration-process.checking" *ngIf="checkingSvnRepo">Checking</span>
                 </button>
@@ -74,11 +74,29 @@
                     <li>
                         <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
                         <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
-                        <mat-selection-list #dirs [ngModel]="selectedSvnDirectories" (ngModelChange)="onSelectedOptionsChange($event)" [ngModelOptions]="{standalone: true}">
-                            <mat-list-option *ngFor="let directory of svnDirectories" [value]="directory">
-                                {{directory}}
-                            </mat-list-option>
-                        </mat-selection-list>
+                        <table mat-table [(dataSource)]="svnDirectories" class="large-table">
+                            <ng-container matColumnDef="svnDir">
+                                <th mat-header-cell *matHeaderCellDef>Directory</th>
+                                <td mat-cell *matCellDef="let directory">{{ directory }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="selectSvn">
+                                <th mat-header-cell *matHeaderCellDef>
+                                    <mat-checkbox (change)="$event ? masterSvnToggle() : null"
+                                                  [checked]="svnSelection.hasValue() && isAllSvnSelected()"
+                                                  [indeterminate]="svnSelection.hasValue() && !isAllSvnSelected()">
+                                    </mat-checkbox>
+                                </th>
+                                <td mat-cell *matCellDef="let directory">
+                                    <mat-checkbox (click)="$event.stopPropagation()"
+                                                  (change)="svnToggle($event, directory)"
+                                                  [checked]="svnChecked(directory)">
+                                    </mat-checkbox>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="svnDisplayedColumns"></tr>
+                            <tr mat-row *matRowDef="let directory; columns: svnDisplayedColumns;"></tr>
+                        </table>
                     </li>
                     <li>
                         <span class="fa-li"><fa-icon [icon]="'check'"></fa-icon></span>
@@ -180,17 +198,29 @@
     <!-- Summary step -->
     <mat-step>
         <ng-template matStepLabel><span jhiTranslate="migration-process.done">Done</span></ng-template>
-        <mat-card class="summary-card">
-            <mat-card-header class="card-header">
-                <mat-card-title class="my-header">{{svnFormGroup.controls['svnRepository'].value | uppercase}}</mat-card-title>
-                <mat-card-subtitle style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-subtitle>
-            </mat-card-header>
-            <jhi-summary-card [migration]="mig"></jhi-summary-card>
-            <mat-card-actions class="center-block">
-                <button mat-stroked-button (click)="go()" class="ok" *ngIf="!migrationStarted"><i class="material-icons">power_settings_new</i> <span jhiTranslate="migration-process.migration.start">Start migration</span></button>
-                <button mat-stroked-button *ngIf="migrationStarted" disabled><i class="material-icons">check</i> <span jhiTranslate="migration-process.migration.planned">Migration planned</span></button>
-            </mat-card-actions>
-        </mat-card>
+        <mat-grid-list cols="2" rowHeight="500px">
+            <mat-grid-tile>
+                <mat-card class="summary-card">
+                    <mat-card-header class="card-header">
+                        <mat-card-title class="my-header">{{svnFormGroup.controls['svnRepository'].value | uppercase}}</mat-card-title>
+                        <mat-card-subtitle style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-subtitle>
+                    </mat-card-header>
+                    <jhi-summary-card [migration]="mig"></jhi-summary-card>
+                    <mat-card-actions class="center-block">
+                        <button mat-stroked-button (click)="go()" class="ok" *ngIf="!migrationStarted"><i class="material-icons">power_settings_new</i> <span jhiTranslate="migration-process.migration.start">Start migration</span></button>
+                        <button mat-stroked-button *ngIf="migrationStarted" disabled><i class="material-icons">check</i> <span jhiTranslate="migration-process.migration.planned">Migration planned</span></button>
+                    </mat-card-actions>
+                </mat-card>
+            </mat-grid-tile>
+            <mat-grid-tile>
+                <mat-card class="summary-card">
+                    <mat-card-header class="card-header">
+                        <mat-card-title style="margin: 0" jhiTranslate="migration-process.mappings">Migration mappings</mat-card-title>
+                    </mat-card-header>
+                    <jhi-summary-mappings [migration]="mig"></jhi-summary-mappings>
+                </mat-card>
+            </mat-grid-tile>
+        </mat-grid-list>
         <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
         <button mat-stroked-button routerLink="/"><i class="material-icons">home</i> <span jhiTranslate="migration-process.home">Home</span></button>
     </mat-step>

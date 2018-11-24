@@ -9,10 +9,12 @@ import { SERVER_API_URL } from 'app/app.constants';
 import { createRequestOption } from 'app/shared';
 import { IMigration } from 'app/shared/model/migration.model';
 import { IMigrationHistory } from 'app/shared/model/migration-history.model';
+import { IMapping } from 'app/shared/model/mapping.model';
 
 type EntityResponseType = HttpResponse<IMigration>;
 type EntityArrayResponseType = HttpResponse<IMigration[]>;
 type HistoryArrayResponseType = HttpResponse<IMigrationHistory[]>;
+type MappingArrayResponseType = HttpResponse<IMapping[]>;
 
 @Injectable({ providedIn: 'root' })
 export class MigrationService {
@@ -44,6 +46,12 @@ export class MigrationService {
         return this.http
             .get<IMigrationHistory[]>(`${this.resourceUrl}/${id}/histories`, { observe: 'response' })
             .pipe(map((res: HistoryArrayResponseType) => res));
+    }
+
+    findMappings(id: number): Observable<MappingArrayResponseType> {
+        return this.http
+            .get<IMapping[]>(`${this.resourceUrl}/${id}/mappings`, { observe: 'response' })
+            .pipe(map((res: MappingArrayResponseType) => res));
     }
 
     query(req?: any): Observable<EntityArrayResponseType> {

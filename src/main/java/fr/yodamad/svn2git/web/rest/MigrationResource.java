@@ -1,6 +1,7 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
@@ -177,10 +178,10 @@ public class MigrationResource {
     }
 
     /**
-     * GET  /migrations/:id : get the "id" migration.
+     * GET  /migrations/:id/histories : get the histories linked to "id" migration.
      *
      * @param id the id of the migration to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the migration, or with status 404 (Not Found)
+     * @return the ResponseEntity with status 200 (OK) and with body the histories array, or with status 404 (Not Found)
      */
     @GetMapping("/migrations/{id}/histories")
     @Timed
@@ -188,6 +189,20 @@ public class MigrationResource {
         log.debug("REST request to get Migration : {}", id);
         List<MigrationHistory> histories = migrationHistoryService.findAllForMigration(id);
         return new ResponseEntity<>(histories, null, HttpStatus.OK);
+    }
+
+    /**
+     * GET  /migrations/:id/mappings : get the mappings linked to "id" migration.
+     *
+     * @param id the id of the migration to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the mappings array, or with status 404 (Not Found)
+     */
+    @GetMapping("/migrations/{id}/mappings")
+    @Timed
+    public ResponseEntity<List<Mapping>> getMigrationMappings(@PathVariable Long id) {
+        log.debug("REST request to get Migration : {}", id);
+        List<Mapping> mappings = mappingService.findAllForMigration(id);
+        return new ResponseEntity<>(mappings, null, HttpStatus.OK);
     }
 
     /**

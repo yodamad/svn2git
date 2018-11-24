@@ -1,55 +1,38 @@
 package fr.yodamad.svn2git.service;
 
-import com.madgag.git.bfg.cli.Main;
-import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
+import fr.yodamad.svn2git.domain.WorkUnit;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
-import fr.yodamad.svn2git.repository.MappingRepository;
-import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
-import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Group;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.File;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
+import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
+import static fr.yodamad.svn2git.service.util.MigrationConstants.MASTER;
+import static fr.yodamad.svn2git.service.util.Shell.execCommand;
+import static fr.yodamad.svn2git.service.util.Shell.gitWorkingDir;
+import static fr.yodamad.svn2git.service.util.Shell.workingDir;
 import static java.lang.String.format;
 
+/**
+ * Migration manager processing all steps
+ */
 @Service
 public class MigrationManager {
-
-    /** Default ref origin for tags. */
-    private static final String ORIGIN_TAGS = "origin/tags/";
-    /** Temp directory. */
-    private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
-    /** Default branch. */
-    private static final String MASTER = "master";
-    /** Git push command. */
-    private static final String GIT_PUSH = "git push";
-    /** Stars to hide sensitive data. */
-    private static final String STARS = "******";
 
     // Configuration
     @Value("${gitlab.url}") String gitlabUrl;
@@ -59,21 +42,23 @@ public class MigrationManager {
 
     /** Gitlab API. */
     private GitlabAdmin gitlab;
+    // Managers
+    private final HistoryManager historyMgr;
+    private final GitManager gitManager;
+    private final Cleaner cleaner;
     // Repositories
     private final MigrationRepository migrationRepository;
-    private final MigrationHistoryRepository migrationHistoryRepository;
-    private final MappingRepository mappingRepository;
 
-    private static final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
-
-    public MigrationManager(final GitlabAdmin gitlabAdmin,
-                            final MigrationRepository migrationRepository,
-                            final MigrationHistoryRepository migrationHistoryRepository,
-                            final MappingRepository mappingRepository) {
+    public MigrationManager(final Cleaner cleaner,
+                            final GitlabAdmin gitlabAdmin,
+                            final GitManager gitManager,
+                            final HistoryManager historyManager,
+                            final MigrationRepository migrationRepository) {
+        this.cleaner = cleaner;
         this.gitlab = gitlabAdmin;
+        this.gitManager = gitManager;
+        this.historyMgr = historyManager;
         this.migrationRepository = migrationRepository;
-        this.migrationHistoryRepository = migrationHistoryRepository;
-        this.mappingRepository = mappingRepository;
     }
 
     /**
@@ -82,11 +67,12 @@ public class MigrationManager {
      */
     @Async
     public void startMigration(final long migrationId) {
+        String gitCommand;
         Migration migration = migrationRepository.findById(migrationId).get();
         MigrationHistory history = null;
-        String rootWorkingDir = workingDir(migration);
-        String gitWorkingDir = gitWorkingDir(migration);
-        AtomicBoolean withWarnings = new AtomicBoolean(false);
+
+        String rootDir = workingDir(migration);
+        WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
 
         try {
 
@@ -95,116 +81,25 @@ public class MigrationManager {
             migrationRepository.save(migration);
 
             // 1. Create project on gitlab : OK
-            history = startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
+            createGitlabProject(migration);
 
-            GitlabAdmin gitlabAdmin = gitlab;
-            if (!gitlabUrl.equalsIgnoreCase(migration.getGitlabUrl())) {
-                gitlabAdmin = new GitlabAdmin(migration.getGitlabUrl(), migration.getGitlabToken());
-            }
-            Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
-
-            // If no svn project specified, use svn group instead
-            if (StringUtils.isEmpty(migration.getSvnProject())) {
-                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
-            } else {
-                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnProject());
-            }
-
-            endStep(history, StatusEnum.DONE, null);
-
-            // 2. Checkout SVN repository : OK
-            String svn = StringUtils.isEmpty(migration.getSvnProject()) ? migration.getSvnGroup(): migration.getSvnProject();
-            String initCommand = format("git clone %s/%s/%s.git %s",
-                migration.getGitlabUrl(),
-                migration.getGitlabGroup(),
-                svn,
-                migration.getGitlabGroup());
-
-            history = startStep(migration, StepEnum.GIT_CLONE, initCommand);
-
-            String mkdir = "mkdir " + gitWorkingDir;
-            execCommand(System.getProperty(JAVA_IO_TMPDIR), mkdir);
-
-            // 2.1. Clone as mirror empty repository, required for BFG
-            execCommand(rootWorkingDir, initCommand);
-
-            endStep(history, StatusEnum.DONE, null);
+            // 2. Checkout empty repository : OK
+            String svn = gitManager.gitClone(workUnit);
 
             // 2.2. SVN checkout
-            String cloneCommand;
-            String safeCommand;
-            if (StringUtils.isEmpty(migration.getSvnUser())) {
-                cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
-                    migration.getSvnProject(),
-                    migration.getSvnProject(),
-                    migration.getSvnProject(),
-                    migration.getSvnUrl(),
-                    migration.getSvnGroup());
-                safeCommand = cloneCommand;
-            } else {
-                String escapedPassword = StringEscapeUtils.escapeJava(migration.getSvnPassword());
-                cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
-                    escapedPassword,
-                    migration.getSvnUser(),
-                    migration.getSvnProject(),
-                    migration.getSvnProject(),
-                    migration.getSvnProject(),
-                    migration.getSvnUrl(),
-                    migration.getSvnGroup());
-                safeCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
-                    STARS,
-                    migration.getSvnUser(),
-                    migration.getSvnProject(),
-                    migration.getSvnProject(),
-                    migration.getSvnProject(),
-                    migration.getSvnUrl(),
-                    migration.getSvnGroup());
-            }
-
-            history = startStep(migration, StepEnum.SVN_CHECKOUT, safeCommand);
-            execCommand(rootWorkingDir, cloneCommand, safeCommand);
-
-            endStep(history, StatusEnum.DONE, null);
+            gitManager.gitSvnClone(workUnit);
 
             // 3. Clean files
-            boolean clean = false;
-            String gitCommand;
+            boolean cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit);
+            boolean cleanLargeFiles = cleaner.cleanLargeFiles(workUnit);
 
-            if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions())) {
-                // 3.1 Clean files based on their extensions
-                Arrays.stream(migration.getForbiddenFileExtensions().split(","))
-                    .forEach(s -> {
-                        MigrationHistory innerHistory = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files with extension : %s", s));
-                        try {
-                            Main.main(new String[]{"--delete-files", s, "--no-blob-protection", gitWorkingDir});
-                            endStep(innerHistory, StatusEnum.DONE, null);
-                        } catch (Exception exc) {
-                            endStep(innerHistory, StatusEnum.FAILED, exc.getMessage());
-                            withWarnings.set(true);
-                        }
-                    });
-                clean = true;
-            }
-
-            if (!StringUtils.isEmpty(migration.getMaxFileSize()) && Character.isDigit(migration.getMaxFileSize().charAt(0))) {
-                // 3.2 Clean files based on size
-                history = startStep(migration, StepEnum.GIT_CLEANING, format("Remove files bigger than %s", migration.getMaxFileSize()));
-
-                gitCommand = "git gc";
-                execCommand(gitWorkingDir, gitCommand);
-
-                Main.main(new String[]{"--strip-blobs-bigger-than", migration.getMaxFileSize(), "--no-blob-protection", gitWorkingDir});
-                clean = true;
-                endStep(history, StatusEnum.DONE, null);
-            }
-
-            if (clean) {
+            if (cleanExtensions || cleanLargeFiles) {
                 gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
-                execCommand(gitWorkingDir, gitCommand);
+                execCommand(workUnit.directory, gitCommand);
             }
 
             // 4. Git push master based on SVN trunk
-            history = startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
+            history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
             // if using root, additional step
             if (StringUtils.isEmpty(migration.getSvnProject())) {
@@ -213,67 +108,43 @@ public class MigrationManager {
                     migration.getGitlabUrl(),
                     migration.getGitlabGroup(),
                     svn);
-                execCommand(gitWorkingDir, remoteCommand);
+                execCommand(workUnit.directory, remoteCommand);
 
                 // Push with upstream
                 gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
-                execCommand(gitWorkingDir, gitCommand);
+                execCommand(workUnit.directory, gitCommand);
             } else {
-                execCommand(gitWorkingDir, GIT_PUSH);
+                execCommand(workUnit.directory, GIT_PUSH);
             }
 
-            endStep(history, StatusEnum.DONE, null);
+            historyMgr.endStep(history, StatusEnum.DONE, null);
 
             // Clean pending file(s) removed by BFG
             gitCommand = "git reset --hard origin/master";
-            execCommand(gitWorkingDir, gitCommand);
+            execCommand(workUnit.directory, gitCommand);
 
             // 5. Apply mappings if some
-            boolean warning = applyMapping(gitWorkingDir, migration, MASTER);
-            withWarnings.set(withWarnings.get() || warning);
+            boolean warning = gitManager.applyMapping(workUnit, MASTER);
+            workUnit.warnings.set(workUnit.warnings.get() || warning);
 
             // 6. List branches & tags
-            List<String> remotes = svnList(gitWorkingDir);
+            List<String> remotes = GitManager.branchList(workUnit.directory);
             // Extract branches
-            List<String> gitBranches = remotes.stream()
-                .map(String::trim)
-                // Remove tags
-                .filter(b -> !b.startsWith(ORIGIN_TAGS))
-                // Remove master/trunk
-                .filter(b -> !b.contains(MASTER))
-                .filter(b -> !b.contains("trunk"))
-                .collect(Collectors.toList());
+            gitManager.manageBranches(workUnit, remotes);
             // Extract tags
-            List<String> gitTags = remotes.stream()
-                .map(String::trim)
-                // Only tags
-                .filter(b -> b.startsWith(ORIGIN_TAGS))
-                // Remove temp tags
-                .filter(b -> !b.contains("@"))
-                .collect(Collectors.toList());
-
-            gitBranches.forEach(b -> {
-                    final boolean warn = pushBranch(gitWorkingDir, migration, b);
-                    withWarnings.set(withWarnings.get() || warn);
-                }
-            );
-            gitTags.forEach(t -> {
-                    final boolean warn = pushTag(gitWorkingDir, migration, t);
-                    withWarnings.set(withWarnings.get() || warn);
-                }
-            );
+            gitManager.manageTags(workUnit, remotes);
 
             // 7. Clean work directory
-            history = startStep(migration, StepEnum.CLEANING, format("Remove %s", workingDir(migration)));
+            history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));
             try {
-                FileUtils.deleteDirectory(new File(workingDir(migration)));
-                endStep(history, StatusEnum.DONE, null);
+                FileUtils.deleteDirectory(new File(workUnit.root));
+                historyMgr.endStep(history, StatusEnum.DONE, null);
             } catch (Exception exc) {
-                endStep(history, StatusEnum.FAILED, exc.getMessage());
-                withWarnings.set(true);
+                historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+                workUnit.warnings.set(true);
             }
 
-            if (withWarnings.get()) {
+            if (workUnit.warnings.get()) {
                 migration.setStatus(StatusEnum.DONE_WITH_WARNINGS);
             } else{
                 migration.setStatus(StatusEnum.DONE);
@@ -282,7 +153,7 @@ public class MigrationManager {
         } catch (Exception exc) {
             if (history != null) {
                 LOG.error("Failed step : " + history.getStep(), exc);
-                endStep(history, StatusEnum.FAILED, exc.getMessage());
+                historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
             }
 
             migration.setStatus(StatusEnum.FAILED);
@@ -291,330 +162,26 @@ public class MigrationManager {
     }
 
     /**
-     * Get working directory
-     * @param mig
-     * @return
-     */
-    private static String workingDir(Migration mig) {
-        String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        if (isWindows) {
-            return System.getProperty(JAVA_IO_TMPDIR) + "\\" + today + "_" + mig.getId();
-        }
-        return System.getProperty(JAVA_IO_TMPDIR) + "/" + today + "_" + mig.getId();
-    }
-
-    /**
-     * Get git working directory
-     * @param migration Migration to process
-     * @return
-     */
-    private static String gitWorkingDir(Migration migration) {
-        if (isWindows) {
-            return workingDir(migration) + "\\" + migration.getSvnGroup();
-        }
-        return workingDir(migration) + "/" + migration.getSvnGroup();
-    }
-
-    /**
-     * Execute a commmand through process
-     * @param directory Directory in which running command
-     * @param command command to execute
-     * @throws InterruptedException
-     * @throws IOException
-     */
-    private static int execCommand(String directory, String command) throws InterruptedException, IOException {
-        return execCommand(directory, command, command);
-    }
-
-    /**
-     * Execute a commmand through process without an alternative command to print in history
-     * @param directory Directory in which running command
-     * @param command command to execute
-     * @param securedCommandToPrint command to print in history without password/token/...
-     * @throws InterruptedException
-     * @throws IOException
-     */
-    private static int execCommand(String directory, String command, String securedCommandToPrint) throws InterruptedException, IOException {
-        ProcessBuilder builder = new ProcessBuilder();
-        if (isWindows) {
-            builder.command("cmd.exe", "/c", command);
-        } else {
-            builder.command("sh", "-c", command);
-        }
-
-        builder.directory(new File(directory));
-
-        LOG.debug(format("Exec command : %s", securedCommandToPrint));
-        LOG.debug(format("in %s", directory));
-
-        Process process = builder.start();
-        StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), LOG::debug);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
-
-        StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), LOG::debug);
-        Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
-
-        int exitCode = process.waitFor();
-        LOG.debug(format("Exit : %d", exitCode));
-
-        assert exitCode == 0;
-
-        return exitCode;
-    }
-
-    // Tasks
-    /**
-     * Apply mappings configured
-     * @param gitWorkingDir Current working directory
-     * @param migration Migration in progress
-     * @param branch Branch to process
-     */
-    private boolean applyMapping(String gitWorkingDir, Migration migration, String branch) {
-        List<Mapping> mappings = mappingRepository.findAllByMigration(migration.getId());
-        boolean workDone = false;
-        List<StatusEnum> results = null;
-        if (!CollectionUtils.isEmpty(mappings)) {
-            results = mappings.stream()
-                .map(mapping -> mvDirectory(gitWorkingDir, migration, mapping, branch))
-                .collect(Collectors.toList());
-            workDone = results.contains(StatusEnum.DONE);
-        }
-
-        if (workDone) {
-            MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, format("Push moved elements on %s", branch));
-            try {
-                // git commit
-                String gitCommand = "git add .";
-                execCommand(gitWorkingDir, gitCommand);
-                gitCommand = format("git commit -m \"Apply mappings on %s\"", branch);
-                execCommand(gitWorkingDir, gitCommand);
-                // git push
-                execCommand(gitWorkingDir, GIT_PUSH);
-
-                endStep(history, StatusEnum.DONE, null);
-            } catch (IOException | InterruptedException iEx) {
-                endStep(history, StatusEnum.FAILED, iEx.getMessage());
-                return false;
-            }
-        }
-
-        // No mappings, OK
-        if (results == null) {
-            return true;
-        }
-        // Some errors, WARNING to be set
-        return results.contains(StatusEnum.DONE_WITH_WARNINGS);
-    }
-
-    /**
-     * Apply git mv
-     * @param gitWorkingDir Working directory
-     * @param migration Current migration
-     * @param mapping Mapping to apply
-     * @param branch Current branch
-     */
-    private StatusEnum mvDirectory(String gitWorkingDir, Migration migration, Mapping mapping, String branch) {
-        MigrationHistory history;
-        String msg = format("git mv %s %s on %s", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
-        try {
-            if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
-                // For root directory, we need to loop for subdirectory
-                List<StatusEnum> results = Files.list(Paths.get(gitWorkingDir, mapping.getSvnDirectory()))
-                    .map(d -> mv(gitWorkingDir, migration, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString(), branch))
-                    .collect(Collectors.toList());
-
-                if (results.isEmpty()) {
-                    history = startStep(migration, StepEnum.GIT_MV, msg);
-                    endStep(history, StatusEnum.IGNORED, null);
-                    return StatusEnum.IGNORED;
-                }
-
-                if (results.contains(StatusEnum.DONE_WITH_WARNINGS)) {
-                    return StatusEnum.DONE_WITH_WARNINGS;
-                }
-                return StatusEnum.DONE;
-
-            } else {
-                return mv(gitWorkingDir, migration, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
-            }
-        } catch (IOException gitEx) {
-            LOG.debug("Failed to mv directory", gitEx);
-            history = startStep(migration, StepEnum.GIT_MV, msg);
-            endStep(history, StatusEnum.IGNORED, null);
-            return StatusEnum.IGNORED;
-        }
-    }
-
-    /**
-     * Apply git mv
-     * @param gitWorkingDir Current working directory
-     * @param migration Migration in progress
-     * @param svnDir Origin SVN element
-     * @param gitDir Target Git element
-     * @param branch Current branch
-     */
-    private StatusEnum mv(String gitWorkingDir, Migration migration, String svnDir, String gitDir, String branch) {
-        MigrationHistory history = null;
-        try {
-            String gitCommand = format("git mv %s %s on %s", svnDir, gitDir, branch);
-            history = startStep(migration, StepEnum.GIT_MV, gitCommand);
-            // git mv
-            int exitCode = execCommand(gitWorkingDir, gitCommand);
-
-            if (128 == exitCode) {
-                endStep(history, StatusEnum.IGNORED, null);
-                return StatusEnum.IGNORED;
-            } else {
-                endStep(history, StatusEnum.DONE, null);
-                return StatusEnum.DONE;
-            }
-        } catch (IOException | InterruptedException gitEx) {
-            LOG.error("Failed to mv directory", gitEx);
-            endStep(history, StatusEnum.FAILED, gitEx.getMessage());
-            return StatusEnum.DONE_WITH_WARNINGS;
-        }
-    }
-
-    /**
-     * List SVN branches & tags cloned
-     * @param directory working directory
-     * @return
-     * @throws InterruptedException
-     * @throws IOException
-     */
-    private List<String> svnList(String directory) throws InterruptedException, IOException {
-        String command = "git branch -r";
-        ProcessBuilder builder = new ProcessBuilder();
-        if (isWindows) {
-            builder.command("cmd.exe", "/c", command);
-        } else {
-            builder.command("sh", "-c", command);
-        }
-        builder.directory(new File(directory));
-
-        Process p = builder.start();
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-        List<String> remotes = new ArrayList<>();
-        reader.lines().iterator().forEachRemaining(remotes::add);
-
-        p.waitFor();
-        p.destroy();
-
-        return remotes;
-    }
-
-    /**
-     * Push a branch
-     * @param gitWorkingDir Working directory
-     * @param migration Migration object
-     * @param branch Branch to migrate
-     */
-    private boolean pushBranch(String gitWorkingDir, Migration migration, String branch) throws RuntimeException {
-        String branchName = branch.replaceFirst("refs/remotes/origin/", "");
-        branchName = branchName.replaceFirst("origin/", "");
-        LOG.debug(format("Branch %s", branchName));
-
-        MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, branchName);
-        try {
-            String gitCommand = format("git checkout -b %s %s", branchName, branch);
-            execCommand(gitWorkingDir, gitCommand);
-            execCommand(gitWorkingDir, GIT_PUSH);
-
-            endStep(history, StatusEnum.DONE, null);
-
-            return applyMapping(gitWorkingDir, migration, branch);
-        } catch (IOException | InterruptedException iEx) {
-            LOG.error("Failed to push branch", iEx);
-            endStep(history, StatusEnum.FAILED, iEx.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Push a tag
-     * @param gitWorkingDir Current working directory
-     * @param migration Migration object
-     * @param tag Tag to migrate
-     */
-    private boolean pushTag(String gitWorkingDir, Migration migration, String tag) {
-        MigrationHistory history = startStep(migration, StepEnum.GIT_PUSH, tag);
-        try {
-            String tagName = tag.replaceFirst(ORIGIN_TAGS, "");
-            LOG.debug(format("Tag %s", tagName));
-
-            String gitCommand = format("git checkout -b tmp_tag %s", tag);
-            execCommand(gitWorkingDir, gitCommand);
-
-            gitCommand = "git checkout master";
-            execCommand(gitWorkingDir, gitCommand);
-
-            gitCommand = format("git tag %s tmp_tag", tagName);
-
-            execCommand(gitWorkingDir, gitCommand);
-
-            gitCommand = format("git push -u origin %s", tagName);
-            execCommand(gitWorkingDir, gitCommand);
-
-            gitCommand = "git branch -D tmp_tag";
-            execCommand(gitWorkingDir, gitCommand);
-
-            endStep(history, StatusEnum.DONE, null);
-        } catch (IOException | InterruptedException gitEx) {
-            LOG.error("Failed to push branch", gitEx);
-            endStep(history, StatusEnum.FAILED, gitEx.getMessage());
-            return false;
-        }
-        return false;
-    }
-
-    // History management
-    /**
-     * Create a new history for migration
+     * Create project in GitLab
      * @param migration
-     * @param step
-     * @param data
-     * @return
+     * @throws GitLabApiException
      */
-    private MigrationHistory startStep(Migration migration, StepEnum step, String data) {
-        MigrationHistory history = new MigrationHistory()
-            .step(step)
-            .migration(migration)
-            .date(Instant.now())
-            .status(StatusEnum.RUNNING);
+    private void createGitlabProject(Migration migration) throws GitLabApiException {
+        MigrationHistory history = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
-        if (data != null) {
-            history.data(data);
+        GitlabAdmin gitlabAdmin = gitlab;
+        if (!gitlabUrl.equalsIgnoreCase(migration.getGitlabUrl())) {
+            gitlabAdmin = new GitlabAdmin(migration.getGitlabUrl(), migration.getGitlabToken());
+        }
+        Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
+
+        // If no svn project specified, use svn group instead
+        if (StringUtils.isEmpty(migration.getSvnProject())) {
+            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
+        } else {
+            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnProject());
         }
 
-        return migrationHistoryRepository.save(history);
-    }
-
-    /**
-     * Update history
-     * @param history
-     */
-    private void endStep(MigrationHistory history, StatusEnum status, String data) {
-        history.setStatus(status);
-        if (data != null) history.setData(data);
-        migrationHistoryRepository.save(history);
-    }
-
-
-    // Utils
-    private static class StreamGobbler implements Runnable {
-        private InputStream inputStream;
-        private Consumer<String> consumer;
-
-        StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
-            this.inputStream = inputStream;
-            this.consumer = consumer;
-        }
-
-        @Override
-        public void run() {
-            new BufferedReader(new InputStreamReader(inputStream)).lines()
-                .forEach(consumer);
-        }
+        historyMgr.endStep(history, StatusEnum.DONE, null);
     }
 }

@@ -337,7 +337,7 @@ export class MigrationStepperComponent implements OnInit {
             currentMappings.forEach(mp => this.mappings.push(mp));
             this.mappings.push(result);
             this.mappings.push(new Mapping());
-            console.log(this.mappings);
+            this.selection.select(result);
             this._changeDetectorRefs.detectChanges();
         });
     }

@@ -17,6 +17,16 @@ import { StaticMapping } from 'app/shared/model/static-mapping.model';
     styleUrls: ['migration-stepper.component.css']
 })
 export class MigrationStepperComponent implements OnInit {
+    // Static data
+    staticExtensions: any[] = [
+        { label: '*.zip', value: '*.zip' },
+        { label: '*.*ar (including ear, jar, war...)', value: '*.*ar' },
+        { label: '*.ear', value: '*.ear' },
+        { label: '*.jar', value: '*.jar' },
+        { label: '*.war', value: '*.war' },
+        { label: '*.tar', value: '*.tar' }
+    ];
+
     // Form groups
     gitlabFormGroup: FormGroup;
     svnFormGroup: FormGroup;
@@ -24,6 +34,7 @@ export class MigrationStepperComponent implements OnInit {
     mappingFormGroup: FormGroup;
     displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping'];
     svnDisplayedColumns: string[] = ['svnDir', 'selectSvn'];
+    extensionDisplayedColumns: string[] = ['extensionPattern', 'selectExtension'];
 
     // Controls
     gitlabUserKO = true;
@@ -35,7 +46,7 @@ export class MigrationStepperComponent implements OnInit {
 
     // Input for migrations
     svnDirectories: string[] = null;
-    selectedExtensions: string[];
+    selectedExtensions: any[] = [];
     migrationStarted = false;
     fileUnit = 'M';
     mig: IMigration;
@@ -50,6 +61,9 @@ export class MigrationStepperComponent implements OnInit {
     allowMultiSelect = true;
     selection: SelectionModel<IMapping>;
     useSvnRootFolder = false;
+
+    // Extension selection
+    extensionSelection: SelectionModel<any>;
 
     // Waiting flag
     checkingGitlabUser = false;
@@ -92,6 +106,8 @@ export class MigrationStepperComponent implements OnInit {
             fileMaxSize: ['', Validators.min(1)]
         });
         this.mappingFormGroup = this._formBuilder.group({});
+
+        this.extensionSelection = new SelectionModel<string>(this.allowMultiSelect, this.initialSelection);
     }
 
     /**
@@ -144,14 +160,6 @@ export class MigrationStepperComponent implements OnInit {
                 this.svnDirectories = res.body;
                 this.checkingSvnRepo = false;
             }, () => (this.checkingSvnRepo = false));
-    }
-
-    /**
-     * Get selected extensions to clean
-     * @param values
-     */
-    onSelectedExtensionsChange(values: string[]) {
-        this.selectedExtensions = values;
     }
 
     /**
@@ -226,8 +234,10 @@ export class MigrationStepperComponent implements OnInit {
         if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
             this.mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
         }
-        if (this.selectedExtensions !== undefined && this.selectedExtensions.length > 0) {
-            this.mig.forbiddenFileExtensions = this.selectedExtensions.toString();
+        if (this.extensionSelection !== undefined && !this.extensionSelection.isEmpty()) {
+            const values: string[] = [];
+            this.extensionSelection.selected.forEach(ext => values.push(ext.value));
+            this.mig.forbiddenFileExtensions = values.toString();
         }
 
         // Mappings
@@ -347,5 +357,33 @@ export class MigrationStepperComponent implements OnInit {
         this.useSvnRootFolder = event.checked;
         this.svnSelection.clear();
         this.svnRepoKO = !event.checked;
+    }
+
+    /** Selects all rows if they are not all selected; otherwise clear selection. */
+    masterExtensionToggle() {
+        if (this.isAllExtensionSelected()) {
+            this.extensionSelection.clear();
+        } else {
+            this.staticExtensions.forEach(row => this.extensionSelection.select(row));
+        }
+    }
+
+    /**
+     * Toggle extension directory selection change
+     * @param event
+     * @param extension
+     */
+    extensionToggle(event: MatCheckboxChange, extension: string) {
+        if (event) {
+            return this.extensionSelection.toggle(extension);
+        }
+        return null;
+    }
+
+    /** Whether the number of selected elements matches the total number of rows. */
+    isAllExtensionSelected() {
+        const numSelected = this.extensionSelection.selected.length;
+        const numRows = this.staticExtensions.length;
+        return numSelected === numRows;
     }
 }

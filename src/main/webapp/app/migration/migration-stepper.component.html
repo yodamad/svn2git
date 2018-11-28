@@ -177,14 +177,29 @@
             <br/>
             <mat-divider></mat-divider>
             <b><span jhiTranslate="migration-process.file.extensions">File extensions to clean</span></b>:
-            <mat-selection-list #extensions [ngModel]="selectedExtensions" (ngModelChange)="onSelectedExtensionsChange($event)" [ngModelOptions]="{standalone: true}">
-                <mat-list-option value="*.zip">*.zip</mat-list-option>
-                <mat-list-option value="*.*ar">*.*ar (ear, jar, war, tar...)</mat-list-option>
-                <mat-list-option value="*.ear"><span>*.ear <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
-                <mat-list-option value="*.jar"><span>*.jar <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
-                <mat-list-option value="*.war"><span>*.war <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
-                <mat-list-option value="*.tar"><span>*.tar <span jhiTranslate="migration-process.only">only</span></span></mat-list-option>
-            </mat-selection-list>
+            <table mat-table [(dataSource)]="staticExtensions" class="large-table">
+                <ng-container matColumnDef="extensionPattern">
+                    <th mat-header-cell *matHeaderCellDef>Pattern</th>
+                    <td mat-cell *matCellDef="let extension">{{ extension.label }}</td>
+                </ng-container>
+                <ng-container matColumnDef="selectExtension">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <mat-checkbox (change)="$event ? masterExtensionToggle() : null"
+                                      [checked]="extensionSelection.hasValue() && isAllExtensionSelected()"
+                                      [indeterminate]="extensionSelection.hasValue() && !isAllExtensionSelected()">
+                        </mat-checkbox>
+                    </th>
+                    <td mat-cell *matCellDef="let extension">
+                        <mat-checkbox (click)="$event.stopPropagation()"
+                                      (change)="extensionToggle($event, extension)"
+                                      [checked]="extensionSelection.isSelected(extension)">
+                        </mat-checkbox>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="extensionDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let extension; columns: extensionDisplayedColumns;"></tr>
+            </table>
 
             <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
             <mat-divider style="margin-bottom: 10px"></mat-divider>

@@ -39,7 +39,7 @@ export class MigrationStepperComponent implements OnInit {
 
     // Tables columns
     displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping'];
-    svnDisplayedColumns: string[] = ['svnDir', 'selectSvn'];
+    svnDisplayedColumns: string[] = ['selectSvn', 'svnDir'];
     extensionDisplayedColumns: string[] = ['extensionPattern', 'selectExtension'];
 
     // Controls

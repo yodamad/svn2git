@@ -80,13 +80,13 @@
                                 <td mat-cell *matCellDef="let directory">{{ directory }}</td>
                             </ng-container>
                             <ng-container matColumnDef="selectSvn">
-                                <th mat-header-cell *matHeaderCellDef>
+                                <th mat-header-cell *matHeaderCellDef style="width: 70px">
                                     <mat-checkbox (change)="$event ? masterSvnToggle() : null"
                                                   [checked]="svnSelection.hasValue() && isAllSvnSelected()"
                                                   [indeterminate]="svnSelection.hasValue() && !isAllSvnSelected()">
                                     </mat-checkbox>
                                 </th>
-                                <td mat-cell *matCellDef="let directory">
+                                <td mat-cell *matCellDef="let directory" style="width: 70px">
                                     <mat-checkbox (click)="$event.stopPropagation()"
                                                   (change)="svnToggle($event, directory)"
                                                   [checked]="svnChecked(directory)">

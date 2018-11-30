@@ -48,6 +48,11 @@ public class MigrationChecker {
             });
         } catch (Exception exc) {
             LOG.error("Failed to check migration on startup", exc);
+            // Fail running migrations
+            repository.findAllByStatusOrderByDateDesc(StatusEnum.RUNNING).stream().forEach(mig -> {
+                mig.status(StatusEnum.FAILED);
+                repository.save(mig);
+            });
         }
     }
 }

@@ -1,6 +1,7 @@
 package fr.yodamad.svn2git.domain;
 
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
+import fr.yodamad.svn2git.security.PasswordConverter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -60,6 +61,7 @@ public class Migration implements Serializable {
     private String gitlabUrl;
 
     @Column(name = "gitlab_token")
+    @Convert(converter = PasswordConverter.class)
     private String gitlabToken;
 
     @Column(name = "svn_url")
@@ -69,6 +71,7 @@ public class Migration implements Serializable {
     private String svnUser;
 
     @Column(name = "svn_password")
+    @Convert(converter = PasswordConverter.class)
     private String svnPassword;
 
     @OneToMany(mappedBy = "migration")

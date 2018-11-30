@@ -112,6 +112,8 @@ svn:
     user:
     password:
 
+password.cipher: svn2git
+
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

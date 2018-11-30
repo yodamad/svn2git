@@ -399,8 +399,7 @@ export class MigrationStepperComponent implements OnInit {
 
     /** Add a custom extension. */
     addExtension() {
-        console.log(this.addExtentionFormControl.value);
-        if (this.addExtentionFormControl.value !== undefined) {
+        if (this.addExtentionFormControl.value !== undefined && this.addExtentionFormControl.value !== '') {
             this.staticExtensions = this.staticExtensions.concat([
                 { label: this.addExtentionFormControl.value, value: this.addExtentionFormControl.value }
             ]);

@@ -1,4 +1,4 @@
-<mat-horizontal-stepper [linear]="true" #stepper>
+<mat-horizontal-stepper [linear]="false" #stepper>
     <!-- Check Gitlab account step -->
     <mat-step [stepControl]="gitlabFormGroup">
         <form [formGroup]="gitlabFormGroup">
@@ -200,6 +200,10 @@
                 <tr mat-header-row *matHeaderRowDef="extensionDisplayedColumns"></tr>
                 <tr mat-row *matRowDef="let extension; columns: extensionDisplayedColumns;"></tr>
             </table>
+            <div>
+                <input matInput placeholder="Add custom extension" type="text" style="width: 180px; height: 40px; margin-bottom: 10px" [formControl]="addExtentionFormControl">
+                <button mat-mini-fab color="primary" style="margin-top: -10px; margin-bottom: 10px;" (click)="addExtension()">+</button>
+            </div>
 
             <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
             <mat-divider style="margin-bottom: 10px"></mat-divider>

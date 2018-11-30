@@ -350,6 +350,9 @@ export class MigrationStepperComponent implements OnInit {
         currentMappings.splice(currentMappings.length - 1, 1);
 
         dialog.afterClosed().subscribe((result: Mapping) => {
+            if (result.svnDirectory.startsWith('/')) {
+                result.svnDirectory = result.svnDirectory.slice(1, result.svnDirectory.length);
+            }
             this.mappings = [];
             currentMappings.forEach(mp => this.mappings.push(mp));
             this.mappings.push(result);

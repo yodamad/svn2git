@@ -2,10 +2,11 @@
     "svn2GitApp": {
         "StatusEnum" : {
             "null": "",
-            "WAITING": "WAITING",
-            "RUNNING": "RUNNING",
-            "DONE": "DONE",
-            "FAILED": "FAILED"
+            "WAITING": "En attente",
+            "RUNNING": "En cours",
+            "DONE": "OK",
+            "DONE_WITH_WARNINGS": "Partiellement OK",
+            "FAILED": "KO"
         }
     }
 }

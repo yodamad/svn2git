@@ -1,13 +1,13 @@
-import { FormGroup, Validators, FormBuilder } from '@angular/forms';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { FormGroup, Validators, FormBuilder, FormControl } from '@angular/forms';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping, Mapping } from 'app/shared/model/mapping.model';
-import { SelectionModel } from '@angular/cdk/collections';
+import { DataSource, SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
-import { MatCheckboxChange, MatDialog } from '@angular/material';
+import { MatCheckboxChange, MatDialog, MatTableDataSource } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 
@@ -17,13 +17,30 @@ import { StaticMapping } from 'app/shared/model/static-mapping.model';
     styleUrls: ['migration-stepper.component.css']
 })
 export class MigrationStepperComponent implements OnInit {
+    // Static data
+    @Input()
+    staticExtensions: any[] = [
+        { label: '*.zip', value: '*.zip' },
+        { label: '*.*ar (including ear, jar, war...)', value: '*.*ar' },
+        { label: '*.ear', value: '*.ear' },
+        { label: '*.jar', value: '*.jar' },
+        { label: '*.war', value: '*.war' },
+        { label: '*.tar', value: '*.tar' }
+    ];
+
+    ds: DataSource<any> = new MatTableDataSource(this.staticExtensions);
+
     // Form groups
     gitlabFormGroup: FormGroup;
     svnFormGroup: FormGroup;
     cleaningFormGroup: FormGroup;
     mappingFormGroup: FormGroup;
+    addExtentionFormControl: FormControl;
+
+    // Tables columns
     displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping'];
-    svnDisplayedColumns: string[] = ['svnDir', 'selectSvn'];
+    svnDisplayedColumns: string[] = ['selectSvn', 'svnDir'];
+    extensionDisplayedColumns: string[] = ['extensionPattern', 'selectExtension'];
 
     // Controls
     gitlabUserKO = true;
@@ -35,7 +52,6 @@ export class MigrationStepperComponent implements OnInit {
 
     // Input for migrations
     svnDirectories: string[] = null;
-    selectedExtensions: string[];
     migrationStarted = false;
     fileUnit = 'M';
     mig: IMigration;
@@ -50,6 +66,9 @@ export class MigrationStepperComponent implements OnInit {
     allowMultiSelect = true;
     selection: SelectionModel<IMapping>;
     useSvnRootFolder = false;
+
+    // Extension selection
+    extensionSelection: SelectionModel<any>;
 
     // Waiting flag
     checkingGitlabUser = false;
@@ -92,6 +111,9 @@ export class MigrationStepperComponent implements OnInit {
             fileMaxSize: ['', Validators.min(1)]
         });
         this.mappingFormGroup = this._formBuilder.group({});
+
+        this.addExtentionFormControl = new FormControl('', []);
+        this.extensionSelection = new SelectionModel<string>(this.allowMultiSelect, this.initialSelection);
     }
 
     /**
@@ -144,14 +166,6 @@ export class MigrationStepperComponent implements OnInit {
                 this.svnDirectories = res.body;
                 this.checkingSvnRepo = false;
             }, () => (this.checkingSvnRepo = false));
-    }
-
-    /**
-     * Get selected extensions to clean
-     * @param values
-     */
-    onSelectedExtensionsChange(values: string[]) {
-        this.selectedExtensions = values;
     }
 
     /**
@@ -226,8 +240,10 @@ export class MigrationStepperComponent implements OnInit {
         if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
             this.mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
         }
-        if (this.selectedExtensions !== undefined && this.selectedExtensions.length > 0) {
-            this.mig.forbiddenFileExtensions = this.selectedExtensions.toString();
+        if (this.extensionSelection !== undefined && !this.extensionSelection.isEmpty()) {
+            const values: string[] = [];
+            this.extensionSelection.selected.forEach(ext => values.push(ext.value));
+            this.mig.forbiddenFileExtensions = values.toString();
         }
 
         // Mappings
@@ -332,12 +348,15 @@ export class MigrationStepperComponent implements OnInit {
         // Remove "fake" mapping
         currentMappings.splice(currentMappings.length - 1, 1);
 
-        dialog.afterClosed().subscribe(result => {
+        dialog.afterClosed().subscribe((result: Mapping) => {
+            if (result.svnDirectory.startsWith('/')) {
+                result.svnDirectory = result.svnDirectory.slice(1, result.svnDirectory.length);
+            }
             this.mappings = [];
             currentMappings.forEach(mp => this.mappings.push(mp));
             this.mappings.push(result);
             this.mappings.push(new Mapping());
-            console.log(this.mappings);
+            this.selection.select(result);
             this._changeDetectorRefs.detectChanges();
         });
     }
@@ -347,5 +366,43 @@ export class MigrationStepperComponent implements OnInit {
         this.useSvnRootFolder = event.checked;
         this.svnSelection.clear();
         this.svnRepoKO = !event.checked;
+    }
+
+    /** Selects all rows if they are not all selected; otherwise clear selection. */
+    masterExtensionToggle() {
+        if (this.isAllExtensionSelected()) {
+            this.extensionSelection.clear();
+        } else {
+            this.staticExtensions.forEach(row => this.extensionSelection.select(row));
+        }
+    }
+
+    /**
+     * Toggle extension directory selection change
+     * @param event
+     * @param extension
+     */
+    extensionToggle(event: MatCheckboxChange, extension: string) {
+        if (event) {
+            return this.extensionSelection.toggle(extension);
+        }
+        return null;
+    }
+
+    /** Whether the number of selected elements matches the total number of rows. */
+    isAllExtensionSelected() {
+        const numSelected = this.extensionSelection.selected.length;
+        const numRows = this.staticExtensions.length;
+        return numSelected === numRows;
+    }
+
+    /** Add a custom extension. */
+    addExtension() {
+        if (this.addExtentionFormControl.value !== undefined && this.addExtentionFormControl.value !== '') {
+            this.staticExtensions = this.staticExtensions.concat([
+                { label: this.addExtentionFormControl.value, value: this.addExtentionFormControl.value }
+            ]);
+            console.log(this.staticExtensions);
+        }
     }
 }

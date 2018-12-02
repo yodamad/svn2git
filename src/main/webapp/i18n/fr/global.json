@@ -90,7 +90,10 @@
         "ribbon": {
             "dev":"Développement"
         },
-        "item-count": "Affichage {{first}} - {{second}} de {{total}} items."
+        "item-count": "Affichage {{first}} - {{second}} de {{total}} items.",
+        "search": "Recherche",
+        "search-by": "Recherche par",
+        "or": "ou"
     },
     "entity": {
         "action": {

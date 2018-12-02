@@ -6,21 +6,34 @@
         "cleaning" : {
             "options" : "Cleaning options"
         },
+        "date" : "Date",
+        "directory" : "Directory",
         "done" : "Done",
+        "extension" : {
+            "add" : "Add custom extension"
+        },
         "file" : {
             "extensions" : "File extensions to clean",
             "size" : "Max size authorized for a file"
+        },
+        "git" : {
+            "directory" : " Git directory"
         },
         "gitlab" : {
             "check" : {
                 "account" : "Check your Gitlab account",
                 "group" : "Check your Gitlab group"
             },
+            "group" : "Gitlab group",
+            "token" : "Gitlab token",
+            "url" : "Gitlab URL",
             "use" : {
                 "default" : "Use default URL"
-            }
+            },
+            "user" : "Gitlab user"
         },
         "home" : "Home",
+        "info" : "Info",
         "mapping": "Mapping",
         "migration" : {
             "planned" : "Migration planned",
@@ -28,6 +41,8 @@
         },
         "next" : "Next",
         "only" : "only",
+        "pattern" : "Pattern",
+        "regex" : "Regex",
         "summary" : "Migration summary",
         "details" : "Migration details",
         "mappings" : "Migration mappings",
@@ -35,11 +50,20 @@
             "check" : {
                 "repository" : "Check your SVN repository"
             },
+            "directory" : "SVN directory",
             "directories" : "Choose directories to migrate",
+            "password" : "Password",
+            "repo" : {
+                "name" : "SVN repository name"
+            },
             "root-directory": "Or migrate full repository (assuming trunk, branches & tags are directly in root folder)",
+            "url" : "SVN URL",
             "use" : {
                 "default" : "Use default URL"
-            }
-        }
+            },
+            "user" : "User"
+        },
+        "step" : "Step",
+        "status" : "Status"
     }
 }

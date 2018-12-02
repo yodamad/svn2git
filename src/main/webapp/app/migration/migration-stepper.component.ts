@@ -52,7 +52,6 @@ export class MigrationStepperComponent implements OnInit {
 
     // Input for migrations
     svnDirectories: string[] = null;
-    selectedExtensions: any[] = [];
     migrationStarted = false;
     fileUnit = 'M';
     mig: IMigration;

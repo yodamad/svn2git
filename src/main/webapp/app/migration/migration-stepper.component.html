@@ -116,7 +116,7 @@
     </mat-step>
 
     <!-- Mapping options step -->
-    <mat-step [stepControl]="mappingFormGroup" *ngIf="mappings.length > 0">
+    <mat-step [stepControl]="mappingFormGroup">
         <form [formGroup]="mappingFormGroup">
             <table mat-table [(dataSource)]="mappings" class="large-table">
                 <ng-container matColumnDef="svn">

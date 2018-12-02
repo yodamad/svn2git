@@ -1,7 +1,7 @@
-
 {
     "svn2GitApp": {
         "mapping" : {
+            "add" : "Ajouter un mapping",
             "home": {
                 "title": "Mappings",
                 "createLabel": "Créer un nouveau Mapping",

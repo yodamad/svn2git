@@ -1,0 +1,65 @@
+{
+    "migration-process" : {
+        "back" : " Retour",
+        "check" : "Vérifier",
+        "checking" : "En cours",
+        "cleaning" : {
+            "options" : "Nettoyage"
+        },
+        "directory" : "Répertoire",
+        "done" : "Fait",
+        "extension" : {
+            "add" : "Ajouter une extension"
+        },
+        "file" : {
+            "extensions" : "Extensions de fichiers à nettoyer",
+            "size" : "Taille de fichiers maximum"
+        },
+        "git" : {
+            "directory" : "Répertoire Git"
+        },
+        "gitlab" : {
+            "check" : {
+                "account" : "Vérifier votre compte Gitlab",
+                "group" : "Vérifier votre groupe Gitlab"
+            },
+            "group" : "Groupe Gitlab",
+            "token" : "Token",
+            "url" : "URL Gitlab",
+            "use" : {
+                "default" : "URL par défaut"
+            },
+            "user" : "Utilisateur"
+        },
+        "home" : "Accueil",
+        "mapping": "Mapping",
+        "migration" : {
+            "planned" : "Migration planifiée",
+            "start" : "Démarrer la migration"
+        },
+        "next" : "Suivant",
+        "only" : "Seulement",
+        "pattern" : "Pattern",
+        "regex" : "Regex",
+        "summary" : "Résumé de la migration",
+        "details" : "Détails de la migration",
+        "mappings" : "Mappings",
+        "svn" : {
+            "check" : {
+                "repository" : "Vérifier votre repo SVN"
+            },
+            "directory" : "Répertoire SVN",
+            "directories" : "Choisir les répertoires à migrer",
+            "Password" : "Mot de passe",
+            "repo" : {
+                "name" : "Nom du repository"
+            },
+            "root-directory": "Ou migrer le repo complet (trunk, branches & tags sont à la racine)",
+            "url" : "URL SVN",
+            "use" : {
+                "default" : "URL par défaut"
+            },
+            "user" : "Utilisateur"
+        }
+    }
+}

@@ -1,24 +1,23 @@
-
 {
     "svn2GitApp": {
         "staticMapping" : {
             "home": {
-                "title": "StaticMappings",
-                "createLabel": "Créer un nouveau Static Mapping",
-                "createOrEditLabel": "Créer ou éditer un Static Mapping"
+                "title": "Mappings statiques",
+                "createLabel": "Créer un nouveau mapping",
+                "createOrEditLabel": "Créer ou modifier un mapping"
             },
-            "created": "Un nouveau Static Mapping a été créé avec l'identifiant {{ param }}",
-            "updated": "Le Static Mapping avec l'identifiant {{ param }} a été mis à jour",
-            "deleted": "Le Static Mapping avec l'identifiant {{ param }} a été supprimé",
+            "created": "Un nouveau mapping static a été créé avec l'ID {{ param }}",
+            "updated": "Un nouveau mapping static a été mis à jour avec l'ID {{ param }}",
+            "deleted": "Un nouveau mapping static a été supprimé avec l'ID {{ param }}",
             "delete": {
-                "question": "Etes-vous certain de vouloir supprimer le Static Mapping {{ id }} ?"
+                "question": "Etes vous sur de vouloir supprimer le mapping statique {{ id }}?"
             },
             "detail": {
-                "title": "Static Mapping"
+                "title": "Mapping Statique"
             },
-            "svnDirectory": "Svn Directory",
+            "svnDirectory": "Répertoire Svn",
             "regex": "Regex",
-            "gitDirectory": "Git Directory"
+            "gitDirectory": "Répertoire Git"
         }
     }
 }

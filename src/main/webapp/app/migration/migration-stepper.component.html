@@ -9,15 +9,15 @@
             </div>
             <div>
                 <mat-form-field>
-                    <input matInput placeholder="Gitlab URL" [(disabled)]="useDefaultGitlab" formControlName="gitlabURL" required>
+                    <input matInput placeholder="{{'migration-process.gitlab.url' | translate}}" [(disabled)]="useDefaultGitlab" formControlName="gitlabURL" required>
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultGitlab">
-                    <input matInput placeholder="Gitlab Token" formControlName="gitlabToken">
+                    <input matInput placeholder="{{'migration-process.gitlab.token' | translate}}" formControlName="gitlabToken">
                 </mat-form-field>
             </div>
             <div>
                 <mat-form-field>
-                    <input matInput placeholder="Gitlab username" formControlName="gitlabUser" required>
+                    <input matInput placeholder="{{'migration-process.gitlab.user' | translate}}" formControlName="gitlabUser" required>
                 </mat-form-field>
                 <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)" [disabled]="checkingGitlabUser">
                     <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabUser">Check</span>
@@ -26,7 +26,7 @@
             </div>
             <div>
                 <mat-form-field>
-                    <input matInput placeholder="Gitlab group name" formControlName="gitlabGroup" required>
+                    <input matInput placeholder="{{'migration-process.gitlab.group' | translate}}" formControlName="gitlabGroup" required>
                 </mat-form-field>
                 <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)" [disabled]="checkingGitlabGroup">
                     <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabGroup">Check</span>
@@ -50,18 +50,18 @@
             </div>
             <div>
                 <mat-form-field>
-                    <input matInput placeholder="SVN URL" formControlName="svnURL">
+                    <input matInput placeholder="{{'migration-process.svn.url' | translate}}" formControlName="svnURL">
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultSvn">
-                    <input matInput placeholder="SVN User" formControlName="svnUser">
+                    <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser">
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultSvn">
-                    <input matInput placeholder="SVN Password" formControlName="svnPwd" type="password">
+                    <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password">
                 </mat-form-field>
             </div>
             <div>
                 <mat-form-field>
-                    <input matInput placeholder="SVN repository name" formControlName="svnRepository" required>
+                    <input matInput placeholder="{{'migration-process.svn.repo.name' | translate}}" formControlName="svnRepository" required>
                 </mat-form-field>
                 <button type="button" mat-raised-button (click)="checkSvnRepository()"
                         [ngClass]="cssClass(svnRepoKO)" [disabled]="checkingSvnRepo">
@@ -76,7 +76,7 @@
                         <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
                         <table mat-table [(dataSource)]="svnDirectories" class="large-table">
                             <ng-container matColumnDef="svnDir">
-                                <th mat-header-cell *matHeaderCellDef>Directory</th>
+                                <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
                                 <td mat-cell *matCellDef="let directory">{{ directory }}</td>
                             </ng-container>
                             <ng-container matColumnDef="selectSvn">
@@ -120,15 +120,15 @@
         <form [formGroup]="mappingFormGroup">
             <table mat-table [(dataSource)]="mappings" class="large-table">
                 <ng-container matColumnDef="svn">
-                    <th mat-header-cell *matHeaderCellDef>SVN directory</th>
+                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.svn.directory">SVN directory</span></th>
                     <td mat-cell *matCellDef="let mapping">{{ mapping.svnDirectory }}</td>
                 </ng-container>
                 <ng-container matColumnDef="regex">
-                    <th mat-header-cell *matHeaderCellDef>Regex</th>
+                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.regex">Regex</span></th>
                     <td mat-cell *matCellDef="let mapping">{{ mapping.regex }}</td>
                 </ng-container>
                 <ng-container matColumnDef="git">
-                    <th mat-header-cell *matHeaderCellDef>Git directory</th>
+                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.git.directory">Git directory</span></th>
                     <td mat-cell *matCellDef="let mapping">{{ mapping.gitDirectory }}</td>
                 </ng-container>
                 <ng-container matColumnDef="selectMapping">
@@ -179,7 +179,7 @@
             <b><span jhiTranslate="migration-process.file.extensions">File extensions to clean</span></b>:
             <table mat-table [(dataSource)]="staticExtensions" class="large-table">
                 <ng-container matColumnDef="extensionPattern">
-                    <th mat-header-cell *matHeaderCellDef>Pattern</th>
+                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.pattern">Pattern</span></th>
                     <td mat-cell *matCellDef="let extension">{{ extension.label }}</td>
                 </ng-container>
                 <ng-container matColumnDef="selectExtension">
@@ -201,7 +201,7 @@
                 <tr mat-row *matRowDef="let extension; columns: extensionDisplayedColumns;"></tr>
             </table>
             <div>
-                <input matInput placeholder="Add custom extension" type="text" style="width: 180px; height: 40px; margin-bottom: 10px" [formControl]="addExtentionFormControl">
+                <input matInput placeholder="{{'migration-process.extension.add' | translate}}" type="text" style="width: 180px; height: 40px; margin-bottom: 10px" [formControl]="addExtentionFormControl">
                 <button mat-mini-fab color="primary" style="margin-top: -10px; margin-bottom: 10px;" (click)="addExtension()">+</button>
             </div>
 

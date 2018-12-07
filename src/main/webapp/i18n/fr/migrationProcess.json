@@ -32,16 +32,25 @@
             },
             "user" : "Utilisateur"
         },
+        "history" : {
+            "all" : "Tout",
+            "trunk-only" : "Trunk seulement",
+            "no" : "Rien",
+            "option" : "Choix de conservation de l'historique",
+            "options" : "Options d'historique"
+        },
         "home" : "Accueil",
         "info" : "Infos",
         "mapping": "Mapping",
         "migration" : {
             "planned" : "Migration planifiée",
-            "start" : "Démarrer la migration"
+            "start" : "Démarrer la migration",
+            "structure" : "Conservation de la structure"
         },
         "next" : "Suivant",
         "only" : "Seulement",
         "pattern" : "Pattern",
+        "ready": "Prêt ?",
         "regex" : "Regex",
         "summary" : "Résumé de la migration",
         "details" : "Détails de la migration",

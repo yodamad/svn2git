@@ -32,16 +32,25 @@
             },
             "user" : "Gitlab user"
         },
+        "history" : {
+            "all" : "Keep all",
+            "trunk-only" : "Trunk only",
+            "no" : "Nothing",
+            "option" : "History option",
+            "options" : "History options"
+        },
         "home" : "Home",
         "info" : "Info",
         "mapping": "Mapping",
         "migration" : {
             "planned" : "Migration planned",
-            "start" : "Start migration"
+            "start" : "Start migration",
+            "structure" : "Structure retention"
         },
         "next" : "Next",
         "only" : "only",
         "pattern" : "Pattern",
+        "ready": "Ready?",
         "regex" : "Regex",
         "summary" : "Migration summary",
         "details" : "Migration details",

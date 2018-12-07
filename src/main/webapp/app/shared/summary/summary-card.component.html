@@ -1,28 +1,58 @@
 <mat-card-content *ngIf="migration != undefined">
-    <mat-list>
-        <mat-list-item>
-            <mat-icon mat-list-icon>face</mat-icon>
-            <p mat-line>{{migration.user}}</p>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-icon mat-list-icon>flight_takeoff</mat-icon>
-            <p mat-line>{{migration.svnUrl}}{{migration.svnGroup}}</p>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-icon mat-list-icon>flight_land</mat-icon>
-            <p mat-line>{{migration.gitlabUrl}}{{migration.gitlabGroup}}</p>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-icon mat-list-icon>format_list_bulleted</mat-icon>
-            <p mat-line>{{migration.svnProject}}</p>
-        </mat-list-item>
-        <mat-list-item *ngIf="migration.forbiddenFileExtensions != undefined && migration.forbiddenFileExtensions.length > 0">
-            <mat-icon mat-list-icon>layers_clear</mat-icon>
-            <p mat-line>{{migration.forbiddenFileExtensions}}</p>
-        </mat-list-item>
-        <mat-list-item *ngIf="displayMaxSize()">
-            <mat-icon mat-list-icon>unfold_less</mat-icon>
-            <p mat-line>{{migration.maxFileSize}}</p>
-        </mat-list-item>
-    </mat-list>
+    <mat-grid-list cols="2" rowHeight="400px">
+        <mat-grid-tile>
+            <mat-list>
+                <mat-list-item>
+                    <mat-icon mat-list-icon>face</mat-icon>
+                    <p mat-line>{{migration.user}}</p>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon mat-list-icon>flight_takeoff</mat-icon>
+                    <p mat-line>{{migration.svnUrl}}{{migration.svnGroup}}</p>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon mat-list-icon>flight_land</mat-icon>
+                    <p mat-line>{{migration.gitlabUrl}}{{migration.gitlabGroup}}</p>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon mat-list-icon>format_list_bulleted</mat-icon>
+                    <p mat-line>{{migration.svnProject}}</p>
+                </mat-list-item>
+                <mat-list-item *ngIf="migration.forbiddenFileExtensions != undefined && migration.forbiddenFileExtensions.length > 0">
+                    <mat-icon mat-list-icon>layers_clear</mat-icon>
+                    <p mat-line>{{migration.forbiddenFileExtensions}}</p>
+                </mat-list-item>
+                <mat-list-item *ngIf="displayMaxSize()">
+                    <mat-icon mat-list-icon>unfold_less</mat-icon>
+                    <p mat-line>{{migration.maxFileSize}}</p>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon mat-list-icon>history</mat-icon>
+                    <p mat-line>{{migration.svnHistory}}</p>
+                </mat-list-item>
+            </mat-list>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <mat-list>
+                <mat-list-item>
+                    <p mat-line><i style="font-size: small; height: 10px;"><span jhiTranslate="migration-process.migration.structure">Structure</span></i></p>
+                </mat-list-item>
+                <mat-list-item *ngIf="migration !== undefined">
+                    <mat-icon mat-list-icon *ngIf="migration.trunk === '*'">check_circle_outline</mat-icon>
+                    <mat-icon mat-list-icon *ngIf="migration.trunk !== '*'">highlight_off</mat-icon>
+                    <p mat-line>Trunk</p>
+                </mat-list-item>
+                <mat-list-item *ngIf="migration !== undefined">
+                    <mat-icon mat-list-icon *ngIf="migration.branches === '*'">check_circle_outline</mat-icon>
+                    <mat-icon mat-list-icon *ngIf="migration.branches !== '*'">highlight_off</mat-icon>
+                    <p mat-line>Branches</p>
+                </mat-list-item>
+                <mat-list-item *ngIf="migration !== undefined">
+                    <mat-icon mat-list-icon *ngIf="migration.tags === '*'">check_circle_outline</mat-icon>
+                    <mat-icon mat-list-icon *ngIf="migration.tags !== '*'">highlight_off</mat-icon>
+                    <p mat-line>Tags</p>
+                </mat-list-item>
+            </mat-list>
+        </mat-grid-tile>
+    </mat-grid-list>
 </mat-card-content>

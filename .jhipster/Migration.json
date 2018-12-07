@@ -58,7 +58,7 @@
         {
             "fieldName": "status",
             "fieldType": "StatusEnum",
-            "fieldValues": "WAITING,RUNNING,DONE,FAILED,DONE_WITH_WARNINGS"
+            "fieldValues": "WAITING,RUNNING,DONE,FAILED,IGNORED,DONE_WITH_WARNINGS"
         },
         {
             "fieldName": "maxFileSize",
@@ -87,6 +87,22 @@
         },
         {
             "fieldName": "svnPassword",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "trunk",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "branches",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "tags",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "svnHistory",
             "fieldType": "String"
         }
     ],

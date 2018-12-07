@@ -359,20 +359,24 @@ public class GitManager {
         branchName = branchName.replaceFirst("origin/", "");
         LOG.debug(format("Branch %s", branchName));
 
-        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName);
-        try {
-            String gitCommand = format("git checkout -b %s %s", branchName, branch);
-            execCommand(workUnit.directory, gitCommand);
-            execCommand(workUnit.directory, MigrationConstants.GIT_PUSH);
 
-            historyMgr.endStep(history, StatusEnum.DONE, null);
+            if (workUnit.migration.getSvnHistory().equals("all")) {
+                MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName);
+                try {
+                    String gitCommand = format("git checkout -b %s %s", branchName, branch);
+                    execCommand(workUnit.directory, gitCommand);
+                    execCommand(workUnit.directory, MigrationConstants.GIT_PUSH);
 
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
+                } catch (IOException | InterruptedException iEx) {
+                    LOG.error("Failed to push branch", iEx);
+                    historyMgr.endStep(history, StatusEnum.FAILED, iEx.getMessage());
+                    return false;
+                }
+            } else {
+                removeHistory(workUnit, branchName);
+            }
             return applyMapping(workUnit, branch);
-        } catch (IOException | InterruptedException iEx) {
-            LOG.error("Failed to push branch", iEx);
-            historyMgr.endStep(history, StatusEnum.FAILED, iEx.getMessage());
-            return false;
-        }
     }
 
     /**
@@ -430,5 +434,40 @@ public class GitManager {
             return false;
         }
         return false;
+    }
+
+    /**
+     * Remove commit history on a given branch
+     * @param workUnit Current work unit
+     * @param branch Branch to work on
+     */
+    public void removeHistory(WorkUnit workUnit, String branch) {
+        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branch);
+        try {
+            LOG.debug(format("Remove history on %s", branch));
+
+            String gitCommand = "git checkout --orphan TEMP_BRANCH";
+            execCommand(workUnit.directory, gitCommand);
+
+            gitCommand = "git add -A";
+            execCommand(workUnit.directory, gitCommand);
+
+            gitCommand = format("git commit -am \"Reset history on %s\"", branch);
+            execCommand(workUnit.directory, gitCommand);
+
+            gitCommand = format("git branch -D %s", branch);
+            execCommand(workUnit.directory, gitCommand);
+
+            gitCommand = format("git branch -m %s", branch);
+            execCommand(workUnit.directory, gitCommand);
+
+            gitCommand = format("git push -f origin %s", branch);
+            execCommand(workUnit.directory, gitCommand);
+
+            historyMgr.endStep(history, StatusEnum.DONE, format("Push %s with no history", branch));
+        } catch (IOException | InterruptedException gitEx) {
+            LOG.error("Failed to push branch", gitEx);
+            historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+        }
     }
 }

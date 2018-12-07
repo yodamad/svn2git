@@ -1,7 +1,6 @@
 package fr.yodamad.svn2git.domain;
 
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
-import fr.yodamad.svn2git.security.PasswordConverter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -61,7 +60,6 @@ public class Migration implements Serializable {
     private String gitlabUrl;
 
     @Column(name = "gitlab_token")
-    @Convert(converter = PasswordConverter.class)
     private String gitlabToken;
 
     @Column(name = "svn_url")
@@ -71,8 +69,19 @@ public class Migration implements Serializable {
     private String svnUser;
 
     @Column(name = "svn_password")
-    @Convert(converter = PasswordConverter.class)
     private String svnPassword;
+
+    @Column(name = "trunk")
+    private String trunk;
+
+    @Column(name = "branches")
+    private String branches;
+
+    @Column(name = "tags")
+    private String tags;
+
+    @Column(name = "svn_history")
+    private String svnHistory;
 
     @OneToMany(mappedBy = "migration")
     private Set<MigrationHistory> histories = new HashSet<>();
@@ -269,6 +278,58 @@ public class Migration implements Serializable {
         this.svnPassword = svnPassword;
     }
 
+    public String getTrunk() {
+        return trunk;
+    }
+
+    public Migration trunk(String trunk) {
+        this.trunk = trunk;
+        return this;
+    }
+
+    public void setTrunk(String trunk) {
+        this.trunk = trunk;
+    }
+
+    public String getBranches() {
+        return branches;
+    }
+
+    public Migration branches(String branches) {
+        this.branches = branches;
+        return this;
+    }
+
+    public void setBranches(String branches) {
+        this.branches = branches;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public Migration tags(String tags) {
+        this.tags = tags;
+        return this;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public String getSvnHistory() {
+        return svnHistory;
+    }
+
+    public Migration svnHistory(String svnHistory) {
+        this.svnHistory = svnHistory;
+        return this;
+    }
+
+    public void setSvnHistory(String svnHistory) {
+        this.svnHistory = svnHistory;
+    }
+
     public Set<MigrationHistory> getHistories() {
         return histories;
     }
@@ -358,6 +419,10 @@ public class Migration implements Serializable {
             ", svnUrl='" + getSvnUrl() + "'" +
             ", svnUser='" + getSvnUser() + "'" +
             ", svnPassword='" + getSvnPassword() + "'" +
+            ", trunk='" + getTrunk() + "'" +
+            ", branches='" + getBranches() + "'" +
+            ", tags='" + getTags() + "'" +
+            ", svnHistory='" + getSvnHistory() + "'" +
             "}";
     }
 }

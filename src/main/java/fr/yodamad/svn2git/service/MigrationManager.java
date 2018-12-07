@@ -23,9 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
 import static fr.yodamad.svn2git.service.util.MigrationConstants.MASTER;
-import static fr.yodamad.svn2git.service.util.Shell.execCommand;
-import static fr.yodamad.svn2git.service.util.Shell.gitWorkingDir;
-import static fr.yodamad.svn2git.service.util.Shell.workingDir;
+import static fr.yodamad.svn2git.service.util.Shell.*;
 import static java.lang.String.format;
 
 /**
@@ -99,40 +97,65 @@ public class MigrationManager {
             }
 
             // 4. Git push master based on SVN trunk
-            history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
+            if (migration.getTrunk().equals("*")) {
+                history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
-            // if using root, additional step
-            if (StringUtils.isEmpty(migration.getSvnProject())) {
-                // Set origin
-                String remoteCommand = format("git remote add origin %s/%s/%s.git",
-                    migration.getGitlabUrl(),
-                    migration.getGitlabGroup(),
-                    svn);
-                execCommand(workUnit.directory, remoteCommand);
+                if (StringUtils.isEmpty(migration.getSvnProject())) {
+                    // Set origin
+                    String remoteCommand = format("git remote add origin %s/%s/%s.git",
+                        migration.getGitlabUrl(),
+                        migration.getGitlabGroup(),
+                        svn);
+                    execCommand(workUnit.directory, remoteCommand);
+                }
 
-                // Push with upstream
-                gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                // if no history option set
+                if (migration.getSvnHistory().equals("nothing")) {
+                    gitManager.removeHistory(workUnit, MASTER);
+                } else {
+                    // if using root, additional step
+                    if (StringUtils.isEmpty(migration.getSvnProject())) {
+
+
+                        // Push with upstream
+                        gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                        execCommand(workUnit.directory, gitCommand);
+                    } else {
+                        execCommand(workUnit.directory, GIT_PUSH);
+                    }
+
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
+                }
+
+                // Clean pending file(s) removed by BFG
+                gitCommand = "git reset --hard origin/master";
                 execCommand(workUnit.directory, gitCommand);
+
+                // 5. Apply mappings if some
+                boolean warning = gitManager.applyMapping(workUnit, MASTER);
+                workUnit.warnings.set(workUnit.warnings.get() || warning);
             } else {
-                execCommand(workUnit.directory, GIT_PUSH);
+                history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "Trunk");
+                historyMgr.endStep(history, StatusEnum.IGNORED, "Skip trunk");
             }
-
-            historyMgr.endStep(history, StatusEnum.DONE, null);
-
-            // Clean pending file(s) removed by BFG
-            gitCommand = "git reset --hard origin/master";
-            execCommand(workUnit.directory, gitCommand);
-
-            // 5. Apply mappings if some
-            boolean warning = gitManager.applyMapping(workUnit, MASTER);
-            workUnit.warnings.set(workUnit.warnings.get() || warning);
 
             // 6. List branches & tags
             List<String> remotes = GitManager.branchList(workUnit.directory);
             // Extract branches
-            gitManager.manageBranches(workUnit, remotes);
+            if (!StringUtils.isEmpty(migration.getBranches()) && migration.getBranches().equals("*")) {
+                gitManager.manageBranches(workUnit, remotes);
+            } else {
+                history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "Branches");
+                historyMgr.endStep(history, StatusEnum.IGNORED, "Skip branches");
+            }
+
             // Extract tags
-            gitManager.manageTags(workUnit, remotes);
+            if (!StringUtils.isEmpty(migration.getTags()) && migration.getTags().equals("*")) {
+                gitManager.manageTags(workUnit, remotes);
+            } else {
+                history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "Tags");
+                historyMgr.endStep(history, StatusEnum.IGNORED, "Skip tags");
+            }
 
             // 7. Clean work directory
             history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));

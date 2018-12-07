@@ -38,17 +38,29 @@ your svn repository
 
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/override_svn.png)
 
-Then, chose which project(s) to migration
+Then, choose between which project(s) to migration and migrate to complete repository if trunk, branches & tags are at root directory
  
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/choose_svn.png)
+
+You can choose to keep history or not, only on trunk or for every branch
+
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/history_options.png)
 
 If some static mappings are configured, you can enable/disable which on to apply
 
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/mappings.png)
 
+Or add a custom mapping
+
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/custom_mapping.png)
+
 Optionnaly, add some cleaning options based on files size or/and extensions
 
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/cleaning_options.png)
+
+Or add a custom extension
+
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/custom_extension.png)
 
 Check the summary
  

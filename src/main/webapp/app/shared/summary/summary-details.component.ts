@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
-import { ConfigurationService } from 'app/shared/service/configuration-service';
 import { MigrationHistory } from 'app/shared/model/migration-history.model';
 import { MigrationService } from 'app/entities/migration';
 

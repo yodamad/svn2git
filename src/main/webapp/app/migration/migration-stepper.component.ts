@@ -1,13 +1,13 @@
-import { FormGroup, Validators, FormBuilder, FormControl } from '@angular/forms';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping, Mapping } from 'app/shared/model/mapping.model';
-import { DataSource, SelectionModel } from '@angular/cdk/collections';
+import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
-import { MatCheckboxChange, MatDialog, MatTableDataSource } from '@angular/material';
+import { MatCheckboxChange, MatDialog } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 
@@ -18,7 +18,6 @@ import { StaticMapping } from 'app/shared/model/static-mapping.model';
 })
 export class MigrationStepperComponent implements OnInit {
     // Static data
-    @Input()
     staticExtensions: any[] = [
         { label: '*.zip', value: '*.zip' },
         { label: '*.*ar (including ear, jar, war...)', value: '*.*ar' },
@@ -27,8 +26,7 @@ export class MigrationStepperComponent implements OnInit {
         { label: '*.war', value: '*.war' },
         { label: '*.tar', value: '*.tar' }
     ];
-
-    ds: DataSource<any> = new MatTableDataSource(this.staticExtensions);
+    staticDirectories: string[] = ['trunk', 'branches', 'tags'];
 
     // Form groups
     gitlabFormGroup: FormGroup;
@@ -36,6 +34,7 @@ export class MigrationStepperComponent implements OnInit {
     cleaningFormGroup: FormGroup;
     mappingFormGroup: FormGroup;
     addExtentionFormControl: FormControl;
+    historyFormGroup: FormGroup;
 
     // Tables columns
     displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping'];
@@ -61,10 +60,14 @@ export class MigrationStepperComponent implements OnInit {
     /// Svn selections
     svnSelection: SelectionModel<string>;
 
+    // History selections
+    historySelection: SelectionModel<string>;
+    historyOption = 'nothing';
+
     /// Mapping selections
     initialSelection = [];
     allowMultiSelect = true;
-    selection: SelectionModel<IMapping>;
+    selection: SelectionModel<IMapping> = new SelectionModel<IMapping>();
     useSvnRootFolder = false;
 
     // Extension selection
@@ -111,6 +114,9 @@ export class MigrationStepperComponent implements OnInit {
             fileMaxSize: ['', Validators.min(1)]
         });
         this.mappingFormGroup = this._formBuilder.group({});
+
+        this.historyFormGroup = this._formBuilder.group({});
+        this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
         this.addExtentionFormControl = new FormControl('', []);
         this.extensionSelection = new SelectionModel<string>(this.allowMultiSelect, this.initialSelection);
@@ -236,6 +242,25 @@ export class MigrationStepperComponent implements OnInit {
             this.mig.svnPassword = this.svnFormGroup.controls['svnPwd'].value;
         }
 
+        // History
+        if (this.historySelection !== undefined && !this.historySelection.isEmpty()) {
+            this.historySelection.selected.forEach(hst => {
+                if (hst === 'trunk') {
+                    this.mig.trunk = '*';
+                } else if (hst === 'branches') {
+                    this.mig.branches = '*';
+                } else if (hst === 'tags') {
+                    this.mig.tags = '*';
+                }
+            });
+        }
+        this.mig.svnHistory = this.historyOption;
+
+        // Mappings
+        if (this.selection !== undefined && !this.selection.isEmpty()) {
+            this.mig.mappings = this.selection.selected.filter(mapping => mapping.gitDirectory !== undefined);
+        }
+
         // Cleaning
         if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
             this.mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
@@ -246,10 +271,6 @@ export class MigrationStepperComponent implements OnInit {
             this.mig.forbiddenFileExtensions = values.toString();
         }
 
-        // Mappings
-        if (this.selection !== undefined && !this.selection.isEmpty()) {
-            this.mig.mappings = this.selection.selected.filter(mapping => mapping.gitDirectory !== undefined);
-        }
         return this.mig;
     }
 
@@ -402,7 +423,42 @@ export class MigrationStepperComponent implements OnInit {
             this.staticExtensions = this.staticExtensions.concat([
                 { label: this.addExtentionFormControl.value, value: this.addExtentionFormControl.value }
             ]);
-            console.log(this.staticExtensions);
         }
+    }
+
+    /** Whether the number of selected elements matches the total number of rows. */
+    isAllHistoriesSelected() {
+        const numSelected = this.historySelection.selected.length;
+        const numRows = this.staticDirectories.length;
+        return numSelected === numRows;
+    }
+
+    /** Selects all rows if they are not all selected; otherwise clear selection. */
+    masterHistoryToggle() {
+        if (this.isAllHistoriesSelected()) {
+            this.historySelection.clear();
+        } else {
+            this.staticDirectories.forEach(row => this.historySelection.select(row));
+        }
+    }
+
+    /**
+     * Toggle svn directory selection change
+     * @param event
+     * @param directory
+     */
+    historyToggle(event: any, directory: string) {
+        if (event) {
+            return this.historySelection.toggle(directory);
+        }
+        return null;
+    }
+
+    /**
+     * When check/uncheck svn directory
+     * @param directory
+     */
+    historyChecked(directory: string) {
+        return this.historySelection.isSelected(directory);
     }
 }

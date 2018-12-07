@@ -1,4 +1,4 @@
-<mat-horizontal-stepper [linear]="true" #stepper>
+<mat-horizontal-stepper [linear]="false" #stepper>
     <!-- Check Gitlab account step -->
     <mat-step [stepControl]="gitlabFormGroup">
         <form [formGroup]="gitlabFormGroup">
@@ -115,6 +115,54 @@
         </form>
     </mat-step>
 
+    <!-- History step -->
+    <mat-step [stepControl]="historyFormGroup">
+        <ng-template matStepLabel><span jhiTranslate="migration-process.history.options">History options</span></ng-template>
+        <ul class="fa-ul">
+            <li>
+                <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
+                <table mat-table [(dataSource)]="staticDirectories" class="large-table">
+                    <ng-container matColumnDef="svnDir">
+                        <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
+                        <td mat-cell *matCellDef="let directory">{{ directory }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="selectSvn">
+                        <th mat-header-cell *matHeaderCellDef style="width: 70px">
+                            <mat-checkbox (change)="$event ? masterHistoryToggle() : null"
+                                          [checked]="historySelection.hasValue() && isAllHistoriesSelected()"
+                                          [indeterminate]="historySelection.hasValue() && !isAllHistoriesSelected()">
+                            </mat-checkbox>
+                        </th>
+                        <td mat-cell *matCellDef="let directory" style="width: 70px">
+                            <mat-checkbox (click)="$event.stopPropagation()"
+                                          (change)="historyToggle($event, directory)"
+                                          [checked]="historyChecked(directory)">
+                            </mat-checkbox>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="svnDisplayedColumns"></tr>
+                    <tr mat-row *matRowDef="let directory; columns: svnDisplayedColumns;"></tr>
+                </table>
+            </li>
+            <li>
+                <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                <span jhiTranslate="migration-process.history.option">History</span> :
+                <mat-radio-group [(ngModel)]="historyOption">
+                    <mat-radio-button [value]="'trunk'"><span jhiTranslate="migration-process.history.trunk-only">Trunk</span></mat-radio-button>
+                    <mat-radio-button [value]="'nothing'"><span jhiTranslate="migration-process.history.no">No History</span></mat-radio-button>
+                    <mat-radio-button [value]="'all'"><span jhiTranslate="migration-process.history.all">All History</span></mat-radio-button>
+                </mat-radio-group>
+            </li>
+        </ul>
+        <mat-divider style="margin-bottom: 10px"></mat-divider>
+        <div>
+            <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+            <button mat-stroked-button matStepperNext [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+        </div>
+    </mat-step>
+
     <!-- Mapping options step -->
     <mat-step [stepControl]="mappingFormGroup">
         <form [formGroup]="mappingFormGroup">
@@ -216,8 +264,8 @@
 
     <!-- Summary step -->
     <mat-step>
-        <ng-template matStepLabel><span jhiTranslate="migration-process.done">Done</span></ng-template>
-        <mat-grid-list cols="2" rowHeight="500px">
+        <ng-template matStepLabel><span jhiTranslate="migration-process.ready">Ready</span></ng-template>
+        <mat-grid-list cols="2" rowHeight="600px">
             <mat-grid-tile>
                 <mat-card class="summary-card">
                     <mat-card-header class="card-header">

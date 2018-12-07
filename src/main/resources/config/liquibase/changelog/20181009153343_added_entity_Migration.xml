@@ -78,6 +78,22 @@
                 <constraints nullable="true" />
             </column>
 
+            <column name="trunk" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="branches" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tags" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="svn_history" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
         </createTable>
         

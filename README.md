@@ -50,13 +50,17 @@ If some static mappings are configured, you can enable/disable which on to apply
 
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/mappings.png)
 
-Or add a custom extension
+Or add a custom mapping
 
-![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/custom_extension.png)
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/custom_mapping.png)
 
 Optionnaly, add some cleaning options based on files size or/and extensions
 
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/cleaning_options.png)
+
+Or add a custom extension
+
+![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/custom_extension.png)
 
 Check the summary
  

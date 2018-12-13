@@ -7,9 +7,10 @@ import { IMapping, Mapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
-import { MatCheckboxChange, MatDialog } from '@angular/material';
+import { MatCheckboxChange, MatDialog, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -27,6 +28,9 @@ export class MigrationStepperComponent implements OnInit {
         { label: '*.tar', value: '*.tar' }
     ];
     staticDirectories: string[] = ['trunk', 'branches', 'tags'];
+
+    // SnackBar config
+    snackBarConfig = new MatSnackBarConfig();
 
     // Form groups
     gitlabFormGroup: FormGroup;
@@ -84,8 +88,16 @@ export class MigrationStepperComponent implements OnInit {
         private _migrationService: MigrationService,
         private _mappingService: StaticMappingService,
         private _matDialog: MatDialog,
-        private _changeDetectorRefs: ChangeDetectorRef
-    ) {}
+        private _changeDetectorRefs: ChangeDetectorRef,
+        private _errorSnackBar: MatSnackBar,
+        private _translationService: TranslateService
+    ) {
+        // Init snack bar configuration
+        this.snackBarConfig.panelClass = ['errorPanel'];
+        this.snackBarConfig.duration = 5000;
+        this.snackBarConfig.verticalPosition = 'top';
+        this.snackBarConfig.horizontalPosition = 'center';
+    }
 
     ngOnInit() {
         this._mappingService.query().subscribe(res => {
@@ -133,10 +145,16 @@ export class MigrationStepperComponent implements OnInit {
                 this.gitlabFormGroup.controls['gitlabURL'].value,
                 this.gitlabFormGroup.controls['gitlabToken'].value
             )
-            .subscribe(res => {
-                this.gitlabUserKO = !res.body;
-                this.checkingGitlabUser = false;
-            }, () => (this.checkingGitlabUser = false));
+            .subscribe(
+                res => {
+                    this.gitlabUserKO = !res.body;
+                    this.checkingGitlabUser = false;
+                },
+                () => {
+                    this.checkingGitlabUser = false;
+                    this.openSnackBar('error.checks.gitlab.user');
+                }
+            );
     }
 
     /**
@@ -150,10 +168,16 @@ export class MigrationStepperComponent implements OnInit {
                 this.gitlabFormGroup.controls['gitlabURL'].value,
                 this.gitlabFormGroup.controls['gitlabToken'].value
             )
-            .subscribe(res => {
-                this.gitlabGroupKO = !res.body;
-                this.checkingGitlabGroup = false;
-            }, () => (this.checkingGitlabGroup = false));
+            .subscribe(
+                res => {
+                    this.gitlabGroupKO = !res.body;
+                    this.checkingGitlabGroup = false;
+                },
+                () => {
+                    this.checkingGitlabGroup = false;
+                    this.openSnackBar('error.checks.gitlab.group');
+                }
+            );
     }
 
     /**
@@ -168,10 +192,16 @@ export class MigrationStepperComponent implements OnInit {
                 this.svnFormGroup.controls['svnUser'].value,
                 this.svnFormGroup.controls['svnPwd'].value
             )
-            .subscribe(res => {
-                this.svnDirectories = res.body;
-                this.checkingSvnRepo = false;
-            }, () => (this.checkingSvnRepo = false));
+            .subscribe(
+                res => {
+                    this.svnDirectories = res.body;
+                    this.checkingSvnRepo = false;
+                },
+                () => {
+                    this.checkingSvnRepo = false;
+                    this.openSnackBar('error.checks.svn');
+                }
+            );
     }
 
     /**
@@ -460,5 +490,9 @@ export class MigrationStepperComponent implements OnInit {
      */
     historyChecked(directory: string) {
         return this.historySelection.isSelected(directory);
+    }
+
+    openSnackBar(errorCode: string) {
+        this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
     }
 }

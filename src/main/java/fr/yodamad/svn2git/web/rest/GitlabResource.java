@@ -40,8 +40,12 @@ public class GitlabResource {
         }
         Optional<User> user = gitlab.userApi().getOptionalUser(userName);
 
-        return ResponseEntity.ok()
+        if (user.isPresent()) {
+            return ResponseEntity.ok()
                 .body(user.isPresent());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
@@ -58,7 +62,11 @@ public class GitlabResource {
         }
         Optional<Group> group = gitlab.groupApi().getOptionalGroup(groupName);
 
-        return ResponseEntity.ok()
-            .body(group.isPresent());
+        if (group.isPresent()) {
+            return ResponseEntity.ok()
+                .body(group.isPresent());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

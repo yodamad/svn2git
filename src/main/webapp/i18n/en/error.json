@@ -8,6 +8,13 @@
             "500": "Internal server error."
         },
         "concurrencyFailure": "Another user modified this data at the same time as you. Your changes were rejected.",
-        "validation": "Validation error on the server."
+        "validation": "Validation error on the server.",
+        "checks": {
+            "gitlab": {
+                "user": "Error checking Gitlab user",
+                "group": "Error checking Gitlab group"
+            },
+            "svn": "Error checking SVN repository"
+        }
     }
 }

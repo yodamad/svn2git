@@ -47,8 +47,13 @@ public class SvnResource {
     @PostMapping("repository/{repositoryName}")
     @Timed
     public ResponseEntity<List<String>> checkSVN(@PathVariable("repositoryName") String repositoryName, @RequestBody SvnInfo svnInfo) {
+        List<String> projects = listSVN(svnInfo, repositoryName);
+
+        if (projects.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok()
-                .body(listSVN(svnInfo, repositoryName));
+                .body(projects);
     }
 
     /**
@@ -58,7 +63,7 @@ public class SvnResource {
      * @return list of directories found
      */
     private List<String> listSVN(SvnInfo svnInfo, String repo) {
-        List<String> apiVersions = new ArrayList<>();
+        List<String> repoList = new ArrayList<>();
         SVNRevision revision = SVNRevision.HEAD;
         SvnOperationFactory operationFactory = new SvnOperationFactory();
 
@@ -79,7 +84,7 @@ public class SvnResource {
         list.setReceiver((target, object) -> {
             String name = object.getRelativePath();
             if(name!=null && !name.isEmpty()){
-                apiVersions.add(name);
+                repoList.add(name);
             }
         });
         try {
@@ -87,6 +92,6 @@ public class SvnResource {
         } catch (SVNException ex) {
         }
 
-        return apiVersions;
+        return repoList;
     }
 }

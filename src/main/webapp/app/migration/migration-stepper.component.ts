@@ -11,6 +11,7 @@ import { MatCheckboxChange, MatDialog, MatSnackBar, MatSnackBarConfig } from '@a
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 import { TranslateService } from '@ngx-translate/core';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -150,9 +151,14 @@ export class MigrationStepperComponent implements OnInit {
                     this.gitlabUserKO = !res.body;
                     this.checkingGitlabUser = false;
                 },
-                () => {
+                error => {
+                    const httpER: HttpErrorResponse = error;
                     this.checkingGitlabUser = false;
-                    this.openSnackBar('error.checks.gitlab.user');
+                    if (httpER.status === 504) {
+                        this.openSnackBar('error.http.504');
+                    } else {
+                        this.openSnackBar('error.checks.gitlab.user');
+                    }
                 }
             );
     }
@@ -173,9 +179,14 @@ export class MigrationStepperComponent implements OnInit {
                     this.gitlabGroupKO = !res.body;
                     this.checkingGitlabGroup = false;
                 },
-                () => {
+                error => {
+                    const httpER: HttpErrorResponse = error;
                     this.checkingGitlabGroup = false;
-                    this.openSnackBar('error.checks.gitlab.group');
+                    if (httpER.status === 504) {
+                        this.openSnackBar('error.http.504');
+                    } else {
+                        this.openSnackBar('error.checks.gitlab.group');
+                    }
                 }
             );
     }
@@ -197,9 +208,14 @@ export class MigrationStepperComponent implements OnInit {
                     this.svnDirectories = res.body;
                     this.checkingSvnRepo = false;
                 },
-                () => {
+                error => {
+                    const httpER: HttpErrorResponse = error;
                     this.checkingSvnRepo = false;
-                    this.openSnackBar('error.checks.svn');
+                    if (httpER.status === 504) {
+                        this.openSnackBar('error.http.504');
+                    } else {
+                        this.openSnackBar('error.checks.svn');
+                    }
                 }
             );
     }

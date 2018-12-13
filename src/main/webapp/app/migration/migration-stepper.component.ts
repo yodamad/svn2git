@@ -508,6 +508,10 @@ export class MigrationStepperComponent implements OnInit {
         return this.historySelection.isSelected(directory);
     }
 
+    /**
+     * Open snack bar to display error message
+     * @param errorCode
+     */
     openSnackBar(errorCode: string) {
         this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
     }

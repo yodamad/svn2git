@@ -202,9 +202,20 @@ public class MigrationManager {
         if (StringUtils.isEmpty(migration.getSvnProject())) {
             gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
         } else {
-            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnProject());
+            // split svn structure to create gitlab elements (group(s), project)
+            String[] structure = migration.getSvnProject().split("/");
+            Integer groupId = group.getId();
+            if (structure.length > 2) {
+                for (int module = 1 ; module < structure.length - 2 ; module++) {
+                    Group gitlabSubGroup = new Group();
+                    gitlabSubGroup.setName(structure[module]);
+                    gitlabSubGroup.setPath(structure[module]);
+                    gitlabSubGroup.setParentId(groupId);
+                    groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+                }
+            }
+            gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
         }
-
         historyMgr.endStep(history, StatusEnum.DONE, null);
     }
 }

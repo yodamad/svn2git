@@ -88,8 +88,8 @@
                                 </th>
                                 <td mat-cell *matCellDef="let directory" style="width: 70px">
                                     <mat-checkbox (click)="$event.stopPropagation()"
-                                                  (change)="svnToggle($event, directory.name)"
-                                                  [checked]="svnChecked(directory.name)">
+                                                  (change)="svnToggle($event, directory.path)"
+                                                  [checked]="svnChecked(directory.path)">
                                     </mat-checkbox>
                                 </td>
                             </ng-container>

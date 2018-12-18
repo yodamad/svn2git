@@ -208,18 +208,7 @@ export class MigrationStepperComponent implements OnInit {
                 res => {
                     if (res.body.modules) {
                         this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, []);
-                        res.body.modules.forEach(module => {
-                            console.log('Inspecting ' + module.name);
-                            if (module.subModules.length > 0) {
-                                console.log(module.name + ' has submodules');
-                                module.subModules.forEach(submodule => {
-                                    console.log('Adding submodule ' + submodule.name);
-                                    this.svnDirectories.modules.push(submodule);
-                                });
-                            } else {
-                                this.svnDirectories.modules.push(module);
-                            }
-                        });
+                        res.body.modules.forEach(module => this.fillModules(module));
                     } else if (res.body.flat) {
                         this.useSvnRootFolder = true;
                     }
@@ -236,6 +225,20 @@ export class MigrationStepperComponent implements OnInit {
                     }
                 }
             );
+    }
+
+    /**
+     * Recurvice inspection of submodules
+     * @param module
+     */
+    fillModules(module: SvnModule) {
+        console.log('Inspecting ' + module.name);
+        if (module.subModules.length > 0) {
+            console.log(module.name + ' has submodules');
+            module.subModules.forEach(submodule => this.fillModules(submodule));
+        } else {
+            this.svnDirectories.modules.push(module);
+        }
     }
 
     /**

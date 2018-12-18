@@ -1,6 +1,6 @@
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MigrationProcessService } from 'app/migration/migration-process.service';
+import { MigrationProcessService, SvnFlatModule, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping, Mapping } from 'app/shared/model/mapping.model';
@@ -12,6 +12,7 @@ import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable, of as observableOf } from 'rxjs';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -55,7 +56,7 @@ export class MigrationStepperComponent implements OnInit {
     useDefaultSvn = true;
 
     // Input for migrations
-    svnDirectories: string[] = null;
+    svnDirectories: SvnStructure = null;
     migrationStarted = false;
     fileUnit = 'M';
     mig: IMigration;
@@ -205,7 +206,24 @@ export class MigrationStepperComponent implements OnInit {
             )
             .subscribe(
                 res => {
-                    this.svnDirectories = res.body;
+                    if (res.body.modules) {
+                        this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, []);
+                        res.body.modules.forEach(module => {
+                            console.log('Inspecting ' + module.name);
+                            if (module.subModules.length > 0) {
+                                console.log(module.name + ' has submodules');
+                                module.subModules.forEach(submodule => {
+                                    console.log('Adding submodule ' + submodule.name);
+                                    this.svnDirectories.modules.push(submodule);
+                                });
+                            } else {
+                                this.svnDirectories.modules.push(module);
+                            }
+                        });
+                    } else if (res.body.flat) {
+                        this.useSvnRootFolder = true;
+                    }
+
                     this.checkingSvnRepo = false;
                 },
                 error => {
@@ -360,14 +378,14 @@ export class MigrationStepperComponent implements OnInit {
         }
         // Force recheck
         this.svnRepoKO = true;
-        this.svnDirectories = [];
+        this.svnDirectories = null;
         this.svnSelection.clear();
     }
 
     /** Whether the number of selected elements matches the total number of rows. */
     isAllSvnSelected() {
         const numSelected = this.svnSelection.selected.length;
-        const numRows = this.svnDirectories.length;
+        const numRows = this.svnDirectories.modules.length;
         return numSelected === numRows;
     }
 
@@ -377,7 +395,7 @@ export class MigrationStepperComponent implements OnInit {
             this.svnSelection.clear();
             this.svnRepoKO = true;
         } else {
-            this.svnDirectories.forEach(row => this.svnSelection.select(row));
+            this.svnDirectories.modules.forEach(row => this.svnSelection.select(row.name));
             this.useSvnRootFolder = false;
             this.svnRepoKO = false;
         }
@@ -515,4 +533,17 @@ export class MigrationStepperComponent implements OnInit {
     openSnackBar(errorCode: string) {
         this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
     }
+
+    // SVN Tree elements
+    transformer = (node: SvnModule, level: number) => {
+        return new SvnFlatModule(node.name, node.path, node.subModules, !!node.subModules, level);
+    };
+
+    private _getLevel = (node: SvnFlatModule) => node.level;
+
+    private _isExpandable = (node: SvnFlatModule) => node.expandable;
+
+    private _getChildren = (node: SvnModule): Observable<SvnModule[]> => observableOf(node.subModules);
+
+    hasChild = (_: number, _nodeData: SvnFlatModule) => _nodeData.expandable;
 }

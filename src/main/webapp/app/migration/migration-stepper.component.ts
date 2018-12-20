@@ -398,7 +398,7 @@ export class MigrationStepperComponent implements OnInit {
             this.svnSelection.clear();
             this.svnRepoKO = true;
         } else {
-            this.svnDirectories.modules.forEach(row => this.svnSelection.select(row.name));
+            this.svnDirectories.modules.forEach(row => this.svnSelection.select(row.path));
             this.useSvnRootFolder = false;
             this.svnRepoKO = false;
         }

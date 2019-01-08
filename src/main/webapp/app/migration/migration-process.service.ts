@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
 
 type EntityResponseType = HttpResponse<boolean>;
-type EntityArrayResponseType = HttpResponse<string[]>;
+type EntityStructureResponseType = HttpResponse<SvnStructure>;
 type MigrationArrayResponseType = HttpResponse<IMigration[]>;
 
 @Injectable({ providedIn: 'root' })
@@ -37,11 +37,11 @@ export class MigrationProcessService {
             .pipe(map((res: EntityResponseType) => res));
     }
 
-    checkSvn(name: string, url: string, user: string, password: string): Observable<EntityArrayResponseType> {
+    checkSvn(name: string, url: string, user: string, password: string): Observable<EntityStructureResponseType> {
         const svnInfo = new SvnInfo(url, user, password);
         return this.http
-            .post<string[]>(`${this.repositoryUrl}/${name}`, svnInfo, { observe: 'response' })
-            .pipe(map((res: EntityArrayResponseType) => res));
+            .post<SvnStructure>(`${this.repositoryUrl}/${name}`, svnInfo, { observe: 'response' })
+            .pipe(map((res: EntityStructureResponseType) => res));
     }
 
     findMigrationByUser(user: string): Observable<MigrationArrayResponseType> {
@@ -63,4 +63,22 @@ class GitlabInfo {
 
 class SvnInfo {
     constructor(public url: string, public user: string, public password: string) {}
+}
+
+export class SvnStructure {
+    constructor(public name: string, public flat: boolean, public modules: SvnModule[]) {}
+}
+
+export class SvnModule {
+    constructor(public name: string, public path: string, public subModules: SvnModule[]) {}
+}
+
+export class SvnFlatModule {
+    constructor(
+        public name: string,
+        public path: string,
+        public subModules: SvnModule[],
+        public expandable: boolean,
+        public level: number
+    ) {}
 }

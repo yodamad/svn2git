@@ -253,7 +253,7 @@ export class MigrationStepperComponent implements OnInit {
      * Dynamically set css class on Check button
      * @param flag
      */
-    cssClass(flag: string) {
+    cssClass(flag: boolean) {
         return flag ? 'ko' : 'ok';
     }
 

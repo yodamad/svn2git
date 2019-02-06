@@ -190,7 +190,8 @@
                         <mat-checkbox *ngIf="row.svnDirectory !== undefined"
                             (click)="$event.stopPropagation()"
                             (change)="$event ? selection.toggle(row) : null"
-                            [checked]="selection.isSelected(row)">
+                            [checked]="selection.isSelected(row)"
+                            [disabled]="row.isStatic && !overrideStaticMappings">
                         </mat-checkbox>
                         <mat-icon *ngIf="row.svnDirectory === undefined" class="add-icon" (click)="addMapping()">add</mat-icon>
                     </td>
@@ -240,7 +241,8 @@
                     <td mat-cell *matCellDef="let extension">
                         <mat-checkbox (click)="$event.stopPropagation()"
                                       (change)="extensionToggle($event, extension)"
-                                      [checked]="extensionSelection.isSelected(extension)">
+                                      [checked]="extensionSelection.isSelected(extension)"
+                                      [(disabled)]="extension.isStatic && !overrideStaticExtensions" >
                         </mat-checkbox>
                     </td>
                 </ng-container>

@@ -15,6 +15,7 @@ public class ApplicationProperties {
     public Svn svn = new Svn();
     public Gitlab gitlab = new Gitlab();
     public Password password = new Password();
+    public Override override = new Override();
 
     public static class Work {
         public String directory = System.getenv("java.io.tmpdir");
@@ -106,6 +107,28 @@ public class ApplicationProperties {
         }
     }
 
+    public static class Override {
+        public boolean extensions;
+        public boolean mappings;
+
+        public boolean isExtensions() {
+            return extensions;
+        }
+
+        public void setExtensions(boolean extensions) {
+            this.extensions = extensions;
+        }
+
+        public boolean isMappings() {
+            return mappings;
+        }
+
+        public void setMappings(boolean mappings) {
+            this.mappings = mappings;
+        }
+    }
+
+
     public Work getWork() {
         return work;
     }
@@ -136,5 +159,13 @@ public class ApplicationProperties {
 
     public void setPassword(Password password) {
         this.password = password;
+    }
+
+    public Override getOverride() {
+        return override;
+    }
+
+    public void setOverride(Override override) {
+        this.override = override;
     }
 }

@@ -1,0 +1,35 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="staticExtension">
+            <h2><span jhiTranslate="svn2GitApp.staticExtension.detail.title">Static Extension</span> {{staticExtension.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="svn2GitApp.staticExtension.value">Value</span></dt>
+                <dd>
+                    <span>{{staticExtension.value}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.staticExtension.description">Description</span></dt>
+                <dd>
+                    <span>{{staticExtension.description}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.staticExtension.enabled">Enabled</span></dt>
+                <dd>
+                    <span>{{staticExtension.enabled}}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/static-extension', staticExtension.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -13,6 +13,8 @@ import { StaticMapping } from 'app/shared/model/static-mapping.model';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of as observableOf } from 'rxjs';
+import { StaticExtension } from 'app/shared/model/static-extension.model';
+import { StaticExtensionService } from 'app/entities/static-extension';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -21,14 +23,7 @@ import { Observable, of as observableOf } from 'rxjs';
 })
 export class MigrationStepperComponent implements OnInit {
     // Static data
-    staticExtensions: any[] = [
-        { label: '*.zip', value: '*.zip' },
-        { label: '*.*ar (including ear, jar, war...)', value: '*.*ar' },
-        { label: '*.ear', value: '*.ear' },
-        { label: '*.jar', value: '*.jar' },
-        { label: '*.war', value: '*.war' },
-        { label: '*.tar', value: '*.tar' }
-    ];
+    staticExtensions: StaticExtension[];
     staticDirectories: string[] = ['trunk', 'branches', 'tags'];
 
     // SnackBar config
@@ -92,7 +87,8 @@ export class MigrationStepperComponent implements OnInit {
         private _matDialog: MatDialog,
         private _changeDetectorRefs: ChangeDetectorRef,
         private _errorSnackBar: MatSnackBar,
-        private _translationService: TranslateService
+        private _translationService: TranslateService,
+        private _extensionsService: StaticExtensionService
     ) {
         // Init snack bar configuration
         this.snackBarConfig.panelClass = ['errorPanel'];
@@ -107,6 +103,9 @@ export class MigrationStepperComponent implements OnInit {
             this.mappings.push(new Mapping());
             this.initialSelection = this.mappings;
             this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
+        });
+        this._extensionsService.query().subscribe(res => {
+            this.staticExtensions = res.body;
         });
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
@@ -488,7 +487,7 @@ export class MigrationStepperComponent implements OnInit {
     addExtension() {
         if (this.addExtentionFormControl.value !== undefined && this.addExtentionFormControl.value !== '') {
             this.staticExtensions = this.staticExtensions.concat([
-                { label: this.addExtentionFormControl.value, value: this.addExtentionFormControl.value }
+                { value: this.addExtentionFormControl.value, description: this.addExtentionFormControl.value }
             ]);
         }
     }

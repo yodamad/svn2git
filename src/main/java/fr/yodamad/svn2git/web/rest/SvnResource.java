@@ -1,12 +1,12 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.SvnInfo;
 import fr.yodamad.svn2git.domain.SvnStructure;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tmatesoft.svn.core.SVNDepth;
@@ -31,17 +31,13 @@ public class SvnResource {
     /** Logger. */
     private final Logger log = LoggerFactory.getLogger(SvnResource.class);
     /** SVN global url. */
-    private final String svnUrl;
-    /** SVN default user. */
-    @Value("${svn.user}") String svnUser;
-    /** SVN default password. */
-    @Value("${svn.password}") String svnPassword;
+    private final ApplicationProperties applicationProperties;
 
     /**
-     * @param svnUrl Configured SVN repository URL
+     * @param applicationProperties Application properties
      */
-    public SvnResource(@Value("${svn.url}") String svnUrl) {
-        this.svnUrl = svnUrl;
+    public SvnResource(ApplicationProperties applicationProperties) {
+        this.applicationProperties = applicationProperties;
     }
 
     /** SVN keywords. */
@@ -100,8 +96,11 @@ public class SvnResource {
         // Set authentication if needed
         if (!StringUtils.isEmpty(svnInfo.user)) {
             operationFactory.setAuthenticationManager(BasicAuthenticationManager.newInstance(svnInfo.user, svnInfo.password.toCharArray()));
-        } else if (!StringUtils.isEmpty(svnUser)) {
-            operationFactory.setAuthenticationManager(BasicAuthenticationManager.newInstance(svnUser, svnPassword.toCharArray()));
+        } else if (!StringUtils.isEmpty(applicationProperties.svn.user)) {
+            operationFactory.setAuthenticationManager(
+                BasicAuthenticationManager.newInstance(
+                    applicationProperties.svn.user,
+                    applicationProperties.svn.password.toCharArray()));
         }
 
         SvnList list = operationFactory.createList();

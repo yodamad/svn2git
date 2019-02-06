@@ -1,7 +1,8 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import org.springframework.beans.factory.annotation.Value;
+import fr.yodamad.svn2git.config.ApplicationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/config/")
 public class ConfigurationResource {
 
-    /** SVN Url. */
-    @Value("${svn.url}") private String svnUrl;
-    /** Gitlab Url. */
-    @Value("${gitlab.url}") private String gitlabUrl;
+    @Autowired
+    private ApplicationProperties applicationProperties;
 
     /**
      * @return Configured SVN URL
@@ -28,7 +27,7 @@ public class ConfigurationResource {
     public ResponseEntity<String> getSvnUrl() {
         return ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
-            .body(svnUrl);
+            .body(applicationProperties.svn.url);
     }
 
     /**
@@ -39,7 +38,7 @@ public class ConfigurationResource {
     public ResponseEntity<String> getGitlabUrl() {
         return ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
-            .body(gitlabUrl);
+            .body(applicationProperties.gitlab.url);
     }
 
 }

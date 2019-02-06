@@ -102,20 +102,6 @@ jhipster:
 logging:
     file: target/svn2git.log
 
-gitlab:
-    url: http://localhost/
-    svc-account: svc-gitlab
-    token: snikiuSUbxDYCsAnWWtE
-
-svn:
-    url: svn://localhost/
-    user:
-    password:
-
-app.work.directory: d:\tmpsvn\
-
-password.cipher: svn2git
-
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class
@@ -125,4 +111,14 @@ password.cipher: svn2git
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+    password.cipher: svn2git
+    work.directory: d:\tmpsvn\
+    gitlab:
+        url: http://localhost/
+        account: svc-gitlab
+        token: snikiuSUbxDYCsAnWWtE
+    svn:
+        url: svn://localhost/
+        user:
+        password:

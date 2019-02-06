@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git.service;
 
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.WorkUnit;
@@ -9,11 +10,11 @@ import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Group;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -32,11 +33,6 @@ import static java.lang.String.format;
 @Service
 public class MigrationManager {
 
-    // Configuration
-    @Value("${gitlab.url}") String gitlabUrl;
-    @Value("${gitlab.svc-account}") String gitlabSvcUser;
-    @Value("${app.work.directory:#{systemProperties['java.io.tmpdir']}}") String workDirectory;
-
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
 
     /** Gitlab API. */
@@ -47,17 +43,21 @@ public class MigrationManager {
     private final Cleaner cleaner;
     // Repositories
     private final MigrationRepository migrationRepository;
+    // Configuration
+    private final ApplicationProperties applicationProperties;
 
     public MigrationManager(final Cleaner cleaner,
                             final GitlabAdmin gitlabAdmin,
                             final GitManager gitManager,
                             final HistoryManager historyManager,
-                            final MigrationRepository migrationRepository) {
+                            final MigrationRepository migrationRepository,
+                            final ApplicationProperties applicationProperties) {
         this.cleaner = cleaner;
         this.gitlab = gitlabAdmin;
         this.gitManager = gitManager;
         this.historyMgr = historyManager;
         this.migrationRepository = migrationRepository;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -72,7 +72,7 @@ public class MigrationManager {
 
         try {
 
-            String rootDir = workingDir(workDirectory, migration);
+            String rootDir = workingDir(applicationProperties.work.directory, migration);
             WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
 
             // Start migration
@@ -193,8 +193,9 @@ public class MigrationManager {
         MigrationHistory history = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
         GitlabAdmin gitlabAdmin = gitlab;
-        if (!gitlabUrl.equalsIgnoreCase(migration.getGitlabUrl())) {
-            gitlabAdmin = new GitlabAdmin(migration.getGitlabUrl(), migration.getGitlabToken());
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(migration.getGitlabUrl())) {
+            GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
+            gitlabAdmin.setGitLabApi(api);
         }
         Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
 

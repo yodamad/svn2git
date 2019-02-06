@@ -1,20 +1,20 @@
 package fr.yodamad.svn2git.service.util;
 
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GroupApi;
 import org.gitlab4j.api.ProjectApi;
 import org.gitlab4j.api.UserApi;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GitlabAdmin {
 
     /** Gitlab API wrapper. */
-    private final GitLabApi gitLabApi;
+    private GitLabApi gitLabApi;
 
-    public GitlabAdmin(@Value("${gitlab.url}") String gitlabUrl, @Value("${gitlab.token}") String gitlabToken) {
-        gitLabApi = new GitLabApi(gitlabUrl, gitlabToken);
+    public GitlabAdmin(ApplicationProperties applicationProperties) {
+        gitLabApi = new GitLabApi(applicationProperties.gitlab.url, applicationProperties.gitlab.token);
         gitLabApi.setIgnoreCertificateErrors(true);
     }
 
@@ -32,5 +32,9 @@ public class GitlabAdmin {
 
     public ProjectApi projectApi() {
         return this.gitLabApi.getProjectApi();
+    }
+
+    public void setGitLabApi(GitLabApi gitLabApi) {
+        this.gitLabApi = gitLabApi;
     }
 }

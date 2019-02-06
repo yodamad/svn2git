@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git.service;
 
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.WorkUnit;
@@ -40,19 +41,19 @@ import static java.nio.file.Files.walk;
 @Service
 public class GitManager {
 
-    @Value("${app.work.directory:#{systemProperties['java.io.tmpdir']}}")
-    private String workDirectory;
-
     private static final Logger LOG = LoggerFactory.getLogger(GitManager.class);
 
     // Manager & repository
     private final HistoryManager historyMgr;
     private final MappingRepository mappingRepository;
+    private final ApplicationProperties applicationProperties;
 
     public GitManager(final HistoryManager historyManager,
-                      final MappingRepository mappingRepository) {
+                      final MappingRepository mappingRepository,
+                      final ApplicationProperties applicationProperties) {
         this.historyMgr = historyManager;
         this.mappingRepository = mappingRepository;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -76,7 +77,7 @@ public class GitManager {
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLONE, initCommand);
 
         String mkdir = format("mkdir %s", workUnit.directory);
-        execCommand(workDirectory, mkdir);
+        execCommand(applicationProperties.work.directory, mkdir);
 
         // 2.1. Clone as mirror empty repository, required for BFG
         execCommand(workUnit.root, initCommand);

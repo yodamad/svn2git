@@ -124,9 +124,8 @@ public class MigrationManager {
                     } else {
                         execCommand(workUnit.directory, GIT_PUSH);
                     }
-
-                    historyMgr.endStep(history, StatusEnum.DONE, null);
                 }
+                historyMgr.endStep(history, StatusEnum.DONE, null);
 
                 // Clean pending file(s) removed by BFG
                 gitCommand = "git reset --hard origin/master";

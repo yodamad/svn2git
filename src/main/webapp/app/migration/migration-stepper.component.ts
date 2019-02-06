@@ -13,7 +13,7 @@ import { StaticMapping } from 'app/shared/model/static-mapping.model';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of as observableOf } from 'rxjs';
-import { StaticExtension } from 'app/shared/model/static-extension.model';
+import { IStaticExtension, StaticExtension } from 'app/shared/model/static-extension.model';
 import { StaticExtensionService } from 'app/entities/static-extension';
 
 @Component({
@@ -72,7 +72,7 @@ export class MigrationStepperComponent implements OnInit {
     useSvnRootFolder = false;
 
     // Extension selection
-    extensionSelection: SelectionModel<any>;
+    extensionSelection: SelectionModel<IStaticExtension>;
 
     // Waiting flag
     checkingGitlabUser = false;
@@ -106,6 +106,7 @@ export class MigrationStepperComponent implements OnInit {
         });
         this._extensionsService.query().subscribe(res => {
             this.staticExtensions = res.body;
+            this.extensionSelection = new SelectionModel<IStaticExtension>(this.allowMultiSelect, this.staticExtensions);
         });
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
@@ -132,7 +133,6 @@ export class MigrationStepperComponent implements OnInit {
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
         this.addExtentionFormControl = new FormControl('', []);
-        this.extensionSelection = new SelectionModel<string>(this.allowMultiSelect, this.initialSelection);
     }
 
     /**
@@ -469,7 +469,7 @@ export class MigrationStepperComponent implements OnInit {
      * @param event
      * @param extension
      */
-    extensionToggle(event: MatCheckboxChange, extension: string) {
+    extensionToggle(event: MatCheckboxChange, extension: IStaticExtension) {
         if (event) {
             return this.extensionSelection.toggle(extension);
         }

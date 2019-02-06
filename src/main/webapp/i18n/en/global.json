@@ -11,6 +11,7 @@
                 "migrationHistory": "Migration History",
                 "mapping": "Mapping",
                 "staticMapping": "Static Mapping",
+                "staticExtension": "Static Extension",
                 "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
             },
             "account": {

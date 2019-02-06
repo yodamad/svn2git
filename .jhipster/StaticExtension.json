@@ -1,0 +1,29 @@
+{
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "relationships": [],
+    "fields": [
+        {
+            "fieldName": "value",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "description",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "enabled",
+            "fieldType": "Boolean"
+        }
+    ],
+    "changelogDate": "20190206173520",
+    "dto": "no",
+    "searchEngine": false,
+    "service": "no",
+    "entityTableName": "static_extension",
+    "jpaMetamodelFiltering": false,
+    "pagination": "no"
+}

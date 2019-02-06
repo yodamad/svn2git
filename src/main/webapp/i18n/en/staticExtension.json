@@ -1,0 +1,24 @@
+
+{
+    "svn2GitApp": {
+        "staticExtension" : {
+            "home": {
+                "title": "Static Extensions",
+                "createLabel": "Create a new Static Extension",
+                "createOrEditLabel": "Create or edit a Static Extension"
+            },
+            "created": "A new Static Extension is created with identifier {{ param }}",
+            "updated": "A Static Extension is updated with identifier {{ param }}",
+            "deleted": "A Static Extension is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Static Extension {{ id }}?"
+            },
+            "detail": {
+                "title": "Static Extension"
+            },
+            "value": "Value",
+            "description": "Description",
+            "enabled": "Enabled"
+        }
+    }
+}

@@ -39,7 +39,7 @@ public abstract class Shell {
             return directory + "\\" + today + "_" + mig.getId();
         }
         if (!new File(directory).exists()) {
-            String mkdir = format("mkdir %s", directory);
+            String mkdir = format("mkdir -p %s", directory);
             execCommand("/", mkdir);
         }
         return directory + "/" + today + "_" + mig.getId();

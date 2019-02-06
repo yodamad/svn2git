@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.*;
 import static fr.yodamad.svn2git.service.util.Shell.execCommand;
+import static fr.yodamad.svn2git.service.util.Shell.isWindows;
 import static java.lang.String.format;
 import static java.nio.file.Files.walk;
 
@@ -76,7 +77,12 @@ public class GitManager {
 
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLONE, initCommand);
 
-        String mkdir = format("mkdir %s", workUnit.directory);
+        String mkdir;
+        if (isWindows) {
+            mkdir = format("mkdir %s", workUnit.directory);
+        } else {
+            mkdir = format("mkdir -p %s", workUnit.directory);
+        }
         execCommand(applicationProperties.work.directory, mkdir);
 
         // 2.1. Clone as mirror empty repository, required for BFG

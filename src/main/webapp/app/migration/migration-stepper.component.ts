@@ -23,7 +23,7 @@ import { StaticExtensionService } from 'app/entities/static-extension';
 })
 export class MigrationStepperComponent implements OnInit {
     // Static data
-    staticExtensions: StaticExtension[];
+    staticExtensions: StaticExtension[] = [];
     staticDirectories: string[] = ['trunk', 'branches', 'tags'];
 
     // SnackBar config
@@ -72,7 +72,7 @@ export class MigrationStepperComponent implements OnInit {
     useSvnRootFolder = false;
 
     // Extension selection
-    extensionSelection: SelectionModel<IStaticExtension>;
+    extensionSelection: SelectionModel<IStaticExtension> = new SelectionModel<IStaticExtension>();
 
     // Waiting flag
     checkingGitlabUser = false;

@@ -12,6 +12,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -38,6 +39,9 @@ import static java.nio.file.Files.walk;
  */
 @Service
 public class GitManager {
+
+    @Value("${app.work.directory:#{systemProperties['java.io.tmpdir']}}")
+    private String workDirectory;
 
     private static final Logger LOG = LoggerFactory.getLogger(GitManager.class);
 
@@ -72,7 +76,7 @@ public class GitManager {
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLONE, initCommand);
 
         String mkdir = format("mkdir %s", workUnit.directory);
-        execCommand(System.getProperty(JAVA_IO_TMPDIR), mkdir);
+        execCommand(workDirectory, mkdir);
 
         // 2.1. Clone as mirror empty repository, required for BFG
         execCommand(workUnit.root, initCommand);

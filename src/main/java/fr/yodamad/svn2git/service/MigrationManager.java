@@ -35,6 +35,7 @@ public class MigrationManager {
     // Configuration
     @Value("${gitlab.url}") String gitlabUrl;
     @Value("${gitlab.svc-account}") String gitlabSvcUser;
+    @Value("${app.work.directory:#{systemProperties['java.io.tmpdir']}}") String workDirectory;
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
 
@@ -69,10 +70,10 @@ public class MigrationManager {
         Migration migration = migrationRepository.findById(migrationId).get();
         MigrationHistory history = null;
 
-        String rootDir = workingDir(migration);
-        WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
-
         try {
+
+            String rootDir = workingDir(workDirectory, migration);
+            WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
 
             // Start migration
             migration.setStatus(StatusEnum.RUNNING);

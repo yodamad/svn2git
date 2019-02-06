@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import static fr.yodamad.svn2git.service.util.MigrationConstants.JAVA_IO_TMPDIR;
 import static java.lang.String.format;
 
 /**
@@ -24,15 +23,26 @@ public abstract class Shell {
 
     /**
      * Get working directory
+     * @param directory
      * @param mig
      * @return
+     * @throws InterruptedException
+     * @throws IOException
      */
-    public static String workingDir(Migration mig) {
+    public static String workingDir(String directory, Migration mig) throws IOException, InterruptedException {
         String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         if (isWindows) {
-            return System.getProperty(JAVA_IO_TMPDIR) + "\\" + today + "_" + mig.getId();
+            if (!new File(directory).exists()) {
+                String mkdir = format("mkdir %s", directory);
+                execCommand(System.getenv("SystemDrive"), mkdir);
+            }
+            return directory + "\\" + today + "_" + mig.getId();
         }
-        return System.getProperty(JAVA_IO_TMPDIR) + "/" + today + "_" + mig.getId();
+        if (!new File(directory).exists()) {
+            String mkdir = format("mkdir %s", directory);
+            execCommand("/", mkdir);
+        }
+        return directory + "/" + today + "_" + mig.getId();
     }
 
     /**

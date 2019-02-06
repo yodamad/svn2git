@@ -112,6 +112,8 @@ svn:
     user:
     password:
 
+app.work.directory: d:\ tmpsvn\
+
 password.cipher: svn2git
 
 # ===================================================================

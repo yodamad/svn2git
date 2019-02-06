@@ -20,7 +20,7 @@
         <java.version>1.8</java.version>
         <scala.version>2.12.6</scala.version>
         <node.version>v8.12.0</node.version>
-        <yarn.version>v0.16.1</yarn.version>
+        <yarn.version>v1.10.1</yarn.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.testresult.directory>${project.build.directory}/test-results</project.testresult.directory>
@@ -712,7 +712,7 @@
                                 <phase>generate-resources</phase>
                                 <configuration>
                                     <arguments>run webpack:build</arguments>
-                                    <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
+                                    <npmInheritsProxyConfigFromMaven>true</npmInheritsProxyConfigFromMaven>
                                 </configuration>
                             </execution>
                         </executions>
@@ -873,7 +873,7 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <arguments>run webpack:test</arguments>
-                                    <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
+                                    <npmInheritsProxyConfigFromMaven>true</npmInheritsProxyConfigFromMaven>
                                 </configuration>
                             </execution>
                             <execution>
@@ -884,7 +884,7 @@
                                 <phase>generate-resources</phase>
                                 <configuration>
                                     <arguments>run webpack:prod</arguments>
-                                    <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
+                                    <npmInheritsProxyConfigFromMaven>true</npmInheritsProxyConfigFromMaven>
                                 </configuration>
                             </execution>
                         </executions>

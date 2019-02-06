@@ -240,7 +240,8 @@
                     <td mat-cell *matCellDef="let extension">
                         <mat-checkbox (click)="$event.stopPropagation()"
                                       (change)="extensionToggle($event, extension)"
-                                      [checked]="extensionSelection.isSelected(extension)">
+                                      [checked]="extensionSelection.isSelected(extension)"
+                                      [(disabled)]="extension.isStatic" >
                         </mat-checkbox>
                     </td>
                 </ng-container>

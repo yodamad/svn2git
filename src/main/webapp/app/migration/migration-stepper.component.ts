@@ -13,7 +13,7 @@ import { StaticMapping } from 'app/shared/model/static-mapping.model';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of as observableOf } from 'rxjs';
-import { IStaticExtension, StaticExtension } from 'app/shared/model/static-extension.model';
+import { Extension, IStaticExtension, StaticExtension } from 'app/shared/model/static-extension.model';
 import { StaticExtensionService } from 'app/entities/static-extension';
 
 @Component({
@@ -23,7 +23,7 @@ import { StaticExtensionService } from 'app/entities/static-extension';
 })
 export class MigrationStepperComponent implements OnInit {
     // Static data
-    staticExtensions: StaticExtension[];
+    staticExtensions: Extension[];
     staticDirectories: string[] = ['trunk', 'branches', 'tags'];
 
     // SnackBar config
@@ -72,7 +72,7 @@ export class MigrationStepperComponent implements OnInit {
     useSvnRootFolder = false;
 
     // Extension selection
-    extensionSelection: SelectionModel<IStaticExtension>;
+    extensionSelection: SelectionModel<Extension> = new SelectionModel<Extension>();
 
     // Waiting flag
     checkingGitlabUser = false;
@@ -105,8 +105,9 @@ export class MigrationStepperComponent implements OnInit {
             this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
         });
         this._extensionsService.query().subscribe(res => {
-            this.staticExtensions = res.body;
-            this.extensionSelection = new SelectionModel<IStaticExtension>(this.allowMultiSelect, this.staticExtensions);
+            this.staticExtensions = res.body as Extension[];
+            this.staticExtensions.forEach(ext => (ext.isStatic = true));
+            this.extensionSelection = new SelectionModel<Extension>(this.allowMultiSelect, this.staticExtensions);
         });
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
@@ -458,7 +459,9 @@ export class MigrationStepperComponent implements OnInit {
     /** Selects all rows if they are not all selected; otherwise clear selection. */
     masterExtensionToggle() {
         if (this.isAllExtensionSelected()) {
+            const customExts: Extension[] = this.staticExtensions.filter(ext => ext.isStatic);
             this.extensionSelection.clear();
+            customExts.forEach(row => this.extensionSelection.select(row));
         } else {
             this.staticExtensions.forEach(row => this.extensionSelection.select(row));
         }
@@ -469,7 +472,7 @@ export class MigrationStepperComponent implements OnInit {
      * @param event
      * @param extension
      */
-    extensionToggle(event: MatCheckboxChange, extension: IStaticExtension) {
+    extensionToggle(event: MatCheckboxChange, extension: Extension) {
         if (event) {
             return this.extensionSelection.toggle(extension);
         }
@@ -487,9 +490,10 @@ export class MigrationStepperComponent implements OnInit {
     addExtension() {
         if (this.addExtentionFormControl.value !== undefined && this.addExtentionFormControl.value !== '') {
             this.staticExtensions = this.staticExtensions.concat([
-                { value: this.addExtentionFormControl.value, description: this.addExtentionFormControl.value }
+                { value: this.addExtentionFormControl.value, description: this.addExtentionFormControl.value, isStatic: false }
             ]);
         }
+        this.addExtentionFormControl.reset();
     }
 
     /** Whether the number of selected elements matches the total number of rows. */
@@ -535,17 +539,4 @@ export class MigrationStepperComponent implements OnInit {
     openSnackBar(errorCode: string) {
         this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
     }
-
-    // SVN Tree elements
-    transformer = (node: SvnModule, level: number) => {
-        return new SvnFlatModule(node.name, node.path, node.subModules, !!node.subModules, level);
-    };
-
-    private _getLevel = (node: SvnFlatModule) => node.level;
-
-    private _isExpandable = (node: SvnFlatModule) => node.expandable;
-
-    private _getChildren = (node: SvnModule): Observable<SvnModule[]> => observableOf(node.subModules);
-
-    hasChild = (_: number, _nodeData: SvnFlatModule) => _nodeData.expandable;
 }

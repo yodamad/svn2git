@@ -100,6 +100,7 @@ export class MigrationStepperComponent implements OnInit {
     ngOnInit() {
         this._mappingService.query().subscribe(res => {
             this.mappings = res.body;
+            this.mappings.forEach(mp => (mp.isStatic = true));
             this.mappings.push(new Mapping());
             this.initialSelection = this.mappings;
             this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
@@ -350,7 +351,13 @@ export class MigrationStepperComponent implements OnInit {
 
     /** Selects all rows if they are not all selected; otherwise clear selection. */
     masterToggle() {
-        this.isAllSelected() ? this.selection.clear() : this.mappings.forEach(row => this.selection.select(row));
+        if (this.isAllSelected()) {
+            const staticMappings = this.mappings.filter(mp => mp.isStatic);
+            this.selection.clear();
+            staticMappings.forEach(row => this.selection.select(row));
+        } else {
+            this.mappings.forEach(row => this.selection.select(row));
+        }
     }
 
     /** Reverse flag for gitlab default url. */
@@ -459,9 +466,9 @@ export class MigrationStepperComponent implements OnInit {
     /** Selects all rows if they are not all selected; otherwise clear selection. */
     masterExtensionToggle() {
         if (this.isAllExtensionSelected()) {
-            const customExts: Extension[] = this.staticExtensions.filter(ext => ext.isStatic);
+            const staticExts: Extension[] = this.staticExtensions.filter(ext => ext.isStatic);
             this.extensionSelection.clear();
-            customExts.forEach(row => this.extensionSelection.select(row));
+            staticExts.forEach(row => this.extensionSelection.select(row));
         } else {
             this.staticExtensions.forEach(row => this.extensionSelection.select(row));
         }

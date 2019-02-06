@@ -1,6 +1,6 @@
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MigrationProcessService, SvnFlatModule, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
+import { MigrationProcessService, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping, Mapping } from 'app/shared/model/mapping.model';
@@ -12,9 +12,9 @@ import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, of as observableOf } from 'rxjs';
-import { Extension, IStaticExtension, StaticExtension } from 'app/shared/model/static-extension.model';
+import { Extension } from 'app/shared/model/static-extension.model';
 import { StaticExtensionService } from 'app/entities/static-extension';
+import { ConfigurationService } from 'app/shared/service/configuration-service';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -49,6 +49,8 @@ export class MigrationStepperComponent implements OnInit {
     mappings: IMapping[] = [];
     useDefaultGitlab = true;
     useDefaultSvn = true;
+    overrideStaticExtensions = false;
+    overrideStaticMappings = false;
 
     // Input for migrations
     svnDirectories: SvnStructure = null;
@@ -88,7 +90,8 @@ export class MigrationStepperComponent implements OnInit {
         private _changeDetectorRefs: ChangeDetectorRef,
         private _errorSnackBar: MatSnackBar,
         private _translationService: TranslateService,
-        private _extensionsService: StaticExtensionService
+        private _extensionsService: StaticExtensionService,
+        private _configurationService: ConfigurationService
     ) {
         // Init snack bar configuration
         this.snackBarConfig.panelClass = ['errorPanel'];
@@ -135,6 +138,9 @@ export class MigrationStepperComponent implements OnInit {
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
         this.addExtentionFormControl = new FormControl('', []);
+
+        this._configurationService.overrideStaticExtensions().subscribe(res => (this.overrideStaticExtensions = res));
+        this._configurationService.overrideStaticMappings().subscribe(res => (this.overrideStaticMappings = res));
     }
 
     /**
@@ -352,9 +358,11 @@ export class MigrationStepperComponent implements OnInit {
     /** Selects all rows if they are not all selected; otherwise clear selection. */
     masterToggle() {
         if (this.isAllSelected()) {
-            const staticMappings = this.mappings.filter(mp => mp.isStatic);
             this.selection.clear();
-            staticMappings.forEach(row => this.selection.select(row));
+            if (!this.overrideStaticMappings) {
+                const staticMappings = this.mappings.filter(mp => mp.isStatic);
+                staticMappings.forEach(row => this.selection.select(row));
+            }
         } else {
             this.mappings.forEach(row => this.selection.select(row));
         }
@@ -466,9 +474,11 @@ export class MigrationStepperComponent implements OnInit {
     /** Selects all rows if they are not all selected; otherwise clear selection. */
     masterExtensionToggle() {
         if (this.isAllExtensionSelected()) {
-            const staticExts: Extension[] = this.staticExtensions.filter(ext => ext.isStatic);
             this.extensionSelection.clear();
-            staticExts.forEach(row => this.extensionSelection.select(row));
+            if (!this.overrideStaticExtensions) {
+                const staticExts: Extension[] = this.staticExtensions.filter(ext => ext.isStatic);
+                staticExts.forEach(row => this.extensionSelection.select(row));
+            }
         } else {
             this.staticExtensions.forEach(row => this.extensionSelection.select(row));
         }

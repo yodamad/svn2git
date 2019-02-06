@@ -13,6 +13,9 @@ export class ConfigurationService {
     private resourceUrl = SERVER_API_URL + 'api/config/';
     private svnUrl = this.resourceUrl + 'svn';
     private gitlabUrl = this.resourceUrl + 'gitlab';
+    private overrideUrl = this.resourceUrl + 'override/';
+    private extensionsUrl = this.overrideUrl + 'extensions';
+    private mappingsUrl = this.overrideUrl + 'mappings';
 
     constructor(private http: HttpClient) {}
 
@@ -28,6 +31,20 @@ export class ConfigurationService {
      */
     gitlab(): Observable<string> {
         return this.http.get(`${this.gitlabUrl}`, { responseType: 'text' }).pipe(map(res => res));
+    }
+
+    /**
+     * @return configuration for static extensions
+     */
+    overrideStaticExtensions(): Observable<boolean> {
+        return this.http.get(`${this.extensionsUrl}`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
+    }
+
+    /**
+     * @return configuration for static mappings
+     */
+    overrideStaticMappings(): Observable<boolean> {
+        return this.http.get(`${this.mappingsUrl}`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
     }
 
     /**

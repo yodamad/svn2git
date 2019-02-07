@@ -118,10 +118,12 @@ application:
         url: http://localhost/
         account: svc-gitlab
         token: snikiuSUbxDYCsAnWWtE
+        credentials: optional
     svn:
         url: svn://localhost/
         user:
         password:
+        credentials: required
     override:
         extensions: false
         mappings: false

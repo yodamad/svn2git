@@ -31,6 +31,17 @@ public class ConfigurationResource {
     }
 
     /**
+     * @return Configured SVN credentials option
+     */
+    @Timed
+    @GetMapping("svn/credentials")
+    public ResponseEntity<String> getSvnCredentialsOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_PLAIN)
+            .body(applicationProperties.svn.credentials);
+    }
+
+    /**
      * @return Configured Gitlab URL
      */
     @Timed
@@ -39,6 +50,17 @@ public class ConfigurationResource {
         return ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
             .body(applicationProperties.gitlab.url);
+    }
+
+    /**
+     * @return Configured gitlab credentials option
+     */
+    @Timed
+    @GetMapping("gitlab/credentials")
+    public ResponseEntity<String> getGitlabCredentialsOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_PLAIN)
+            .body(applicationProperties.gitlab.credentials);
     }
 
     /**

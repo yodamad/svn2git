@@ -16,6 +16,8 @@ import { Extension } from 'app/shared/model/static-extension.model';
 import { StaticExtensionService } from 'app/entities/static-extension';
 import { ConfigurationService } from 'app/shared/service/configuration-service';
 
+export const REQUIRED: string = 'required';
+
 @Component({
     selector: 'jhi-migration-stepper.component',
     templateUrl: 'migration-stepper.component.html',
@@ -58,7 +60,9 @@ export class MigrationStepperComponent implements OnInit {
     fileUnit = 'M';
     mig: IMigration;
     svnUrl: string;
+    svnCredsOption: string;
     gitlabUrl: string;
+    gitlabCredsOption: string;
 
     /// Svn selections
     svnSelection: SelectionModel<string>;
@@ -141,6 +145,20 @@ export class MigrationStepperComponent implements OnInit {
 
         this._configurationService.overrideStaticExtensions().subscribe(res => (this.overrideStaticExtensions = res));
         this._configurationService.overrideStaticMappings().subscribe(res => (this.overrideStaticMappings = res));
+        this._configurationService.gitlabCredsOption().subscribe(res => {
+            this.gitlabCredsOption = res;
+            this.useDefaultGitlab = res !== REQUIRED;
+            if (!this.useDefaultGitlab) {
+                this.gitlabFormGroup.get('gitlabURL').enable();
+            }
+        });
+        this._configurationService.svnCredsOption().subscribe(res => {
+            this.svnCredsOption = res;
+            this.useDefaultSvn = res !== REQUIRED;
+            if (!this.useDefaultSvn) {
+                this.svnFormGroup.get('svnURL').enable();
+            }
+        });
     }
 
     /**

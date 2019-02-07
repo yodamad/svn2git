@@ -36,6 +36,8 @@ public class ApplicationProperties {
         public String password;
         /** SVN Url. */
         public String url;
+        /** Flag for credentials. */
+        public String credentials;
 
         public String getUser() {
             return user;
@@ -60,6 +62,14 @@ public class ApplicationProperties {
         public void setUrl(String url) {
             this.url = url;
         }
+
+        public String getCredentials() {
+            return credentials;
+        }
+
+        public void setCredentials(String credentials) {
+            this.credentials = credentials;
+        }
     }
 
     public static class Gitlab {
@@ -69,6 +79,8 @@ public class ApplicationProperties {
         public String account;
         /** Gitlab access token. */
         public String token;
+        /** Flag for credentials. */
+        public String credentials;
 
         public String getUrl() {
             return url;
@@ -92,6 +104,14 @@ public class ApplicationProperties {
 
         public void setToken(String token) {
             this.token = token;
+        }
+
+        public String getCredentials() {
+            return credentials;
+        }
+
+        public void setCredentials(String credentials) {
+            this.credentials = credentials;
         }
     }
 

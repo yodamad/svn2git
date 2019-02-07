@@ -5,14 +5,14 @@
             <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Create your Gitlab account</span></ng-template>
             <div style="margin-bottom: 10px">
                 <span jhiTranslate="migration-process.gitlab.use.default">Use default URL</span>
-                <mat-checkbox [checked]="useDefaultGitlab" (change)="reverseGitlab()"></mat-checkbox>
+                <mat-checkbox [checked]="useDefaultGitlab" (change)="reverseGitlab()" [disabled]="gitlabCredsOption === 'required'"></mat-checkbox>
             </div>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="{{'migration-process.gitlab.url' | translate}}" [(disabled)]="useDefaultGitlab" formControlName="gitlabURL" required>
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultGitlab">
-                    <input matInput placeholder="{{'migration-process.gitlab.token' | translate}}" formControlName="gitlabToken">
+                    <input matInput placeholder="{{'migration-process.gitlab.token' | translate}}" formControlName="gitlabToken" [required]="gitlabCredsOption === 'required'">
                 </mat-form-field>
             </div>
             <div>
@@ -46,17 +46,17 @@
             <ng-template matStepLabel><span jhiTranslate="migration-process.svn.check.repository">Check your SVN repository</span></ng-template>
             <div style="margin-bottom: 10px">
                 <span jhiTranslate="migration-process.svn.use.default">Use default URL</span>
-                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()"></mat-checkbox>
+                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()" [disabled]="svnCredsOption === 'required'"></mat-checkbox>
             </div>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="{{'migration-process.svn.url' | translate}}" formControlName="svnURL">
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultSvn">
-                    <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser">
+                    <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser" [required]="svnCredsOption === 'required'">
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultSvn">
-                    <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password">
+                    <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password" [required]="svnCredsOption === 'required'">
                 </mat-form-field>
             </div>
             <div>

@@ -1,6 +1,6 @@
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MigrationProcessService, SvnFlatModule, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
+import { MigrationProcessService, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping, Mapping } from 'app/shared/model/mapping.model';
@@ -12,7 +12,11 @@ import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, of as observableOf } from 'rxjs';
+import { Extension } from 'app/shared/model/static-extension.model';
+import { StaticExtensionService } from 'app/entities/static-extension';
+import { ConfigurationService } from 'app/shared/service/configuration-service';
+
+export const REQUIRED = 'required';
 
 @Component({
     selector: 'jhi-migration-stepper.component',
@@ -21,14 +25,7 @@ import { Observable, of as observableOf } from 'rxjs';
 })
 export class MigrationStepperComponent implements OnInit {
     // Static data
-    staticExtensions: any[] = [
-        { label: '*.zip', value: '*.zip' },
-        { label: '*.*ar (including ear, jar, war...)', value: '*.*ar' },
-        { label: '*.ear', value: '*.ear' },
-        { label: '*.jar', value: '*.jar' },
-        { label: '*.war', value: '*.war' },
-        { label: '*.tar', value: '*.tar' }
-    ];
+    staticExtensions: Extension[];
     staticDirectories: string[] = ['trunk', 'branches', 'tags'];
 
     // SnackBar config
@@ -54,6 +51,8 @@ export class MigrationStepperComponent implements OnInit {
     mappings: IMapping[] = [];
     useDefaultGitlab = true;
     useDefaultSvn = true;
+    overrideStaticExtensions = false;
+    overrideStaticMappings = false;
 
     // Input for migrations
     svnDirectories: SvnStructure = null;
@@ -61,7 +60,9 @@ export class MigrationStepperComponent implements OnInit {
     fileUnit = 'M';
     mig: IMigration;
     svnUrl: string;
+    svnCredsOption: string;
     gitlabUrl: string;
+    gitlabCredsOption: string;
 
     /// Svn selections
     svnSelection: SelectionModel<string>;
@@ -77,7 +78,7 @@ export class MigrationStepperComponent implements OnInit {
     useSvnRootFolder = false;
 
     // Extension selection
-    extensionSelection: SelectionModel<any>;
+    extensionSelection: SelectionModel<Extension> = new SelectionModel<Extension>();
 
     // Waiting flag
     checkingGitlabUser = false;
@@ -92,7 +93,9 @@ export class MigrationStepperComponent implements OnInit {
         private _matDialog: MatDialog,
         private _changeDetectorRefs: ChangeDetectorRef,
         private _errorSnackBar: MatSnackBar,
-        private _translationService: TranslateService
+        private _translationService: TranslateService,
+        private _extensionsService: StaticExtensionService,
+        private _configurationService: ConfigurationService
     ) {
         // Init snack bar configuration
         this.snackBarConfig.panelClass = ['errorPanel'];
@@ -104,9 +107,15 @@ export class MigrationStepperComponent implements OnInit {
     ngOnInit() {
         this._mappingService.query().subscribe(res => {
             this.mappings = res.body;
+            this.mappings.forEach(mp => (mp.isStatic = true));
             this.mappings.push(new Mapping());
             this.initialSelection = this.mappings;
             this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
+        });
+        this._extensionsService.query().subscribe(res => {
+            this.staticExtensions = res.body as Extension[];
+            this.staticExtensions.forEach(ext => (ext.isStatic = true));
+            this.extensionSelection = new SelectionModel<Extension>(this.allowMultiSelect, this.staticExtensions);
         });
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
@@ -133,7 +142,23 @@ export class MigrationStepperComponent implements OnInit {
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
         this.addExtentionFormControl = new FormControl('', []);
-        this.extensionSelection = new SelectionModel<string>(this.allowMultiSelect, this.initialSelection);
+
+        this._configurationService.overrideStaticExtensions().subscribe(res => (this.overrideStaticExtensions = res));
+        this._configurationService.overrideStaticMappings().subscribe(res => (this.overrideStaticMappings = res));
+        this._configurationService.gitlabCredsOption().subscribe(res => {
+            this.gitlabCredsOption = res;
+            this.useDefaultGitlab = res !== REQUIRED;
+            if (!this.useDefaultGitlab) {
+                this.gitlabFormGroup.get('gitlabURL').enable();
+            }
+        });
+        this._configurationService.svnCredsOption().subscribe(res => {
+            this.svnCredsOption = res;
+            this.useDefaultSvn = res !== REQUIRED;
+            if (!this.useDefaultSvn) {
+                this.svnFormGroup.get('svnURL').enable();
+            }
+        });
     }
 
     /**
@@ -350,7 +375,15 @@ export class MigrationStepperComponent implements OnInit {
 
     /** Selects all rows if they are not all selected; otherwise clear selection. */
     masterToggle() {
-        this.isAllSelected() ? this.selection.clear() : this.mappings.forEach(row => this.selection.select(row));
+        if (this.isAllSelected()) {
+            this.selection.clear();
+            if (!this.overrideStaticMappings) {
+                const staticMappings = this.mappings.filter(mp => mp.isStatic);
+                staticMappings.forEach(row => this.selection.select(row));
+            }
+        } else {
+            this.mappings.forEach(row => this.selection.select(row));
+        }
     }
 
     /** Reverse flag for gitlab default url. */
@@ -460,6 +493,10 @@ export class MigrationStepperComponent implements OnInit {
     masterExtensionToggle() {
         if (this.isAllExtensionSelected()) {
             this.extensionSelection.clear();
+            if (!this.overrideStaticExtensions) {
+                const staticExts: Extension[] = this.staticExtensions.filter(ext => ext.isStatic);
+                staticExts.forEach(row => this.extensionSelection.select(row));
+            }
         } else {
             this.staticExtensions.forEach(row => this.extensionSelection.select(row));
         }
@@ -470,7 +507,7 @@ export class MigrationStepperComponent implements OnInit {
      * @param event
      * @param extension
      */
-    extensionToggle(event: MatCheckboxChange, extension: string) {
+    extensionToggle(event: MatCheckboxChange, extension: Extension) {
         if (event) {
             return this.extensionSelection.toggle(extension);
         }
@@ -487,10 +524,15 @@ export class MigrationStepperComponent implements OnInit {
     /** Add a custom extension. */
     addExtension() {
         if (this.addExtentionFormControl.value !== undefined && this.addExtentionFormControl.value !== '') {
-            this.staticExtensions = this.staticExtensions.concat([
-                { label: this.addExtentionFormControl.value, value: this.addExtentionFormControl.value }
-            ]);
+            const newExtension: Extension = {
+                value: this.addExtentionFormControl.value,
+                description: this.addExtentionFormControl.value,
+                isStatic: false
+            };
+            this.staticExtensions = this.staticExtensions.concat([newExtension]);
+            this.extensionSelection.select(newExtension);
         }
+        this.addExtentionFormControl.reset();
     }
 
     /** Whether the number of selected elements matches the total number of rows. */
@@ -536,17 +578,4 @@ export class MigrationStepperComponent implements OnInit {
     openSnackBar(errorCode: string) {
         this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
     }
-
-    // SVN Tree elements
-    transformer = (node: SvnModule, level: number) => {
-        return new SvnFlatModule(node.name, node.path, node.subModules, !!node.subModules, level);
-    };
-
-    private _getLevel = (node: SvnFlatModule) => node.level;
-
-    private _isExpandable = (node: SvnFlatModule) => node.expandable;
-
-    private _getChildren = (node: SvnModule): Observable<SvnModule[]> => observableOf(node.subModules);
-
-    hasChild = (_: number, _nodeData: SvnFlatModule) => _nodeData.expandable;
 }

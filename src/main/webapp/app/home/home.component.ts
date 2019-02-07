@@ -4,6 +4,7 @@ import { JhiEventManager } from 'ng-jhipster';
 
 import { LoginModalService, Principal, Account } from 'app/core';
 import { Router } from '@angular/router';
+import { ConfigurationService } from 'app/shared/service/configuration-service';
 
 @Component({
     selector: 'jhi-home',
@@ -17,6 +18,7 @@ export class HomeComponent implements OnInit {
     constructor(
         private principal: Principal,
         private loginModalService: LoginModalService,
+        private configService: ConfigurationService,
         private eventManager: JhiEventManager,
         private router: Router
     ) {}
@@ -26,6 +28,7 @@ export class HomeComponent implements OnInit {
             this.account = account;
         });
         this.registerAuthenticationSuccess();
+        this.configService.init();
     }
 
     registerAuthenticationSuccess() {

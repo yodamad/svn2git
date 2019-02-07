@@ -4,6 +4,7 @@ import { Svn2GitMigrationModule } from './migration/migration.module';
 import { Svn2GitMigrationHistoryModule } from './migration-history/migration-history.module';
 import { Svn2GitMappingModule } from './mapping/mapping.module';
 import { Svn2GitStaticMappingModule } from './static-mapping/static-mapping.module';
+import { Svn2GitStaticExtensionModule } from './static-extension/static-extension.module';
 /* jhipster-needle-add-entity-module-import - JHipster will add entity modules imports here */
 
 @NgModule({
@@ -13,6 +14,7 @@ import { Svn2GitStaticMappingModule } from './static-mapping/static-mapping.modu
         Svn2GitMigrationHistoryModule,
         Svn2GitMappingModule,
         Svn2GitStaticMappingModule,
+        Svn2GitStaticExtensionModule,
         /* jhipster-needle-add-entity-module - JHipster will add entity modules here */
     ],
     declarations: [],

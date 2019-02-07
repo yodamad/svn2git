@@ -1,11 +1,12 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.GitlabInfo;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.User;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +21,12 @@ public class GitlabResource {
 
     /** Gitlab API wrapper. */
     private final GitlabAdmin gitlabAdmin;
-    @Value("${gitlab.url}") String gitlabUrl;
+    private final ApplicationProperties applicationProperties;
 
-    public GitlabResource(GitlabAdmin gitlabAdmin) {
+    public GitlabResource(GitlabAdmin gitlabAdmin,
+                          ApplicationProperties applicationProperties) {
         this.gitlabAdmin = gitlabAdmin;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -35,8 +38,8 @@ public class GitlabResource {
     @Timed
     public ResponseEntity<Boolean> checkUser(@PathVariable("username") String userName, @RequestBody GitlabInfo gitlabInfo) {
         GitlabAdmin gitlab = gitlabAdmin;
-        if (!gitlabUrl.equalsIgnoreCase(gitlabInfo.url)) {
-            gitlab = new GitlabAdmin(gitlabInfo.url, gitlabInfo.token);
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)) {
+            gitlabAdmin.setGitLabApi(customApi(gitlabInfo));
         }
         Optional<User> user = gitlab.userApi().getOptionalUser(userName);
 
@@ -57,8 +60,8 @@ public class GitlabResource {
     @Timed
     public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
         GitlabAdmin gitlab = gitlabAdmin;
-        if (!gitlabUrl.equalsIgnoreCase(gitlabInfo.url)) {
-            gitlab = new GitlabAdmin(gitlabInfo.url, gitlabInfo.token);
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)) {
+            gitlabAdmin.setGitLabApi(customApi(gitlabInfo));
         }
         Optional<Group> group = gitlab.groupApi().getOptionalGroup(groupName);
 
@@ -68,5 +71,10 @@ public class GitlabResource {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private GitLabApi customApi(GitlabInfo gitlabInfo) {
+        GitLabApi api = new GitLabApi(gitlabInfo.url, gitlabInfo.token);
+        return api;
     }
 }

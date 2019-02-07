@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git.service;
 
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.WorkUnit;
@@ -12,6 +13,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.*;
 import static fr.yodamad.svn2git.service.util.Shell.execCommand;
+import static fr.yodamad.svn2git.service.util.Shell.isWindows;
 import static java.lang.String.format;
 import static java.nio.file.Files.walk;
 
@@ -44,11 +47,14 @@ public class GitManager {
     // Manager & repository
     private final HistoryManager historyMgr;
     private final MappingRepository mappingRepository;
+    private final ApplicationProperties applicationProperties;
 
     public GitManager(final HistoryManager historyManager,
-                      final MappingRepository mappingRepository) {
+                      final MappingRepository mappingRepository,
+                      final ApplicationProperties applicationProperties) {
         this.historyMgr = historyManager;
         this.mappingRepository = mappingRepository;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -71,8 +77,13 @@ public class GitManager {
 
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLONE, initCommand);
 
-        String mkdir = format("mkdir %s", workUnit.directory);
-        execCommand(System.getProperty(JAVA_IO_TMPDIR), mkdir);
+        String mkdir;
+        if (isWindows) {
+            mkdir = format("mkdir %s", workUnit.directory);
+        } else {
+            mkdir = format("mkdir -p %s", workUnit.directory);
+        }
+        execCommand(applicationProperties.work.directory, mkdir);
 
         // 2.1. Clone as mirror empty repository, required for BFG
         execCommand(workUnit.root, initCommand);

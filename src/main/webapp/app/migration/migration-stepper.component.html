@@ -5,14 +5,14 @@
             <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Create your Gitlab account</span></ng-template>
             <div style="margin-bottom: 10px">
                 <span jhiTranslate="migration-process.gitlab.use.default">Use default URL</span>
-                <mat-checkbox [checked]="useDefaultGitlab" (change)="reverseGitlab()"></mat-checkbox>
+                <mat-checkbox [checked]="useDefaultGitlab" (change)="reverseGitlab()" [disabled]="gitlabCredsOption === 'required'"></mat-checkbox>
             </div>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="{{'migration-process.gitlab.url' | translate}}" [(disabled)]="useDefaultGitlab" formControlName="gitlabURL" required>
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultGitlab">
-                    <input matInput placeholder="{{'migration-process.gitlab.token' | translate}}" formControlName="gitlabToken">
+                    <input matInput placeholder="{{'migration-process.gitlab.token' | translate}}" formControlName="gitlabToken" [required]="gitlabCredsOption === 'required'">
                 </mat-form-field>
             </div>
             <div>
@@ -46,17 +46,17 @@
             <ng-template matStepLabel><span jhiTranslate="migration-process.svn.check.repository">Check your SVN repository</span></ng-template>
             <div style="margin-bottom: 10px">
                 <span jhiTranslate="migration-process.svn.use.default">Use default URL</span>
-                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()"></mat-checkbox>
+                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()" [disabled]="svnCredsOption === 'required'"></mat-checkbox>
             </div>
             <div>
                 <mat-form-field>
                     <input matInput placeholder="{{'migration-process.svn.url' | translate}}" formControlName="svnURL">
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultSvn">
-                    <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser">
+                    <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser" [required]="svnCredsOption === 'required'">
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultSvn">
-                    <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password">
+                    <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password" [required]="svnCredsOption === 'required'">
                 </mat-form-field>
             </div>
             <div>
@@ -190,7 +190,8 @@
                         <mat-checkbox *ngIf="row.svnDirectory !== undefined"
                             (click)="$event.stopPropagation()"
                             (change)="$event ? selection.toggle(row) : null"
-                            [checked]="selection.isSelected(row)">
+                            [checked]="selection.isSelected(row)"
+                            [disabled]="row.isStatic && !overrideStaticMappings">
                         </mat-checkbox>
                         <mat-icon *ngIf="row.svnDirectory === undefined" class="add-icon" (click)="addMapping()">add</mat-icon>
                     </td>
@@ -228,7 +229,7 @@
             <table mat-table [(dataSource)]="staticExtensions" class="large-table">
                 <ng-container matColumnDef="extensionPattern">
                     <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.pattern">Pattern</span></th>
-                    <td mat-cell *matCellDef="let extension">{{ extension.label }}</td>
+                    <td mat-cell *matCellDef="let extension">{{ extension.description }}</td>
                 </ng-container>
                 <ng-container matColumnDef="selectExtension">
                     <th mat-header-cell *matHeaderCellDef>
@@ -240,7 +241,8 @@
                     <td mat-cell *matCellDef="let extension">
                         <mat-checkbox (click)="$event.stopPropagation()"
                                       (change)="extensionToggle($event, extension)"
-                                      [checked]="extensionSelection.isSelected(extension)">
+                                      [checked]="extensionSelection.isSelected(extension)"
+                                      [(disabled)]="extension.isStatic && !overrideStaticExtensions" >
                         </mat-checkbox>
                     </td>
                 </ng-container>

@@ -70,7 +70,7 @@ public class PasswordConverter implements AttributeConverter<String, String> {
      */
     @Override
     public String convertToDatabaseColumn(String attribute) {
-        String secret = env.getProperty("password.cipher");
+        String secret = env.getProperty("application.password.cipher");
         if (!StringUtils.isEmpty(secret) && !StringUtils.isEmpty(attribute)) {
             try {
                 Cipher cipher = cipherMaker.configureAndGetInstance(Cipher.ENCRYPT_MODE, secret);
@@ -96,7 +96,7 @@ public class PasswordConverter implements AttributeConverter<String, String> {
      */
     @Override
     public String convertToEntityAttribute(String dbData) {
-        String secret = env.getProperty("password.cipher");
+        String secret = env.getProperty("application.password.cipher");
         if (!StringUtils.isEmpty(secret) && !StringUtils.isEmpty(dbData)) {
             try {
                 Cipher cipher = cipherMaker.configureAndGetInstance(Cipher.DECRYPT_MODE, secret);

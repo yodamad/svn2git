@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 
 import javax.persistence.*;
@@ -59,6 +60,7 @@ public class Migration implements Serializable {
     @Column(name = "gitlab_url")
     private String gitlabUrl;
 
+    @JsonIgnore
     @Column(name = "gitlab_token")
     private String gitlabToken;
 
@@ -68,6 +70,7 @@ public class Migration implements Serializable {
     @Column(name = "svn_user")
     private String svnUser;
 
+    @JsonIgnore
     @Column(name = "svn_password")
     private String svnPassword;
 
@@ -415,10 +418,8 @@ public class Migration implements Serializable {
             ", maxFileSize='" + getMaxFileSize() + "'" +
             ", forbiddenFileExtensions='" + getForbiddenFileExtensions() + "'" +
             ", gitlabUrl='" + getGitlabUrl() + "'" +
-            ", gitlabToken='" + getGitlabToken() + "'" +
             ", svnUrl='" + getSvnUrl() + "'" +
             ", svnUser='" + getSvnUser() + "'" +
-            ", svnPassword='" + getSvnPassword() + "'" +
             ", trunk='" + getTrunk() + "'" +
             ", branches='" + getBranches() + "'" +
             ", tags='" + getTags() + "'" +

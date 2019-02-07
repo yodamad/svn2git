@@ -1,7 +1,8 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import org.springframework.beans.factory.annotation.Value;
+import fr.yodamad.svn2git.config.ApplicationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/config/")
 public class ConfigurationResource {
 
-    /** SVN Url. */
-    @Value("${svn.url}") private String svnUrl;
-    /** Gitlab Url. */
-    @Value("${gitlab.url}") private String gitlabUrl;
+    @Autowired
+    private ApplicationProperties applicationProperties;
 
     /**
      * @return Configured SVN URL
@@ -28,7 +27,18 @@ public class ConfigurationResource {
     public ResponseEntity<String> getSvnUrl() {
         return ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
-            .body(svnUrl);
+            .body(applicationProperties.svn.url);
+    }
+
+    /**
+     * @return Configured SVN credentials option
+     */
+    @Timed
+    @GetMapping("svn/credentials")
+    public ResponseEntity<String> getSvnCredentialsOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_PLAIN)
+            .body(applicationProperties.svn.credentials);
     }
 
     /**
@@ -39,7 +49,38 @@ public class ConfigurationResource {
     public ResponseEntity<String> getGitlabUrl() {
         return ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
-            .body(gitlabUrl);
+            .body(applicationProperties.gitlab.url);
     }
 
+    /**
+     * @return Configured gitlab credentials option
+     */
+    @Timed
+    @GetMapping("gitlab/credentials")
+    public ResponseEntity<String> getGitlabCredentialsOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_PLAIN)
+            .body(applicationProperties.gitlab.credentials);
+    }
+
+    /**
+     * @return Configured extensions policy
+     */
+    @Timed
+    @GetMapping("override/extensions")
+    public ResponseEntity<Boolean> getOverrideExtensions() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(applicationProperties.override.extensions);
+    }
+    /**
+     * @return Configured mappings policy
+     */
+    @Timed
+    @GetMapping("override/mappings")
+    public ResponseEntity<Boolean> getOverrideMappings() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(applicationProperties.override.mappings);
+    }
 }

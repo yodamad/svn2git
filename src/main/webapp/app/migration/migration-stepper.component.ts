@@ -16,7 +16,7 @@ import { Extension } from 'app/shared/model/static-extension.model';
 import { StaticExtensionService } from 'app/entities/static-extension';
 import { ConfigurationService } from 'app/shared/service/configuration-service';
 
-export const REQUIRED: string = 'required';
+export const REQUIRED = 'required';
 
 @Component({
     selector: 'jhi-migration-stepper.component',

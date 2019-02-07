@@ -41,4 +41,24 @@ public class ConfigurationResource {
             .body(applicationProperties.gitlab.url);
     }
 
+    /**
+     * @return Configured extensions policy
+     */
+    @Timed
+    @GetMapping("override/extensions")
+    public ResponseEntity<Boolean> getOverrideExtensions() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(applicationProperties.override.extensions);
+    }
+    /**
+     * @return Configured mappings policy
+     */
+    @Timed
+    @GetMapping("override/mappings")
+    public ResponseEntity<Boolean> getOverrideMappings() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(applicationProperties.override.mappings);
+    }
 }

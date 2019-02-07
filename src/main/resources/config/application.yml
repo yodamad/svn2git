@@ -122,3 +122,6 @@ application:
         url: svn://localhost/
         user:
         password:
+    override:
+        extensions: false
+        mappings: false

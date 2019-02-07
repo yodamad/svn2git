@@ -10,3 +10,9 @@ export class StaticExtension implements IStaticExtension {
         this.enabled = this.enabled || false;
     }
 }
+
+export class Extension extends StaticExtension {
+    constructor(public id?: number, public value?: string, public description?: string, public enabled?: boolean, public isStatic = true) {
+        super(id, value, description, enabled);
+    }
+}

@@ -1,11 +1,10 @@
-import { IMigration } from 'app/shared/model/migration.model';
-
 export interface IMapping {
     id?: number;
     svnDirectory?: string;
     regex?: string;
     gitDirectory?: string;
     migration?: number;
+    isStatic?: boolean;
 }
 
 export class Mapping implements IMapping {
@@ -14,6 +13,7 @@ export class Mapping implements IMapping {
         public svnDirectory?: string,
         public regex?: string,
         public gitDirectory?: string,
-        public migration?: number
+        public migration?: number,
+        public isStatic?: boolean
     ) {}
 }

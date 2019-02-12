@@ -197,26 +197,31 @@ public class MigrationManager {
             GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
             gitlabAdmin.setGitLabApi(api);
         }
-        Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
+        try {
+            Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
 
-        // If no svn project specified, use svn group instead
-        if (StringUtils.isEmpty(migration.getSvnProject())) {
-            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
-        } else {
-            // split svn structure to create gitlab elements (group(s), project)
-            String[] structure = migration.getSvnProject().split("/");
-            Integer groupId = group.getId();
-            if (structure.length > 2) {
-                for (int module = 1 ; module < structure.length - 2 ; module++) {
-                    Group gitlabSubGroup = new Group();
-                    gitlabSubGroup.setName(structure[module]);
-                    gitlabSubGroup.setPath(structure[module]);
-                    gitlabSubGroup.setParentId(groupId);
-                    groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+            // If no svn project specified, use svn group instead
+            if (StringUtils.isEmpty(migration.getSvnProject())) {
+                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
+            } else {
+                // split svn structure to create gitlab elements (group(s), project)
+                String[] structure = migration.getSvnProject().split("/");
+                Integer groupId = group.getId();
+                if (structure.length > 2) {
+                    for (int module = 1; module < structure.length - 2; module++) {
+                        Group gitlabSubGroup = new Group();
+                        gitlabSubGroup.setName(structure[module]);
+                        gitlabSubGroup.setPath(structure[module]);
+                        gitlabSubGroup.setParentId(groupId);
+                        groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+                    }
                 }
+                gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
             }
-            gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+            historyMgr.endStep(history, StatusEnum.DONE, null);
+        } catch (GitLabApiException exc) {
+            historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+            throw exc;
         }
-        historyMgr.endStep(history, StatusEnum.DONE, null);
     }
 }

@@ -50,6 +50,7 @@
         "next" : "Suivant",
         "only" : "Seulement",
         "pattern" : "Pattern",
+        "projects": "Projets à migrer",
         "ready": "Prêt ?",
         "regex" : "Regex",
         "summary" : "Résumé de la migration",

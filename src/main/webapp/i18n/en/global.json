@@ -105,6 +105,7 @@
             "delete": "Delete",
             "edit": "Edit",
             "open": "Open",
+            "retry": "Retry",
             "save": "Save",
             "view": "View"
         },
@@ -142,6 +143,8 @@
     },
     "footer": "Copyright - 2018",
     "migration": {
-        "title": "Migration"
+        "title": "Migration",
+        "confirm": "Confirm migration retry",
+        "retry": "Migration retry planned successfully"
     }
 }

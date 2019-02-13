@@ -74,6 +74,42 @@ public class MigrationResource {
         migration.setDate(LocalDate.now());
         migration.setStatus(StatusEnum.WAITING);
 
+        Migration result = init(migration);
+        migrationManager.startMigration(result.getId(), Boolean.FALSE);
+
+        return ResponseEntity.created(new URI("/api/migrations/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
+            .body(migration);
+    }
+
+    /**
+     * Retry a migration
+     * @param id Migration ID to be retried
+     * @return Migration initialized for retry
+     * @throws URISyntaxException
+     */
+    @PostMapping("/migrations/{id}/retry")
+    @Timed
+    public ResponseEntity<Long> retryMigraton(@PathVariable Long id) throws URISyntaxException {
+        log.debug("REST request to retry Migration : {}", id);
+        Migration mig = migrationRepository.findById(id).orElseThrow(() -> new BadRequestAlertException("Migration cannot be retried", ENTITY_NAME, "iddonotexist"));
+
+        log.debug("Create a new migration to retry");
+        mig.setId(null);
+        Migration result = init(mig);
+        migrationManager.startMigration(result.getId(), Boolean.TRUE);
+
+        return ResponseEntity.created(new URI("/api/migrations/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
+            .body(id);
+    }
+
+    /**
+     * Initialize a migration and its mappings
+     * @param migration Migration to initialize
+     * @return Migration initialized
+     */
+    private Migration init(Migration migration) {
         Migration result = migrationRepository.save(migration);
 
         if (migration.getMappings() != null && !migration.getMappings().isEmpty()) {
@@ -84,14 +120,9 @@ public class MigrationResource {
                     mapping.setId(0L);
                     mapping.setMigration(result.getId());
                     mappingService.save(mapping);
-            });
+                });
         }
-
-        migrationManager.startMigration(result.getId());
-
-        return ResponseEntity.created(new URI("/api/migrations/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
-            .body(migration);
+        return result;
     }
 
     /**

@@ -63,9 +63,10 @@ public class MigrationManager {
     /**
      * Start a migration in a dedicated thread
      * @param migrationId ID for migration to start
+     * @param retry Flag to know if it's the first attempt or a retry
      */
     @Async
-    public void startMigration(final long migrationId) {
+    public void startMigration(final long migrationId, final boolean retry) {
         String gitCommand;
         Migration migration = migrationRepository.findById(migrationId).get();
         MigrationHistory history = null;
@@ -74,6 +75,12 @@ public class MigrationManager {
 
             String rootDir = workingDir(applicationProperties.work.directory, migration);
             WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
+
+            // in retry case, clean gitlab
+            if (retry) {
+                // TODO : Remove gitlab group
+                LOG.info("This a retry, clean gitlab");
+            }
 
             // Start migration
             migration.setStatus(StatusEnum.RUNNING);

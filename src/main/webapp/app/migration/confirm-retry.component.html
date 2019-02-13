@@ -1,0 +1,17 @@
+<div class="modal-header">
+    <h4 class="modal-title" jhiTranslate="migration.confirm">Retry</h4>
+</div>
+<div class="modal-body">
+    <div>
+        <span jhiTranslate="migration-process.gitlab.clean">Clean</span>
+        <hr>
+    </div>
+    <div>
+        <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="cancel()">
+            <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+        <button type="submit" id="save-entity" class="btn btn-primary" mat-button (click)="retry()">
+            <fa-icon [icon]="'sync'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.retry">Retry</span>
+        </button>
+    </div>
+</div>

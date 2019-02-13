@@ -40,7 +40,7 @@ public class MigrationChecker {
     public void checkDb() {
         try {
             // Start waiting migrations
-            repository.findAllByStatusOrderByDateDesc(StatusEnum.WAITING).stream().forEach(mig -> manager.startMigration(mig.getId()));
+            repository.findAllByStatusOrderByDateDesc(StatusEnum.WAITING).stream().forEach(mig -> manager.startMigration(mig.getId(), Boolean.FALSE));
             // Fail running migrations
             repository.findAllByStatusOrderByDateDesc(StatusEnum.RUNNING).stream().forEach(mig -> {
                 mig.status(StatusEnum.FAILED);

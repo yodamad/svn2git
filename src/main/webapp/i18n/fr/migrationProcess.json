@@ -24,6 +24,7 @@
                 "account" : "Vérifier votre compte Gitlab",
                 "group" : "Vérifier votre groupe Gitlab"
             },
+            "clean" : "Avez-vous nettoyé Gitlab avant de réessayer ?",
             "group" : "Groupe Gitlab",
             "token" : "Token",
             "url" : "URL Gitlab",

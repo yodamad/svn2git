@@ -24,6 +24,7 @@
                 "account" : "Check your Gitlab account",
                 "group" : "Check your Gitlab group"
             },
+            "clean" : "Have you clean Gitlab before retrying ?",
             "group" : "Gitlab group",
             "token" : "Gitlab token",
             "url" : "Gitlab URL",
@@ -50,6 +51,7 @@
         "next" : "Next",
         "only" : "only",
         "pattern" : "Pattern",
+        "projects": "Projects to migrate",
         "ready": "Ready?",
         "regex" : "Regex",
         "summary" : "Migration summary",

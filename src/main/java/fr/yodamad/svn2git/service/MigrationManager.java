@@ -63,9 +63,10 @@ public class MigrationManager {
     /**
      * Start a migration in a dedicated thread
      * @param migrationId ID for migration to start
+     * @param retry Flag to know if it's the first attempt or a retry
      */
     @Async
-    public void startMigration(final long migrationId) {
+    public void startMigration(final long migrationId, final boolean retry) {
         String gitCommand;
         Migration migration = migrationRepository.findById(migrationId).get();
         MigrationHistory history = null;
@@ -74,6 +75,12 @@ public class MigrationManager {
 
             String rootDir = workingDir(applicationProperties.work.directory, migration);
             WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
+
+            // in retry case, clean gitlab
+            if (retry) {
+                // TODO : Remove gitlab group
+                LOG.info("This a retry, clean gitlab");
+            }
 
             // Start migration
             migration.setStatus(StatusEnum.RUNNING);
@@ -197,26 +204,31 @@ public class MigrationManager {
             GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
             gitlabAdmin.setGitLabApi(api);
         }
-        Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
+        try {
+            Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
 
-        // If no svn project specified, use svn group instead
-        if (StringUtils.isEmpty(migration.getSvnProject())) {
-            gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
-        } else {
-            // split svn structure to create gitlab elements (group(s), project)
-            String[] structure = migration.getSvnProject().split("/");
-            Integer groupId = group.getId();
-            if (structure.length > 2) {
-                for (int module = 1 ; module < structure.length - 2 ; module++) {
-                    Group gitlabSubGroup = new Group();
-                    gitlabSubGroup.setName(structure[module]);
-                    gitlabSubGroup.setPath(structure[module]);
-                    gitlabSubGroup.setParentId(groupId);
-                    groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+            // If no svn project specified, use svn group instead
+            if (StringUtils.isEmpty(migration.getSvnProject())) {
+                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
+            } else {
+                // split svn structure to create gitlab elements (group(s), project)
+                String[] structure = migration.getSvnProject().split("/");
+                Integer groupId = group.getId();
+                if (structure.length > 2) {
+                    for (int module = 1; module < structure.length - 2; module++) {
+                        Group gitlabSubGroup = new Group();
+                        gitlabSubGroup.setName(structure[module]);
+                        gitlabSubGroup.setPath(structure[module]);
+                        gitlabSubGroup.setParentId(groupId);
+                        groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+                    }
                 }
+                gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
             }
-            gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+            historyMgr.endStep(history, StatusEnum.DONE, null);
+        } catch (GitLabApiException exc) {
+            historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+            throw exc;
         }
-        historyMgr.endStep(history, StatusEnum.DONE, null);
     }
 }

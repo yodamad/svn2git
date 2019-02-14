@@ -105,6 +105,7 @@
             "edit": "Editer",
             "delete": "Supprimer",
             "open": "Ouvrir",
+            "retry": "Relancer",
             "save": "Sauvegarder",
             "view": "Voir"
         },
@@ -139,5 +140,10 @@
         "idexists": "Une nouvelle entité {{entityName}} ne peut pas avoir d'ID !",
         "idnull": "Invalid ID"
     },
-    "footer": "Copyright - 2018"
+    "footer": "Copyright - 2018",
+    "migration" : {
+        "title": "Migration",
+        "confirm": "Confirmer la planification de la migration",
+        "retry": "Migration planifiée"
+    }
 }

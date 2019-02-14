@@ -284,6 +284,16 @@
             <mat-grid-tile>
                 <mat-card class="summary-card">
                     <mat-card-header class="card-header">
+                        <mat-card-title style="margin: 0" jhiTranslate="migration-process.projects">Projects to migrate</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content *ngIf="mig !== undefined">
+                        <mat-list>
+                            <mat-list-item *ngFor="let proj of mig.svnProject.split(',')">
+                                <mat-icon mat-list-icon>folder</mat-icon> {{proj}}
+                            </mat-list-item>
+                        </mat-list>
+                    </mat-card-content>
+                    <mat-card-header class="card-header">
                         <mat-card-title style="margin: 0" jhiTranslate="migration-process.mappings">Migration mappings</mat-card-title>
                     </mat-card-header>
                     <jhi-summary-mappings [migration]="mig"></jhi-summary-mappings>

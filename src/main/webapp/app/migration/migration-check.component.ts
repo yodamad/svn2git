@@ -4,8 +4,10 @@ import { MigrationProcessService } from 'app/migration/migration-process.service
 import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { JhiParseLinks } from 'ng-jhipster';
-import { MatSnackBar, MatSnackBarConfig } from '@angular/material';
+import { MatDialog, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { TranslateService } from '@ngx-translate/core';
+import { MigrationService } from 'app/entities/migration';
+import { JhiConfirmRetryModalComponent } from 'app/migration/confirm-retry.component';
 
 /**
  * Page to check migrations status
@@ -26,10 +28,12 @@ export class MigrationCheckComponent implements OnInit {
 
     constructor(
         private _formBuilder: FormBuilder,
-        private _migrationService: MigrationProcessService,
+        private _migrationProcessService: MigrationProcessService,
+        private _migrationService: MigrationService,
         private parseLinks: JhiParseLinks,
         private _errorSnackBar: MatSnackBar,
-        private _translationService: TranslateService
+        private _translationService: TranslateService,
+        private _matDialog: MatDialog
     ) {
         // Init snack bar configuration
         this.snackBarConfig.panelClass = ['errorPanel'];
@@ -49,19 +53,28 @@ export class MigrationCheckComponent implements OnInit {
     }
 
     /**
+     * Retry a migration
+     */
+    retry(id: number) {
+        const dialog = this._matDialog.open(JhiConfirmRetryModalComponent, {
+            data: { migId: id }
+        });
+    }
+
+    /**
      * Search migration according to criteria
      */
     search() {
         this.migrations = [];
         if (this.searchFormGroup.controls['userCriteria'].value !== '') {
-            this._migrationService
+            this._migrationProcessService
                 .findMigrationByUser(this.searchFormGroup.controls['userCriteria'].value)
                 .subscribe(
                     (res: HttpResponse<IMigration[]>) => this.paginateMigrations(res.body, res.headers),
                     () => this.openSnackBar('error.http.504')
                 );
         } else if (this.searchFormGroup.controls['groupCriteria'].value !== '') {
-            this._migrationService
+            this._migrationProcessService
                 .findMigrationByGroup(this.searchFormGroup.controls['groupCriteria'].value)
                 .subscribe(
                     (res: HttpResponse<IMigration[]>) => this.paginateMigrations(res.body, res.headers),
@@ -86,7 +99,7 @@ export class MigrationCheckComponent implements OnInit {
      * @param status
      */
     cssClass(status: StatusEnum) {
-        if (status === StatusEnum.DONE) {
+        if (status === StatusEnum.DONE || status === StatusEnum.DONE_WITH_WARNINGS) {
             return 'badge-success';
         }
         if (status === StatusEnum.FAILED) {

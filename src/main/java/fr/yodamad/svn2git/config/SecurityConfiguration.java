@@ -111,6 +111,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/migrations/user/**").permitAll()
             .antMatchers("/api/migrations/group/**").permitAll()
             .antMatchers("/api/static-mappings/**").permitAll()
+            .antMatchers("/api/static-extensions/**").permitAll()
             .antMatchers("/api/config/**").permitAll()
             .antMatchers("/api/gitlab/**").permitAll()
             .antMatchers("/api/svn/**").permitAll()

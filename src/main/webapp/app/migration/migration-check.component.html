@@ -30,6 +30,11 @@
                             <fa-icon [icon]="'eye'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
                         </button>
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                (click)="retry(migration.id)" *ngIf="migration.status == 'FAILED'">
+                            <fa-icon [icon]="'sync'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.retry">Retry</span>
+                        </button>
                     </div>
                 </td>
             </tr>

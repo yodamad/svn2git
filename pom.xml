@@ -826,6 +826,7 @@
                                     <directory>src/main/webapp</directory>
                                     <includes>
                                         <include>WEB-INF/**</include>
+                                        <exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
                                     </includes>
                                 </resource>
                             </webResources>

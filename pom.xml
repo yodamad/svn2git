@@ -333,6 +333,12 @@
             <groupId>com.madgag</groupId>
             <artifactId>bfg</artifactId>
             <version>1.13.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- SVN -->
         <dependency>
@@ -820,6 +826,7 @@
                                     <directory>src/main/webapp</directory>
                                     <includes>
                                         <include>WEB-INF/**</include>
+                                        <exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
                                     </includes>
                                 </resource>
                             </webResources>

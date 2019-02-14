@@ -1,4 +1,4 @@
-# svn2git [![Build Status](https://yodamad.visualstudio.com/svn2git/_apis/build/status/svn2git-Maven-CI?branchName=dev)](https://yodamad.visualstudio.com/svn2git/_build/latest?definitionId=1?branchName=dev)
+# svn2git ![](https://img.shields.io/github/release/yodamad/svn2git.svg?style=popout) [![Build Status](https://yodamad.visualstudio.com/svn2git/_apis/build/status/svn2git-Maven-CI?branchName=dev)](https://yodamad.visualstudio.com/svn2git/_build/latest?definitionId=1?branchName=dev)
 This application helps you to migrate from SVN to Gitlab.
 
 This application was generated using JHipster 5.4.2, you can find documentation and help at [jhipster](https://www.jhipster.tech/documentation-archive/v5.4.2).

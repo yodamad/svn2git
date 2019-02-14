@@ -4,7 +4,7 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>1.9-SNAPSHOT</version>
+    <version>1.9</version>
     <packaging>war</packaging>
     <name>Svn 2 GitLab</name>
 
@@ -826,6 +826,7 @@
                                     <directory>src/main/webapp</directory>
                                     <includes>
                                         <include>WEB-INF/**</include>
+                                        <exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
                                     </includes>
                                 </resource>
                             </webResources>

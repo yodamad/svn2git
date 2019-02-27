@@ -36,7 +36,6 @@ export class MigrationCheckComponent implements OnInit {
         private _matDialog: MatDialog
     ) {
         // Init snack bar configuration
-        this.snackBarConfig.panelClass = ['errorPanel'];
         this.snackBarConfig.duration = 5000;
         this.snackBarConfig.verticalPosition = 'top';
         this.snackBarConfig.horizontalPosition = 'center';
@@ -86,12 +85,17 @@ export class MigrationCheckComponent implements OnInit {
     }
 
     private paginateMigrations(data: IMigration[], headers: HttpHeaders) {
-        this.links = this.parseLinks.parse(headers.get('link'));
-        this.totalItems = parseInt(headers.get('X-Total-Count'), 10);
-        for (let i = 0; i < data.length; i++) {
-            this.migrations.push(data[i]);
+        if (data.length === 0) {
+            this.openSnackBar('error.no.result', false);
+            console.log('No migration found for this search');
+        } else {
+            this.links = this.parseLinks.parse(headers.get('link'));
+            this.totalItems = parseInt(headers.get('X-Total-Count'), 10);
+            for (let i = 0; i < data.length; i++) {
+                this.migrations.push(data[i]);
+            }
+            console.log(this.migrations);
         }
-        console.log(this.migrations);
     }
 
     /**
@@ -114,7 +118,12 @@ export class MigrationCheckComponent implements OnInit {
      * Open snack bar to display error message
      * @param errorCode
      */
-    openSnackBar(errorCode: string) {
+    openSnackBar(errorCode: string, error = true) {
+        if (error) {
+            this.snackBarConfig.panelClass = ['errorPanel'];
+        } else {
+            this.snackBarConfig.panelClass = ['warnPanel'];
+        }
         this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
     }
 }

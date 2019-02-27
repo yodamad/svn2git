@@ -15,7 +15,7 @@
 
 logging:
     level:
-        ROOT: DEBUG
+        ROOT: INFO
         io.github.jhipster: DEBUG
         fr.yodamad.svn2git: DEBUG
 

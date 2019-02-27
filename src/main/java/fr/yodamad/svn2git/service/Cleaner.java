@@ -9,10 +9,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static fr.yodamad.svn2git.service.util.Shell.execCommand;
 import static java.lang.String.format;
+import static java.nio.file.Files.isRegularFile;
+import static java.nio.file.Files.newDirectoryStream;
 
 /**
  * Cleaning operations
@@ -25,6 +31,48 @@ public class Cleaner {
 
     public Cleaner(final HistoryManager historyManager) {
         this.historyMgr = historyManager;
+    }
+
+    /**
+     * List files that are going to be cleaned by BFG
+     * @param workUnit Current migration information
+     * @throws IOException
+     */
+    public void listCleanedFiles(WorkUnit workUnit) throws IOException {
+        Path workingPath = Paths.get(workUnit.directory);
+        inspectPath(workUnit, workingPath);
+    }
+
+    /**
+     * Inspect current path (recursively)
+     * @param workUnit Current migration information
+     * @param workingPath Current path
+     * @throws IOException
+     */
+    private static void inspectPath(WorkUnit workUnit, Path workingPath) throws IOException  {
+        Path initialPath = Paths.get(workUnit.directory);
+        DirectoryStream.Filter<Path> pathFilter = path -> {
+            if (Files.isDirectory(path)) {
+                inspectPath(workUnit, path);
+                return false;
+            } else {
+                return isRegularFile(path) &&  isForbiddenExtension(workUnit, path);
+            }
+        };
+        try (DirectoryStream<Path> dirStream = newDirectoryStream(workingPath, pathFilter)) {
+            dirStream.forEach(p -> System.out.println(initialPath.relativize(p)));
+        }
+    }
+
+    /**
+     * Check if current file has a forbidden extension
+     * @param workUnit Current migration information
+     * @param path Current file
+     * @return
+     */
+    private static boolean isForbiddenExtension(WorkUnit workUnit, Path path) {
+        return Arrays.stream(workUnit.migration.getForbiddenFileExtensions().split(","))
+            .anyMatch(ext -> path.toString().endsWith(ext.replaceFirst("\\*", "")));
     }
 
     /**

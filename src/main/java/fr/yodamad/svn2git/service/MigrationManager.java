@@ -96,6 +96,10 @@ public class MigrationManager {
             gitManager.gitSvnClone(workUnit);
 
             // 3. Clean files
+            // 3.1 List files to remove
+            cleaner.listCleanedFiles(workUnit);
+
+            // 3.2 Remove
             boolean cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit);
             boolean cleanLargeFiles = cleaner.cleanLargeFiles(workUnit);
 

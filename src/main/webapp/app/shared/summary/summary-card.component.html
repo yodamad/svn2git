@@ -26,7 +26,7 @@
                     <mat-icon mat-list-icon>history</mat-icon>
                     <p mat-line>{{migration.svnHistory}}</p>
                 </mat-list-item>
-                <mat-list-item>
+                <mat-list-item *ngIf="nbRemovedFiles !== undefined">
                     <mat-icon mat-list-icon>delete_forever</mat-icon>
                     <p mat-line>{{nbRemovedFiles}} <span jhiTranslate="migration-process.cleaning.files">files</span> <fa-icon [icon]="'arrow-circle-right'" (click)="displayDetails()" *ngIf="nbRemovedFiles > 0"></fa-icon></p>
                 </mat-list-item>

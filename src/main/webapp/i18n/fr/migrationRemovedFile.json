@@ -1,0 +1,23 @@
+{
+    "svn2GitApp": {
+        "migrationRemovedFile": {
+            "home": {
+                "title": "MigrationRemovedFiles",
+                "createLabel": "Créer un nouveau Migration Removed File",
+                "createOrEditLabel": "Créer ou éditer un Migration Removed File"
+            },
+            "created": "Un nouveau Migration Removed File a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Migration Removed File avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Migration Removed File avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Migration Removed File {{ id }} ?"
+            },
+            "detail": {
+                "title": "Migration Removed File"
+            },
+            "path": "Path",
+            "reason": "Reason",
+            "migration": "Migration"
+        }
+    }
+}

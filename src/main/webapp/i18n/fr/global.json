@@ -1,7 +1,8 @@
 {
     "global": {
         "title": "Svn2git",
-        "browsehappy": "Vous utilisez un <strong>ancien</strong> navigateur. Veuillez <a href=\"http://browsehappy.com/?locale=fr\">mettre à jour votre navigateur</a> pour une meilleure expérience.",
+        "browsehappy":
+            "Vous utilisez un <strong>ancien</strong> navigateur. Veuillez <a href=\"http://browsehappy.com/?locale=fr\">mettre à jour votre navigateur</a> pour une meilleure expérience.",
         "menu": {
             "home": "Accueil",
             "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
@@ -12,6 +13,7 @@
                 "mapping": "Mapping",
                 "staticMapping": "Static Mapping",
                 "staticExtension": "Static Extension",
+                "migrationRemovedFile": "Migration Removed File",
                 "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
             },
             "account": {
@@ -55,7 +57,8 @@
                 "authenticated": {
                     "prefix": "Si vous voulez vous ",
                     "link": "connecter",
-                    "suffix": ", vous pouvez utiliser les comptes par défaut : <br/> - Administrateur (nom d'utilisateur=\"admin\" et mot de passe =\"admin\") <br/> - Utilisateur (nom d'utilisateur=\"user\" et mot de passe =\"user\")."
+                    "suffix":
+                        ", vous pouvez utiliser les comptes par défaut : <br/> - Administrateur (nom d'utilisateur=\"admin\" et mot de passe =\"admin\") <br/> - Utilisateur (nom d'utilisateur=\"user\" et mot de passe =\"user\")."
                 },
                 "register": {
                     "noaccount": "Vous n'avez pas encore de compte ?",
@@ -89,7 +92,7 @@
             "id": "ID"
         },
         "ribbon": {
-            "dev":"Développement"
+            "dev": "Développement"
         },
         "item-count": "Affichage {{first}} - {{second}} de {{total}} items.",
         "search": "Recherche",
@@ -141,7 +144,7 @@
         "idnull": "Invalid ID"
     },
     "footer": "Copyright - 2018",
-    "migration" : {
+    "migration": {
         "title": "Migration",
         "confirm": "Confirmer la planification de la migration",
         "retry": "Migration planifiée"

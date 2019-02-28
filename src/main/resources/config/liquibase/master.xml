@@ -10,7 +10,9 @@
     <include file="config/liquibase/changelog/20181109153011_added_entity_Mapping.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20181109211009_added_entity_StaticMapping.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20190206173520_added_entity_StaticExtension.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190228181035_added_entity_MigrationRemovedFile.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20181024090448_added_entity_constraints_MigrationHistory.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190228181035_added_entity_constraints_MigrationRemovedFile.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
 </databaseChangeLog>

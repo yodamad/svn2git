@@ -1,0 +1,37 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="migrationRemovedFile">
+            <h2><span jhiTranslate="svn2GitApp.migrationRemovedFile.detail.title">Migration Removed File</span> {{migrationRemovedFile.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="svn2GitApp.migrationRemovedFile.path">Path</span></dt>
+                <dd>
+                    <span>{{migrationRemovedFile.path}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migrationRemovedFile.reason">Reason</span></dt>
+                <dd>
+                    <span jhiTranslate="{{'svn2GitApp.Reason.' + migrationRemovedFile.reason}}">{{migrationRemovedFile.reason}}</span>
+                </dd>
+                <dt><span jhiTranslate="svn2GitApp.migrationRemovedFile.migration">Migration</span></dt>
+                <dd>
+                    <div *ngIf="migrationRemovedFile.migration">
+                        <a [routerLink]="['/migration', migrationRemovedFile.migration?.id, 'view']">{{migrationRemovedFile.migration?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/migration-removed-file', migrationRemovedFile.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

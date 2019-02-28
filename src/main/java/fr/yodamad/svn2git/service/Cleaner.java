@@ -2,9 +2,12 @@ package fr.yodamad.svn2git.service;
 
 import com.madgag.git.bfg.cli.Main;
 import fr.yodamad.svn2git.domain.MigrationHistory;
+import fr.yodamad.svn2git.domain.MigrationRemovedFile;
 import fr.yodamad.svn2git.domain.WorkUnit;
+import fr.yodamad.svn2git.domain.enumeration.Reason;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
+import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +31,12 @@ public class Cleaner {
 
     // Manager
     private final HistoryManager historyMgr;
+    // Repo
+    private final MigrationRemovedFileRepository mrfRepo;
 
-    public Cleaner(final HistoryManager historyManager) {
+    public Cleaner(final HistoryManager historyManager, final MigrationRemovedFileRepository repository) {
         this.historyMgr = historyManager;
+        this.mrfRepo = repository;
     }
 
     /**
@@ -49,7 +55,7 @@ public class Cleaner {
      * @param workingPath Current path
      * @throws IOException
      */
-    private static void inspectPath(WorkUnit workUnit, Path workingPath) throws IOException  {
+    private void inspectPath(WorkUnit workUnit, Path workingPath) throws IOException  {
         Path initialPath = Paths.get(workUnit.directory);
         DirectoryStream.Filter<Path> pathFilter = path -> {
             if (Files.isDirectory(path)) {
@@ -60,7 +66,13 @@ public class Cleaner {
             }
         };
         try (DirectoryStream<Path> dirStream = newDirectoryStream(workingPath, pathFilter)) {
-            dirStream.forEach(p -> System.out.println(initialPath.relativize(p)));
+            dirStream.forEach(p -> {
+                MigrationRemovedFile mrf = new MigrationRemovedFile()
+                    .migration(workUnit.migration)
+                    .path(initialPath.relativize(p).toString())
+                    .reason(Reason.EXTENSION);
+                this.mrfRepo.save(mrf);
+            });
         }
     }
 

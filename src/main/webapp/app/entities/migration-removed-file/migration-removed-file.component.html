@@ -1,0 +1,62 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="svn2GitApp.migrationRemovedFile.home.title">Migration Removed Files</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-migration-removed-file" [routerLink]="['/migration-removed-file/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="svn2GitApp.migrationRemovedFile.home.createLabel">
+            Create new Migration Removed File
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="table-responsive" *ngIf="migrationRemovedFiles">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="reset.bind(this)">
+            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="path"><span jhiTranslate="svn2GitApp.migrationRemovedFile.path">Path</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="reason"><span jhiTranslate="svn2GitApp.migrationRemovedFile.reason">Reason</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="migration.id"><span jhiTranslate="svn2GitApp.migrationRemovedFile.migration">Migration</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
+            <tr *ngFor="let migrationRemovedFile of migrationRemovedFiles ;trackBy: trackId">
+                <td><a [routerLink]="['/migration-removed-file', migrationRemovedFile.id, 'view' ]">{{migrationRemovedFile.id}}</a></td>
+                <td>{{migrationRemovedFile.path}}</td>
+                <td jhiTranslate="{{'svn2GitApp.Reason.' + migrationRemovedFile.reason}}">{{migrationRemovedFile.reason}}</td>
+                <td>
+                    <div *ngIf="migrationRemovedFile.migration">
+                        <a [routerLink]="['../migration', migrationRemovedFile.migration?.id, 'view' ]" >{{migrationRemovedFile.migration?.id}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['/migration-removed-file', migrationRemovedFile.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/migration-removed-file', migrationRemovedFile.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', 'migration-removed-file', { outlets: { popup: migrationRemovedFile.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

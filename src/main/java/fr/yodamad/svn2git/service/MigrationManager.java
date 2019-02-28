@@ -8,7 +8,6 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -169,14 +167,14 @@ public class MigrationManager {
             }
 
             // 7. Clean work directory
-            history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));
+            /* history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));
             try {
                 FileUtils.deleteDirectory(new File(workUnit.root));
                 historyMgr.endStep(history, StatusEnum.DONE, null);
             } catch (Exception exc) {
                 historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
                 workUnit.warnings.set(true);
-            }
+            } */
 
             if (workUnit.warnings.get()) {
                 migration.setStatus(StatusEnum.DONE_WITH_WARNINGS);

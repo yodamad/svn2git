@@ -1,0 +1,19 @@
+<mat-card class="summary-card">
+    <mat-card-header class="card-header">
+        <mat-card-title class="my-header">Removed files</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <table mat-table [(dataSource)]="removedFiles">
+            <ng-container matColumnDef="filePath">
+                <th mat-header-cell *matHeaderCellDef style="padding-right: 20px"><span jhiTranslate="migration-process.cleaning.path">Path</span></th>
+                <td mat-cell *matCellDef="let file" style="padding-right: 20px">{{ file.path }}</td>
+            </ng-container>
+            <ng-container matColumnDef="reason">
+                <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.cleaning.reason">Reason</span></th>
+                <td mat-cell *matCellDef="let file">{{ file.reason }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let file; columns: displayedColumns;"></tr>
+        </table>
+    </mat-card-content>
+</mat-card>

@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
+import fr.yodamad.svn2git.service.MigrationRemovedFileService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 
 import org.assertj.core.api.Assertions;
@@ -95,10 +96,13 @@ public class MigrationResourceIntTest {
     @Autowired
     private MappingService mappingService;
 
+    @Autowired
+    private MigrationRemovedFileService mrfService;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService);
+        final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService, mrfService);
         this.restMigrationMockMvc = MockMvcBuilders.standaloneSetup(migrationResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

@@ -4,11 +4,13 @@ import com.codahale.metrics.annotation.Timed;
 import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
+import fr.yodamad.svn2git.domain.MigrationRemovedFile;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
+import fr.yodamad.svn2git.service.MigrationRemovedFileService;
 import fr.yodamad.svn2git.web.rest.errors.BadRequestAlertException;
 import fr.yodamad.svn2git.web.rest.util.HeaderUtil;
 import fr.yodamad.svn2git.web.rest.util.PaginationUtil;
@@ -49,11 +51,16 @@ public class MigrationResource {
 
     private final MappingService mappingService;
 
-    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager, MigrationHistoryService migrationHistoryService, MappingService mappingService) {
+    private final MigrationRemovedFileService mrfService;
+
+    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager,
+                             MigrationHistoryService migrationHistoryService, MappingService mappingService,
+                             MigrationRemovedFileService migrationRemovedFileService) {
         this.migrationRepository = migrationRepository;
         this.migrationManager = migrationManager;
         this.migrationHistoryService = migrationHistoryService;
         this.mappingService = mappingService;
+        this.mrfService = migrationRemovedFileService;
     }
 
     /**
@@ -249,5 +256,26 @@ public class MigrationResource {
 
         migrationRepository.deleteById(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+    }
+
+    /**
+     * Get removed files for a given migration, either count or list them.
+     * @param id Migration Id
+     * @param action Action (list or count)
+     * @return
+     */
+    @GetMapping("/migrations/{id}/removed-files")
+    @Timed
+    public ResponseEntity<?> getRemovedFiles(@PathVariable Long id, @RequestParam String action) {
+        if (action.equalsIgnoreCase("list")) {
+            List<MigrationRemovedFile> files = this.mrfService.getAll4Migration(id);
+            return new ResponseEntity<>(files, null, HttpStatus.OK);
+        } else if (action.equalsIgnoreCase("count")) {
+            Integer count = this.mrfService.countAll4Migration(id);
+            return new ResponseEntity<>(count, null, HttpStatus.OK);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+
     }
 }

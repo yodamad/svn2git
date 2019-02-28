@@ -10,11 +10,14 @@ import { createRequestOption } from 'app/shared';
 import { IMigration } from 'app/shared/model/migration.model';
 import { IMigrationHistory } from 'app/shared/model/migration-history.model';
 import { IMapping } from 'app/shared/model/mapping.model';
+import { IMigrationRemovedFile, MigrationRemovedFile } from 'app/shared/model/migration-removed-file.model';
 
 type EntityResponseType = HttpResponse<IMigration>;
 type EntityArrayResponseType = HttpResponse<IMigration[]>;
 type HistoryArrayResponseType = HttpResponse<IMigrationHistory[]>;
 type MappingArrayResponseType = HttpResponse<IMapping[]>;
+type NumberResponseType = HttpResponse<number>;
+type RemovedFilesArrayResponseType = HttpResponse<IMigrationRemovedFile[]>;
 
 @Injectable({ providedIn: 'root' })
 export class MigrationService {
@@ -58,6 +61,18 @@ export class MigrationService {
         return this.http
             .get<IMapping[]>(`${this.resourceUrl}/${id}/mappings`, { observe: 'response' })
             .pipe(map((res: MappingArrayResponseType) => res));
+    }
+
+    countRemovedFiles(id: number): Observable<NumberResponseType> {
+        return this.http
+            .get<number>(`${this.resourceUrl}/${id}/removed-files?action=count`, { observe: 'response' })
+            .pipe(map((res: NumberResponseType) => res));
+    }
+
+    getRemovedFiles(id: number): Observable<RemovedFilesArrayResponseType> {
+        return this.http
+            .get<MigrationRemovedFile[]>(`${this.resourceUrl}/${id}/removed-files?action=list`, { observe: 'response' })
+            .pipe(map((res: RemovedFilesArrayResponseType) => res));
     }
 
     query(req?: any): Observable<EntityArrayResponseType> {

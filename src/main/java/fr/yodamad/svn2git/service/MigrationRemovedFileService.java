@@ -4,12 +4,12 @@ import fr.yodamad.svn2git.domain.MigrationRemovedFile;
 import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -61,6 +61,26 @@ public class MigrationRemovedFileService {
     public Optional<MigrationRemovedFile> findOne(Long id) {
         log.debug("Request to get MigrationRemovedFile : {}", id);
         return migrationRemovedFileRepository.findById(id);
+    }
+
+    /**
+     * Count all removed files for a migration
+     * @param migrationId Migration ID
+     * @return Nb of files
+     */
+    @Transactional(readOnly = true)
+    public Integer countAll4Migration(Long migrationId) {
+        return migrationRemovedFileRepository.countAllByMigration_Id(migrationId);
+    }
+
+    /**
+     * List all removed files for a migration
+     * @param migrationId Migration ID
+     * @return List of files
+     */
+    @Transactional(readOnly = true)
+    public List<MigrationRemovedFile> getAll4Migration(Long migrationId) {
+        return migrationRemovedFileRepository.findAllByMigration_Id(migrationId);
     }
 
     /**

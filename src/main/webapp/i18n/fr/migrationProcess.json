@@ -4,7 +4,10 @@
         "check" : "Vérifier",
         "checking" : "En cours",
         "cleaning" : {
-            "options" : "Nettoyage"
+            "options" : "Nettoyage",
+            "files": "fichier(s) supprimé(s)",
+            "path": "Chemin",
+            "reason": "Raison"
         },
         "date" : "Date",
         "directory" : "Répertoire",

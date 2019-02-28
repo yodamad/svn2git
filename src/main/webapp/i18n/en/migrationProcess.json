@@ -4,7 +4,10 @@
         "check" : "Check",
         "checking" : "Checking",
         "cleaning" : {
-            "options" : "Cleaning options"
+            "options" : "Cleaning options",
+            "files": "file(s) removed",
+            "path": "File path",
+            "reason": "Removal reason"
         },
         "date" : "Date",
         "directory" : "Directory",

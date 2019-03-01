@@ -32,6 +32,7 @@ management:
     metrics:
         enabled: false # http://micrometer.io/ is disabled by default, as we use http://metrics.dropwizard.io/ instead
 
+
 spring:
     application:
         name: svn2git

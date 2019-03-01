@@ -16,6 +16,9 @@
                 "group": "Erreur de vérification du groupe Gitlab"
             },
             "svn": "Erreur de vérification du SVN"
+        },
+        "no": {
+            "result" : "Aucun résultat trouvé"
         }
     }
 }

@@ -16,6 +16,9 @@
                 "group": "Error checking Gitlab group"
             },
             "svn": "Error checking SVN repository"
+        },
+        "no": {
+            "result" : "No result found"
         }
     }
 }

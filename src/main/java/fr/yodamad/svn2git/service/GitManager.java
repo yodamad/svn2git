@@ -69,7 +69,7 @@ public class GitManager {
             workUnit.migration.getSvnGroup()
             : workUnit.migration.getSvnProject();
 
-        String initCommand = format("git clone %s/%s/%s.git %s",
+        String initCommand = format("git clone %s%s/%s.git %s",
             workUnit.migration.getGitlabUrl(),
             workUnit.migration.getGitlabGroup(),
             svn,

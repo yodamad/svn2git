@@ -2,6 +2,7 @@ import { Moment } from 'moment';
 import { IMigration } from 'app/shared/model//migration.model';
 
 export const enum StepEnum {
+    INIT = 'INIT',
     GITLAB_PROJECT_CREATION = 'GITLAB_PROJECT_CREATION',
     SVN_CHECKOUT = 'SVN_CHECKOUT',
     GIT_CLEANING = 'GIT_CLEANING',

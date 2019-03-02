@@ -37,4 +37,5 @@ public interface MigrationRepository extends JpaRepository<Migration, Long> {
      * @return all migrations concerning given group
      */
     Page<Migration> findAllBySvnGroup(String group, Pageable pageable);
+
 }

@@ -15,4 +15,6 @@ import java.util.List;
 public interface MigrationHistoryRepository extends JpaRepository<MigrationHistory, Long> {
 
     List<MigrationHistory> findAllByMigration_Id(Long migrationId);
+
+    MigrationHistory findFirstByMigration_IdOrderByIdDesc(Long migrationId);
 }

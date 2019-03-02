@@ -42,7 +42,7 @@ public class Cleaner {
                     try {
                         Main.main(new String[]{"--delete-files", s, "--no-blob-protection", workUnit.directory});
                         historyMgr.endStep(innerHistory, StatusEnum.DONE, null);
-                    } catch (Error exc) {
+                    } catch (Throwable exc) {
                         historyMgr.endStep(innerHistory, StatusEnum.FAILED, exc.getMessage());
                         workUnit.warnings.set(true);
                     }

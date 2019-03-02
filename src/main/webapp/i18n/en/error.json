@@ -19,6 +19,7 @@
         },
         "no": {
             "result" : "No result found"
-        }
+        },
+        "criteria": "Missing criteria"
     }
 }

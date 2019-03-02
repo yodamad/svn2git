@@ -19,6 +19,7 @@
         },
         "no": {
             "result" : "Aucun résultat trouvé"
-        }
+        },
+        "criteria": "Critère de recherche manquant"
     }
 }

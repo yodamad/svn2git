@@ -4,6 +4,8 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
+import { sanitizeUrl } from '@angular/core/src/sanitization/sanitization';
+import { el } from '@angular/platform-browser/testing/src/browser_util';
 
 type EntityResponseType = HttpResponse<boolean>;
 type EntityStructureResponseType = HttpResponse<SvnStructure>;
@@ -20,6 +22,7 @@ export class MigrationProcessService {
     private migrationUrl = this.serverUrl + 'migrations';
     private userMigrationUrl = this.migrationUrl + '/user/';
     private groupMigrationUrl = this.migrationUrl + '/group/';
+    private projectMigrationUrl = this.migrationUrl + '/project/';
 
     constructor(private http: HttpClient) {}
 
@@ -53,6 +56,14 @@ export class MigrationProcessService {
     findMigrationByGroup(group: string): Observable<MigrationArrayResponseType> {
         return this.http
             .get<IMigration[]>(`${this.groupMigrationUrl}${group}`, { observe: 'response' })
+            .pipe(map((res: MigrationArrayResponseType) => res));
+    }
+
+    findMigrationByProject(project: string): Observable<MigrationArrayResponseType> {
+        const elements: string[] = project.split('/');
+
+        return this.http
+            .get<IMigration[]>(`${this.projectMigrationUrl}${elements[elements.length - 1]}`, { observe: 'response' })
             .pipe(map((res: MigrationArrayResponseType) => res));
     }
 }

@@ -5,6 +5,8 @@
         <mat-form-field><input matInput type="text" placeholder="{{'svn2GitApp.migration.login' | translate}}" formControlName="userCriteria" /></mat-form-field>
         <span jhiTranslate="global.or" style="margin: 0 20px">Or</span>
         <mat-form-field><input matInput type="text" placeholder="{{'svn2GitApp.migration.svnGroup' | translate}}" formControlName="groupCriteria"/></mat-form-field>
+        <span jhiTranslate="global.or" style="margin: 0 20px">Or</span>
+        <mat-form-field><input matInput type="text" placeholder="{{'svn2GitApp.migration.svnProject' | translate}}" formControlName="projectCriteria"/></mat-form-field>
         <button mat-raised-button type="submit" color="primary" style="margin-left: 20px" (click)="search()"><span jhiTranslate="global.search">Search</span></button>
     </form>
     <mat-divider></mat-divider>

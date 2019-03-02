@@ -25,7 +25,7 @@
     "@nguniversal/express-engine": "^7.1.0",
     "@ngx-translate/core": "^11.0.1",
     "@ngx-translate/http-loader": "^4.0.0",
-    "bootstrap": "4.3.0",
+    "bootstrap": ">=4.3.1",
     "core-js": "2.6.4",
     "moment": "2.24.0",
     "ng-jhipster": "0.9.2",

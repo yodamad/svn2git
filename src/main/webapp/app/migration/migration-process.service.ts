@@ -60,7 +60,7 @@ export class MigrationProcessService {
     }
 
     findMigrationByProject(project: string): Observable<MigrationArrayResponseType> {
-        let elements: string[] = project.split('/');
+        const elements: string[] = project.split('/');
 
         return this.http
             .get<IMigration[]>(`${this.projectMigrationUrl}${elements[elements.length - 1]}`, { observe: 'response' })

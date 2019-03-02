@@ -78,7 +78,7 @@ public class MigrationManager {
         String rootDir;
 
         try {
-            history = historyMgr.startStep(migration, StepEnum.INIT, "Try to create working directory");
+            history = historyMgr.startStep(migration, StepEnum.INIT, "Create working directory");
             rootDir = workingDir(applicationProperties.work.directory, migration);
             historyMgr.endStep(history, StatusEnum.DONE,null);
         } catch (IOException | InterruptedException ex) {

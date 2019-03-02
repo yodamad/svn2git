@@ -6,6 +6,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.WorkUnit;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
+import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.apache.commons.io.FileUtils;
@@ -19,6 +20,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,6 +45,7 @@ public class MigrationManager {
     private final Cleaner cleaner;
     // Repositories
     private final MigrationRepository migrationRepository;
+    private final MigrationHistoryRepository migrationHistoryRepository;
     // Configuration
     private final ApplicationProperties applicationProperties;
 
@@ -51,12 +54,14 @@ public class MigrationManager {
                             final GitManager gitManager,
                             final HistoryManager historyManager,
                             final MigrationRepository migrationRepository,
+                            final MigrationHistoryRepository migrationHistoryRepository,
                             final ApplicationProperties applicationProperties) {
         this.cleaner = cleaner;
         this.gitlab = gitlabAdmin;
         this.gitManager = gitManager;
         this.historyMgr = historyManager;
         this.migrationRepository = migrationRepository;
+        this.migrationHistoryRepository = migrationHistoryRepository;
         this.applicationProperties = applicationProperties;
     }
 
@@ -70,11 +75,22 @@ public class MigrationManager {
         String gitCommand;
         Migration migration = migrationRepository.findById(migrationId).get();
         MigrationHistory history = null;
+        String rootDir;
 
         try {
+            history = historyMgr.startStep(migration, StepEnum.INIT, "Try to create working directory");
+            rootDir = workingDir(applicationProperties.work.directory, migration);
+            historyMgr.endStep(history, StatusEnum.DONE,null);
+        } catch (IOException | InterruptedException ex) {
+            historyMgr.endStep(history, StatusEnum.FAILED, format("Failed to create directory : %s", ex.getMessage()));
+            migration.setStatus(StatusEnum.FAILED);
+            migrationRepository.save(migration);
+            return;
+        }
 
-            String rootDir = workingDir(applicationProperties.work.directory, migration);
-            WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
+        WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
+
+        try {
 
             // in retry case, clean gitlab
             if (retry) {
@@ -164,23 +180,14 @@ public class MigrationManager {
                 historyMgr.endStep(history, StatusEnum.IGNORED, "Skip tags");
             }
 
-            // 7. Clean work directory
-            history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));
-            try {
-                FileUtils.deleteDirectory(new File(workUnit.root));
-                historyMgr.endStep(history, StatusEnum.DONE, null);
-            } catch (Exception exc) {
-                historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
-                workUnit.warnings.set(true);
-            }
-
             if (workUnit.warnings.get()) {
                 migration.setStatus(StatusEnum.DONE_WITH_WARNINGS);
             } else{
                 migration.setStatus(StatusEnum.DONE);
             }
             migrationRepository.save(migration);
-        } catch (Exception exc) {
+        } catch (Throwable exc) {
+            history = migrationHistoryRepository.findFirstByMigration_IdOrderByIdDesc(migrationId);
             if (history != null) {
                 LOG.error("Failed step : " + history.getStep(), exc);
                 historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
@@ -188,6 +195,15 @@ public class MigrationManager {
 
             migration.setStatus(StatusEnum.FAILED);
             migrationRepository.save(migration);
+        } finally {
+            // 7. Clean work directory
+            history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));
+            try {
+                FileUtils.deleteDirectory(new File(workUnit.root));
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+            } catch (Exception exc) {
+                historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+            }
         }
     }
 

@@ -100,7 +100,9 @@ public abstract class Shell {
         int exitCode = process.waitFor();
         LOG.debug(format("Exit : %d", exitCode));
 
-        assert exitCode == 0;
+        if (exitCode != 0) {
+            throw new RuntimeException(""+ exitCode);
+        }
 
         return exitCode;
     }

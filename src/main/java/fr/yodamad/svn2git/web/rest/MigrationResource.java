@@ -195,8 +195,24 @@ public class MigrationResource {
     }
 
     /**
-     * GET  /migrations/:id : get the "id" migration.
+     * GET  /migrations/project/:group : get all the migrations for a given project.
      *
+     * @param project project for migrations
+     * @param pageable the pagination information
+     * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
+     */
+    @GetMapping("/migrations/project/{project}")
+    @Timed
+    public ResponseEntity<List<Migration>> getMigrationsByProject(@PathVariable String project, Pageable pageable) {
+        log.debug("REST request to get a page of Migrations for a given project");
+        Page<Migration> page = migrationRepository.findAllBySvnProjectEndingWith(project, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/migrations/project/");
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * GET  /migrations/:id : get the "id" migration.
+     *'
      * @param id the id of the migration to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the migration, or with status 404 (Not Found)
      */

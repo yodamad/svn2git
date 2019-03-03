@@ -2,8 +2,6 @@ package fr.yodamad.svn2git.repository;
 
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -26,15 +24,19 @@ public interface MigrationRepository extends JpaRepository<Migration, Long> {
 
     /**
      * @param user input user
-     * @param pageable
      * @return all migrations invoked by user
      */
-    Page<Migration> findAllByUser(String user, Pageable pageable);
+    List<Migration> findAllByUser(String user);
 
     /**
      * @param group input group
-     * @param pageable
      * @return all migrations concerning given group
      */
-    Page<Migration> findAllBySvnGroup(String group, Pageable pageable);
+    List<Migration> findAllBySvnGroup(String group);
+
+    /**
+     * @param project input project
+     * @return all migrations concerning given project
+     */
+    List<Migration> findAllBySvnProjectEndingWith(String project);
 }

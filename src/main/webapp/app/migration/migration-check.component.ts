@@ -44,7 +44,8 @@ export class MigrationCheckComponent implements OnInit {
     ngOnInit() {
         this.searchFormGroup = this._formBuilder.group({
             userCriteria: [''],
-            groupCriteria: ['']
+            groupCriteria: [''],
+            projectCriteria: ['']
         });
         this.links = {
             last: 0
@@ -68,19 +69,17 @@ export class MigrationCheckComponent implements OnInit {
         if (this.searchFormGroup.controls['userCriteria'].value !== '') {
             this._migrationProcessService
                 .findMigrationByUser(this.searchFormGroup.controls['userCriteria'].value)
-                .subscribe(
-                    (res: HttpResponse<IMigration[]>) => this.paginateMigrations(res.body, res.headers),
-                    () => this.openSnackBar('error.http.504')
-                );
+                .subscribe((res: HttpResponse<IMigration[]>) => (this.migrations = res.body), () => this.openSnackBar('error.http.504'));
         } else if (this.searchFormGroup.controls['groupCriteria'].value !== '') {
             this._migrationProcessService
                 .findMigrationByGroup(this.searchFormGroup.controls['groupCriteria'].value)
-                .subscribe(
-                    (res: HttpResponse<IMigration[]>) => this.paginateMigrations(res.body, res.headers),
-                    () => this.openSnackBar('error.http.504')
-                );
+                .subscribe((res: HttpResponse<IMigration[]>) => (this.migrations = res.body), () => this.openSnackBar('error.http.504'));
+        } else if (this.searchFormGroup.controls['projectCriteria'].value !== '') {
+            this._migrationProcessService
+                .findMigrationByProject(this.searchFormGroup.controls['projectCriteria'].value)
+                .subscribe((res: HttpResponse<IMigration[]>) => (this.migrations = res.body), () => this.openSnackBar('error.http.504'));
         } else {
-            alert('Enter a criteria');
+            this.openSnackBar('error.criteria');
         }
     }
 

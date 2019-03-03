@@ -166,37 +166,47 @@ public class MigrationResource {
      * GET  /migrations/user/:user : get all the migrations for a given user.
      *
      * @param user username for migrations
-     * @param pageable the pagination information
      * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
      */
     @GetMapping("/migrations/user/{user}")
     @Timed
-    public ResponseEntity<List<Migration>> getMigrationsByUser(@PathVariable String user, Pageable pageable) {
-        log.debug("REST request to get a page of Migrations for a given user");
-        Page<Migration> page = migrationRepository.findAllByUser(user, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/migrations/user/");
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    public ResponseEntity<List<Migration>> getMigrationsByUser(@PathVariable String user) {
+        log.debug("REST request to get a migrations of Migrations for a given user");
+        List<Migration> migrations = migrationRepository.findAllByUser(user);
+        return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 
     /**
      * GET  /migrations/group/:group : get all the migrations for a given group.
      *
      * @param group group for migrations
-     * @param pageable the pagination information
      * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
      */
     @GetMapping("/migrations/group/{group}")
     @Timed
-    public ResponseEntity<List<Migration>> getMigrationsByGroup(@PathVariable String group, Pageable pageable) {
-        log.debug("REST request to get a page of Migrations for a given group");
-        Page<Migration> page = migrationRepository.findAllBySvnGroup(group, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/migrations/group/");
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    public ResponseEntity<List<Migration>> getMigrationsByGroup(@PathVariable String group) {
+        log.debug("REST request to get a migrationRepositoryAllBySvnGroup of Migrations for a given group");
+        List<Migration> migrations = migrationRepository.findAllBySvnGroup(group);
+        return new ResponseEntity<>(migrations, null, HttpStatus.OK);
+    }
+
+    /**
+     * GET  /migrations/project/:group : get all the migrations for a given project.
+     *
+     * @param project project for migrations
+     * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
+     */
+    @GetMapping("/migrations/project/{project}")
+    @Timed
+    public ResponseEntity<List<Migration>> getMigrationsByProject(@PathVariable String project) {
+        log.debug("REST request to get a migrations of Migrations for a given project");
+        List<Migration> migrations = migrationRepository.findAllBySvnProjectEndingWith(project);
+        return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 
     /**
      * GET  /migrations/:id : get the "id" migration.
-     *
+     *'
      * @param id the id of the migration to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the migration, or with status 404 (Not Found)
      */

@@ -131,7 +131,6 @@ public class GitManager {
 
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT, safeCommand);
         execCommand(workUnit.root, cloneCommand, safeCommand);
-
         historyMgr.endStep(history, StatusEnum.DONE, null);
     }
 
@@ -466,8 +465,14 @@ public class GitManager {
             gitCommand = format("git commit -am \"Reset history on %s\"", branch);
             execCommand(workUnit.directory, gitCommand);
 
-            gitCommand = format("git branch -D %s", branch);
-            execCommand(workUnit.directory, gitCommand);
+            try {
+                gitCommand = format("git branch -D %s", branch);
+                execCommand(workUnit.directory, gitCommand);
+            } catch (RuntimeException ex) {
+                if (ex.getMessage().equalsIgnoreCase("1")) {
+                    // Ignored failed step
+                }
+            }
 
             gitCommand = format("git branch -m %s", branch);
             execCommand(workUnit.directory, gitCommand);

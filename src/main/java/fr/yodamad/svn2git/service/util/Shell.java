@@ -1,10 +1,12 @@
 package fr.yodamad.svn2git.service.util;
 
 import fr.yodamad.svn2git.domain.Migration;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
@@ -97,10 +99,14 @@ public abstract class Shell {
         StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), LOG::debug);
         Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
 
+        String stderr = IOUtils.toString(process.getErrorStream(), Charset.defaultCharset());
+
         int exitCode = process.waitFor();
         LOG.debug(format("Exit : %d", exitCode));
 
-        assert exitCode == 0;
+        if (exitCode != 0) {
+            throw new RuntimeException(stderr);
+        }
 
         return exitCode;
     }

@@ -33,7 +33,7 @@ public class MigrationHistory implements Serializable {
     @Column(name = "jhi_date")
     private Instant date;
 
-    @Column(name = "data")
+    @Column(name = "data", columnDefinition = "text")
     private String data;
 
     @ManyToOne

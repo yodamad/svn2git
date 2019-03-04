@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Group;
+import org.gitlab4j.api.models.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
@@ -239,7 +241,16 @@ public class MigrationManager {
                         groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
                     }
                 }
-                gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+
+                Optional<Project> project = gitlabAdmin.groupApi().getProjects(groupId)
+                    .stream()
+                    .filter(p -> p.getName().equalsIgnoreCase(structure[structure.length - 1]))
+                    .findFirst();
+                if (!project.isPresent()) {
+                    gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+                } else {
+                    throw new GitLabApiException("Please remove the destination project '"+group.getName()+"/"+structure[structure.length - 1]);
+                }
             }
             historyMgr.endStep(history, StatusEnum.DONE, null);
         } catch (GitLabApiException exc) {

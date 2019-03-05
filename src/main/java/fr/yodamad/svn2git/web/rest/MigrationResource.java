@@ -1,6 +1,7 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.annotation.JsonView;
 import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
@@ -12,6 +13,7 @@ import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.BadRequestAlertException;
 import fr.yodamad.svn2git.web.rest.util.HeaderUtil;
 import fr.yodamad.svn2git.web.rest.util.PaginationUtil;
+import fr.yodamad.svn2git.web.rest.util.View;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -155,6 +157,7 @@ public class MigrationResource {
      */
     @GetMapping("/migrations")
     @Timed
+    @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getAllMigrations(Pageable pageable) {
         log.debug("REST request to get a page of Migrations");
         Page<Migration> page = migrationRepository.findAll(pageable);
@@ -170,6 +173,7 @@ public class MigrationResource {
      */
     @GetMapping("/migrations/user/{user}")
     @Timed
+    @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByUser(@PathVariable String user) {
         log.debug("REST request to get a migrations of Migrations for a given user");
         List<Migration> migrations = migrationRepository.findAllByUser(user);
@@ -184,6 +188,7 @@ public class MigrationResource {
      */
     @GetMapping("/migrations/group/{group}")
     @Timed
+    @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByGroup(@PathVariable String group) {
         log.debug("REST request to get a migrationRepositoryAllBySvnGroup of Migrations for a given group");
         List<Migration> migrations = migrationRepository.findAllBySvnGroup(group);
@@ -198,6 +203,7 @@ public class MigrationResource {
      */
     @GetMapping("/migrations/project/{project}")
     @Timed
+    @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByProject(@PathVariable String project) {
         log.debug("REST request to get a migrations of Migrations for a given project");
         List<Migration> migrations = migrationRepository.findAllBySvnProjectEndingWith(project);
@@ -212,6 +218,7 @@ public class MigrationResource {
      */
     @GetMapping("/migrations/{id}")
     @Timed
+    @JsonView(View.Public.class)
     public ResponseEntity<Migration> getMigration(@PathVariable Long id) {
         log.debug("REST request to get Migration : {}", id);
         Optional<Migration> migration = migrationRepository.findById(id);
@@ -226,6 +233,7 @@ public class MigrationResource {
      */
     @GetMapping("/migrations/{id}/histories")
     @Timed
+    @JsonView(View.Public.class)
     public ResponseEntity<List<MigrationHistory>> getMigrationHistories(@PathVariable Long id) {
         log.debug("REST request to get Migration : {}", id);
         List<MigrationHistory> histories = migrationHistoryService.findAllForMigration(id);

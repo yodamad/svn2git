@@ -215,7 +215,7 @@ public class MigrationManager {
      * @param migration
      * @throws GitLabApiException
      */
-    private void createGitlabProject(Migration migration) throws GitLabApiException {
+    private String createGitlabProject(Migration migration) throws GitLabApiException {
         MigrationHistory history = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
         GitlabAdmin gitlabAdmin = gitlab;
@@ -230,6 +230,8 @@ public class MigrationManager {
             // If no svn project specified, use svn group instead
             if (StringUtils.isEmpty(migration.getSvnProject())) {
                 gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+                return migration.getSvnGroup();
             } else {
                 // split svn structure to create gitlab elements (group(s), project)
                 String[] structure = migration.getSvnProject().split("/");
@@ -250,11 +252,12 @@ public class MigrationManager {
                     .findFirst();
                 if (!project.isPresent()) {
                     gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
+                    return structure[structure.length - 1];
                 } else {
                     throw new GitLabApiException("Please remove the destination project '"+group.getName()+"/"+structure[structure.length - 1]);
                 }
             }
-            historyMgr.endStep(history, StatusEnum.DONE, null);
         } catch (GitLabApiException exc) {
             historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
             throw exc;

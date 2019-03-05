@@ -1,27 +1,23 @@
 .cell-ok {
     background-color: #28a745;
     color: white;
-    border: 5px solid white;
-    padding: 10px;
+    text-align: center;
 }
 
 .cell-ko {
     background-color: darkred;
     color: white;
-    border: 5px solid white;
-    padding: 10px;
+    text-align: center;
 }
 
 .cell-ignored {
     background-color: grey;
     color: white;
-    border: 5px solid white;
-    padding: 10px;
+    text-align: center;
 }
 
 .cell-warning {
     background-color: orange;
     color: white;
-    border: 5px solid white;
-    padding: 10px;
+    text-align: center;
 }

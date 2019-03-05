@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.GitlabInfo;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.User;
@@ -38,7 +39,8 @@ public class GitlabResource {
     @Timed
     public ResponseEntity<Boolean> checkUser(@PathVariable("username") String userName, @RequestBody GitlabInfo gitlabInfo) {
         GitlabAdmin gitlab = gitlabAdmin;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)) {
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)
+        || !StringUtils.isEmpty(gitlabInfo.token)) {
             gitlabAdmin.setGitLabApi(customApi(gitlabInfo));
         }
         Optional<User> user = gitlab.userApi().getOptionalUser(userName);
@@ -60,7 +62,8 @@ public class GitlabResource {
     @Timed
     public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
         GitlabAdmin gitlab = gitlabAdmin;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)) {
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)
+            || !StringUtils.isEmpty(gitlabInfo.token)) {
             gitlabAdmin.setGitLabApi(customApi(gitlabInfo));
         }
         Optional<Group> group = gitlab.groupApi().getOptionalGroup(groupName);

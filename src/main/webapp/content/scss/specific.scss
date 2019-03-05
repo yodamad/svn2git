@@ -30,3 +30,20 @@ $svn2git-theme: mat-light-theme($svn2git-primary, $svn2git-accent, $svn2git-warn
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
 }
+
+.badge-primary {
+    text-align: center;
+}
+
+mat-card {
+    height: calc(100% - 10px);
+}
+
+table.large-table.mat-table {
+    width: 100%;
+}
+
+td.badge-success,
+td.badge-danger {
+    text-align: center;
+}

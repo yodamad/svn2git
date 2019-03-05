@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Group;
+import org.gitlab4j.api.models.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
@@ -118,20 +120,22 @@ public class MigrationManager {
             if (cleanExtensions || cleanLargeFiles) {
                 gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
                 execCommand(workUnit.directory, gitCommand);
+                gitCommand = "git reset HEAD";
+                execCommand(workUnit.directory, gitCommand);
+                gitCommand = "git clean -fd";
+                execCommand(workUnit.directory, gitCommand);
             }
 
             // 4. Git push master based on SVN trunk
             if (migration.getTrunk().equals("*")) {
                 history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
-                if (StringUtils.isEmpty(migration.getSvnProject())) {
-                    // Set origin
-                    String remoteCommand = format("git remote add origin %s/%s/%s.git",
-                        migration.getGitlabUrl(),
-                        migration.getGitlabGroup(),
-                        svn);
-                    execCommand(workUnit.directory, remoteCommand);
-                }
+                // Set origin
+                String remoteCommand = format("git remote add origin %s/%s/%s.git",
+                    migration.getGitlabUrl(),
+                    migration.getGitlabGroup(),
+                    svn);
+                execCommand(workUnit.directory, remoteCommand);
 
                 // if no history option set
                 if (migration.getSvnHistory().equals("nothing")) {
@@ -139,13 +143,12 @@ public class MigrationManager {
                 } else {
                     // if using root, additional step
                     if (StringUtils.isEmpty(migration.getSvnProject())) {
-
-
                         // Push with upstream
                         gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
                         execCommand(workUnit.directory, gitCommand);
                     } else {
-                        execCommand(workUnit.directory, GIT_PUSH);
+                        gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                        execCommand(workUnit.directory, gitCommand);
                     }
                 }
                 historyMgr.endStep(history, StatusEnum.DONE, null);
@@ -239,7 +242,16 @@ public class MigrationManager {
                         groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
                     }
                 }
-                gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+
+                Optional<Project> project = gitlabAdmin.groupApi().getProjects(groupId)
+                    .stream()
+                    .filter(p -> p.getName().equalsIgnoreCase(structure[structure.length - 1]))
+                    .findFirst();
+                if (!project.isPresent()) {
+                    gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+                } else {
+                    throw new GitLabApiException("Please remove the destination project '"+group.getName()+"/"+structure[structure.length - 1]);
+                }
             }
             historyMgr.endStep(history, StatusEnum.DONE, null);
         } catch (GitLabApiException exc) {

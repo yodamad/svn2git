@@ -69,7 +69,7 @@ public class GitManager {
             workUnit.migration.getSvnGroup()
             : workUnit.migration.getSvnProject();
 
-        String initCommand = format("git clone %s%s/%s.git %s",
+        String initCommand = format("git clone %s/%s/%s.git %s",
             workUnit.migration.getGitlabUrl(),
             workUnit.migration.getGitlabGroup(),
             svn,
@@ -462,8 +462,12 @@ public class GitManager {
             gitCommand = "git add -A";
             execCommand(workUnit.directory, gitCommand);
 
-            gitCommand = format("git commit -am \"Reset history on %s\"", branch);
-            execCommand(workUnit.directory, gitCommand);
+            try {
+                gitCommand = format("git commit -am \"Reset history on %s\"", branch);
+                execCommand(workUnit.directory, gitCommand);
+            } catch (RuntimeException ex) {
+                // Ignored failed step
+            }
 
             try {
                 gitCommand = format("git branch -D %s", branch);

@@ -219,7 +219,8 @@ public class MigrationManager {
         MigrationHistory history = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
         GitlabAdmin gitlabAdmin = gitlab;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(migration.getGitlabUrl())) {
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(migration.getGitlabUrl())
+        || !StringUtils.isEmpty(migration.getGitlabToken())) {
             GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
             gitlabAdmin.setGitLabApi(api);
         }

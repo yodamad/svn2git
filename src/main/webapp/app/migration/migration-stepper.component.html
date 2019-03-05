@@ -229,7 +229,7 @@
             <table mat-table [(dataSource)]="staticExtensions" class="large-table">
                 <ng-container matColumnDef="extensionPattern">
                     <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.pattern">Pattern</span></th>
-                    <td mat-cell *matCellDef="let extension">{{ extension.description }}</td>
+                    <td mat-cell *matCellDef="let extension">{{ extension.description !== null ? extension.description : extension.value }}</td>
                 </ng-container>
                 <ng-container matColumnDef="selectExtension">
                     <th mat-header-cell *matHeaderCellDef>

@@ -60,7 +60,6 @@ public class Migration implements Serializable {
     @Column(name = "gitlab_url")
     private String gitlabUrl;
 
-    @JsonIgnore
     @Column(name = "gitlab_token")
     private String gitlabToken;
 
@@ -70,7 +69,6 @@ public class Migration implements Serializable {
     @Column(name = "svn_user")
     private String svnUser;
 
-    @JsonIgnore
     @Column(name = "svn_password")
     private String svnPassword;
 

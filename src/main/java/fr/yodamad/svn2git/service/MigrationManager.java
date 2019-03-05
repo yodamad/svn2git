@@ -118,20 +118,22 @@ public class MigrationManager {
             if (cleanExtensions || cleanLargeFiles) {
                 gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
                 execCommand(workUnit.directory, gitCommand);
+                gitCommand = "git reset HEAD";
+                execCommand(workUnit.directory, gitCommand);
+                gitCommand = "git clean -fd";
+                execCommand(workUnit.directory, gitCommand);
             }
 
             // 4. Git push master based on SVN trunk
             if (migration.getTrunk().equals("*")) {
                 history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
-                if (StringUtils.isEmpty(migration.getSvnProject())) {
-                    // Set origin
-                    String remoteCommand = format("git remote add origin %s/%s/%s.git",
-                        migration.getGitlabUrl(),
-                        migration.getGitlabGroup(),
-                        svn);
-                    execCommand(workUnit.directory, remoteCommand);
-                }
+                // Set origin
+                String remoteCommand = format("git remote add origin %s/%s/%s.git",
+                    migration.getGitlabUrl(),
+                    migration.getGitlabGroup(),
+                    svn);
+                execCommand(workUnit.directory, remoteCommand);
 
                 // if no history option set
                 if (migration.getSvnHistory().equals("nothing")) {
@@ -139,13 +141,12 @@ public class MigrationManager {
                 } else {
                     // if using root, additional step
                     if (StringUtils.isEmpty(migration.getSvnProject())) {
-
-
                         // Push with upstream
                         gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
                         execCommand(workUnit.directory, gitCommand);
                     } else {
-                        execCommand(workUnit.directory, GIT_PUSH);
+                        gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                        execCommand(workUnit.directory, gitCommand);
                     }
                 }
                 historyMgr.endStep(history, StatusEnum.DONE, null);

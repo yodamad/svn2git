@@ -2,15 +2,21 @@ package fr.yodamad.svn2git.service;
 
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.Mapping;
+import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.WorkUnit;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MappingRepository;
+import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import fr.yodamad.svn2git.service.util.MigrationConstants;
 import fr.yodamad.svn2git.service.util.Shell;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.gitlab4j.api.GitLabApi;
+import org.gitlab4j.api.GitLabApiException;
+import org.gitlab4j.api.models.Group;
+import org.gitlab4j.api.models.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,52 +51,74 @@ public class GitManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(GitManager.class);
 
+    private GitlabAdmin gitlab;
     // Manager & repository
     private final HistoryManager historyMgr;
     private final MappingRepository mappingRepository;
     private final ApplicationProperties applicationProperties;
 
-    public GitManager(final HistoryManager historyManager,
+    public GitManager(final GitlabAdmin gitlab,
+                      final HistoryManager historyManager,
                       final MappingRepository mappingRepository,
                       final ApplicationProperties applicationProperties) {
+        this.gitlab = gitlab;
         this.historyMgr = historyManager;
         this.mappingRepository = mappingRepository;
         this.applicationProperties = applicationProperties;
     }
 
     /**
-     * Clone empty git repository
-     * @param workUnit
-     * @return
-     * @throws IOException
-     * @throws InterruptedException
+     * Create project in GitLab
+     * @param migration
+     * @throws GitLabApiException
      */
-    public String gitClone(WorkUnit workUnit) throws IOException, InterruptedException {
-        String svn = StringUtils.isEmpty(workUnit.migration.getSvnProject()) ?
-            workUnit.migration.getSvnGroup()
-            : workUnit.migration.getSvnProject();
+    public String createGitlabProject(Migration migration) throws GitLabApiException {
+        MigrationHistory history = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
-        String initCommand = format("git clone %s/%s/%s.git %s",
-            workUnit.migration.getGitlabUrl(),
-            workUnit.migration.getGitlabGroup(),
-            svn,
-            workUnit.migration.getGitlabGroup());
-
-        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLONE, initCommand);
-
-        String mkdir;
-        if (isWindows) {
-            mkdir = format("mkdir %s", workUnit.directory);
-        } else {
-            mkdir = format("mkdir -p %s", workUnit.directory);
+        GitlabAdmin gitlabAdmin = gitlab;
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(migration.getGitlabUrl())
+            || !StringUtils.isEmpty(migration.getGitlabToken())) {
+            GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
+            gitlabAdmin.setGitLabApi(api);
         }
-        execCommand(applicationProperties.work.directory, mkdir);
+        try {
+            Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
 
-        // 2.1. Clone as mirror empty repository, required for BFG
-        execCommand(workUnit.root, initCommand);
+            // If no svn project specified, use svn group instead
+            if (StringUtils.isEmpty(migration.getSvnProject())) {
+                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+                return migration.getSvnGroup();
+            } else {
+                // split svn structure to create gitlab elements (group(s), project)
+                String[] structure = migration.getSvnProject().split("/");
+                Integer groupId = group.getId();
+                if (structure.length > 2) {
+                    for (int module = 1; module < structure.length - 2; module++) {
+                        Group gitlabSubGroup = new Group();
+                        gitlabSubGroup.setName(structure[module]);
+                        gitlabSubGroup.setPath(structure[module]);
+                        gitlabSubGroup.setParentId(groupId);
+                        groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+                    }
+                }
 
-        historyMgr.endStep(history, StatusEnum.DONE, null);
-        return svn;
+                Optional<Project> project = gitlabAdmin.groupApi().getProjects(groupId)
+                    .stream()
+                    .filter(p -> p.getName().equalsIgnoreCase(structure[structure.length - 1]))
+                    .findFirst();
+                if (!project.isPresent()) {
+                    gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
+                    return structure[structure.length - 1];
+                } else {
+                    throw new GitLabApiException("Please remove the destination project '"+group.getName()+"/"+structure[structure.length - 1]);
+                }
+            }
+        } catch (GitLabApiException exc) {
+            historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+            throw exc;
+        }
     }
 
     /**

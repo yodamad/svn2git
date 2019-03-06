@@ -19,7 +19,6 @@ import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -36,10 +35,10 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.*;
 import static fr.yodamad.svn2git.service.util.Shell.execCommand;
-import static fr.yodamad.svn2git.service.util.Shell.isWindows;
 import static java.lang.String.format;
 import static java.nio.file.Files.walk;
 
@@ -123,14 +122,23 @@ public class GitManager {
 
     /**
      * Git svn clone command to copy svn as git repository
-     * @param workUnit
+     * @param workUnit Current work unit
      * @throws IOException
      * @throws InterruptedException
      */
     public void gitSvnClone(WorkUnit workUnit) throws IOException, InterruptedException {
         String cloneCommand;
         String safeCommand;
-        if (StringUtils.isEmpty(workUnit.migration.getSvnUser())) {
+
+        if (!StringUtils.isEmpty(workUnit.migration.getSvnPassword())) {
+            String escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.getSvnPassword());
+            cloneCommand = initCommand(workUnit, workUnit.migration.getSvnUser(), escapedPassword);
+            safeCommand = initCommand(workUnit, workUnit.migration.getSvnUser(), STARS);
+        } else if (!StringUtils.isEmpty(applicationProperties.svn.password)) {
+            String escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password);
+            cloneCommand = initCommand(workUnit, applicationProperties.svn.user, escapedPassword);
+            safeCommand = initCommand(workUnit, applicationProperties.svn.user, STARS);
+        } else {
             cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
                 workUnit.migration.getSvnProject(),
                 workUnit.migration.getSvnProject(),
@@ -138,29 +146,29 @@ public class GitManager {
                 workUnit.migration.getSvnUrl(),
                 workUnit.migration.getSvnGroup());
             safeCommand = cloneCommand;
-        } else {
-            String escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.getSvnPassword());
-            cloneCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
-                escapedPassword,
-                workUnit.migration.getSvnUser(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnUrl(),
-                workUnit.migration.getSvnGroup());
-            safeCommand = format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
-                STARS,
-                workUnit.migration.getSvnUser(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnUrl(),
-                workUnit.migration.getSvnGroup());
         }
 
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT, safeCommand);
         execCommand(workUnit.root, cloneCommand, safeCommand);
         historyMgr.endStep(history, StatusEnum.DONE, null);
+    }
+
+    /**
+     * Init command with or without password in clear
+     * @param workUnit Current workUnit
+     * @param username Username to use
+     * @param secret Escaped password
+     * @return
+     */
+    private static String initCommand(WorkUnit workUnit, String username, String secret) {
+        return format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
+            secret,
+            username,
+            workUnit.migration.getSvnProject(),
+            workUnit.migration.getSvnProject(),
+            workUnit.migration.getSvnProject(),
+            workUnit.migration.getSvnUrl(),
+            workUnit.migration.getSvnGroup());
     }
 
     /**
@@ -254,10 +262,10 @@ public class GitManager {
     private StatusEnum mvDirectory(WorkUnit workUnit, Mapping mapping, String branch) {
         MigrationHistory history;
         String msg = format("git mv %s %s on %s", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
-        try {
+        try (Stream<Path> files = Files.list(Paths.get(workUnit.directory, mapping.getSvnDirectory()))) {
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
                 // For root directory, we need to loop for subdirectory
-                List<StatusEnum> results = Files.list(Paths.get(workUnit.directory, mapping.getSvnDirectory()))
+                List<StatusEnum> results = files
                     .map(d -> mv(workUnit, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString(), branch))
                     .collect(Collectors.toList());
 
@@ -297,9 +305,9 @@ public class GitManager {
         if (mapping.getRegex().startsWith("*")) { regex = '.' + mapping.getRegex(); }
 
         Pattern p = Pattern.compile(regex);
-        try {
-            Path fullPath = Paths.get(workUnit.directory, mapping.getSvnDirectory());
-            long result = walk(fullPath)
+        Path fullPath = Paths.get(workUnit.directory, mapping.getSvnDirectory());
+        try (Stream<Path> walker = walk(fullPath)) {
+            long result = walker
                 .map(Path::toString)
                 .filter(s -> !s.equals(fullPath.toString()))
                 .map(s -> s.substring(workUnit.directory.length()))
@@ -441,10 +449,10 @@ public class GitManager {
 
     /**
      * Push a tag
-     * @param workUnit
+     * @param workUnit Current work unit
      * @param tag Tag to migrate
      */
-    public boolean pushTag(WorkUnit workUnit, String tag) {
+    private boolean pushTag(WorkUnit workUnit, String tag) {
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, tag);
         try {
             String tagName = tag.replaceFirst(ORIGIN_TAGS, "");
@@ -470,7 +478,6 @@ public class GitManager {
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to push branch", gitEx);
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
-            return false;
         }
         return false;
     }

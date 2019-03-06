@@ -59,6 +59,7 @@ export class MigrationCheckComponent implements OnInit {
         const dialog = this._matDialog.open(JhiConfirmRetryModalComponent, {
             data: { migId: id }
         });
+        dialog.afterClosed().subscribe(() => this.search());
     }
 
     /**

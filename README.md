@@ -75,7 +75,7 @@ It is possible to check status of migrations and associated details.
 
 Just click on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/check_migration.png)
 
-Then search migrations with your gitlab account name or svn group
+Then search migrations with your gitlab account name, svn group or svn project
  
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/search_migration.png)
 
@@ -84,6 +84,8 @@ The migrations founded are display
 ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/migrations_list.png)
 
 You can check details of a migration by clicking on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/view.png)
+
+You can also retry a failed migration by clicking on ![alt text](https://raw.githubusercontent.com/yodamad/svn2git/master/github/retry.png)
 
 You are routed to migration details page resuming migration and steps
 

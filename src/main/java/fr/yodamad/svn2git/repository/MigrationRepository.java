@@ -26,17 +26,17 @@ public interface MigrationRepository extends JpaRepository<Migration, Long> {
      * @param user input user
      * @return all migrations invoked by user
      */
-    List<Migration> findAllByUser(String user);
+    List<Migration> findAllByUserOrderByIdDesc(String user);
 
     /**
      * @param group input group
      * @return all migrations concerning given group
      */
-    List<Migration> findAllBySvnGroup(String group);
+    List<Migration> findAllBySvnGroupOrderByIdDesc(String group);
 
     /**
      * @param project input project
      * @return all migrations concerning given project
      */
-    List<Migration> findAllBySvnProjectEndingWith(String project);
+    List<Migration> findAllBySvnProjectEndingWithOrderByIdDesc(String project);
 }

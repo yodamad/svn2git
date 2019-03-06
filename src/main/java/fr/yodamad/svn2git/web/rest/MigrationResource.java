@@ -176,7 +176,7 @@ public class MigrationResource {
     @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByUser(@PathVariable String user) {
         log.debug("REST request to get a migrations of Migrations for a given user");
-        List<Migration> migrations = migrationRepository.findAllByUser(user);
+        List<Migration> migrations = migrationRepository.findAllByUserOrderByIdDesc(user);
         return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 
@@ -191,7 +191,7 @@ public class MigrationResource {
     @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByGroup(@PathVariable String group) {
         log.debug("REST request to get a migrationRepositoryAllBySvnGroup of Migrations for a given group");
-        List<Migration> migrations = migrationRepository.findAllBySvnGroup(group);
+        List<Migration> migrations = migrationRepository.findAllBySvnGroupOrderByIdDesc(group);
         return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 
@@ -206,7 +206,7 @@ public class MigrationResource {
     @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByProject(@PathVariable String project) {
         log.debug("REST request to get a migrations of Migrations for a given project");
-        List<Migration> migrations = migrationRepository.findAllBySvnProjectEndingWith(project);
+        List<Migration> migrations = migrationRepository.findAllBySvnProjectEndingWithOrderByIdDesc(project);
         return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 

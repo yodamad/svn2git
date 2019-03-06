@@ -11,6 +11,7 @@
 .summary-card {
     width: 500px;
     margin: 20px;
+    min-height: 550px;
 }
 
 .my-header {

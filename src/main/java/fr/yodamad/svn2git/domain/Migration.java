@@ -1,7 +1,8 @@
 package fr.yodamad.svn2git.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
+import fr.yodamad.svn2git.web.rest.util.View;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -22,68 +23,85 @@ public class Migration implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonView(View.Public.class)
     private Long id;
 
     @NotNull
     @Column(name = "svn_group", nullable = false)
+    @JsonView(View.Public.class)
     private String svnGroup;
 
     @NotNull
     @Column(name = "svn_project", nullable = false)
+    @JsonView(View.Public.class)
     private String svnProject;
 
     @NotNull
     @Column(name = "jhi_user", nullable = false)
+    @JsonView(View.Public.class)
     private String user;
 
     @Column(name = "jhi_date")
+    @JsonView(View.Public.class)
     private LocalDate date;
 
     @NotNull
     @Column(name = "gitlab_group", nullable = false)
+    @JsonView(View.Public.class)
     private String gitlabGroup;
 
     @NotNull
     @Column(name = "gitlab_project", nullable = false)
+    @JsonView(View.Public.class)
     private String gitlabProject;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
+    @JsonView(View.Public.class)
     private StatusEnum status;
 
     @Column(name = "max_file_size")
+    @JsonView(View.Public.class)
     private String maxFileSize;
 
     @Column(name = "forbidden_file_extensions")
+    @JsonView(View.Public.class)
     private String forbiddenFileExtensions;
 
     @Column(name = "gitlab_url")
+    @JsonView(View.Public.class)
     private String gitlabUrl;
 
-    @JsonIgnore
     @Column(name = "gitlab_token")
+    @JsonView(View.Internal.class)
     private String gitlabToken;
 
     @Column(name = "svn_url")
+    @JsonView(View.Public.class)
     private String svnUrl;
 
     @Column(name = "svn_user")
+    @JsonView(View.Public.class)
     private String svnUser;
 
-    @JsonIgnore
     @Column(name = "svn_password")
+    @JsonView(View.Internal.class)
     private String svnPassword;
 
     @Column(name = "trunk")
+    @JsonView(View.Public.class)
     private String trunk;
 
     @Column(name = "branches")
+    @JsonView(View.Public.class)
     private String branches;
 
     @Column(name = "tags")
+    @JsonView(View.Public.class)
     private String tags;
 
     @Column(name = "svn_history")
+    @JsonView(View.Public.class)
     private String svnHistory;
 
     @OneToMany(mappedBy = "migration")

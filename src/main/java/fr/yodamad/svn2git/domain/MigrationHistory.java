@@ -1,8 +1,10 @@
 package fr.yodamad.svn2git.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
+import fr.yodamad.svn2git.web.rest.util.View;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,24 +22,29 @@ public class MigrationHistory implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonView(View.Public.class)
     private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "step")
+    @JsonView(View.Public.class)
     private StepEnum step;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
+    @JsonView(View.Public.class)
     private StatusEnum status;
 
     @Column(name = "jhi_date")
+    @JsonView(View.Public.class)
     private Instant date;
 
     @Column(name = "data", columnDefinition = "text")
+    @JsonView(View.Public.class)
     private String data;
 
     @ManyToOne
-    @JsonIgnoreProperties("")
+    @JsonIgnoreProperties({"gitlabToken", "svnPassword"})
     private Migration migration;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove

@@ -229,7 +229,7 @@
             <table mat-table [(dataSource)]="staticExtensions" class="large-table">
                 <ng-container matColumnDef="extensionPattern">
                     <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.pattern">Pattern</span></th>
-                    <td mat-cell *matCellDef="let extension">{{ extension.description }}</td>
+                    <td mat-cell *matCellDef="let extension">{{ extension.description !== null ? extension.description : extension.value }}</td>
                 </ng-container>
                 <ng-container matColumnDef="selectExtension">
                     <th mat-header-cell *matHeaderCellDef>
@@ -251,7 +251,7 @@
                 <tr mat-row *matRowDef="let extension; columns: extensionDisplayedColumns;"></tr>
             </table>
             <div>
-                <input matInput placeholder="{{'migration-process.extension.add' | translate}}" type="text" style="width: 180px; height: 40px; margin-bottom: 10px" [formControl]="addExtentionFormControl">
+                <input matInput placeholder="{{'migration-process.extension.add' | translate}}" type="text" style="width: 250px; height: 40px; margin-bottom: 10px" [formControl]="addExtentionFormControl">
                 <button mat-mini-fab color="primary" style="margin-top: -10px; margin-bottom: 10px;" (click)="addExtension()">+</button>
             </div>
 

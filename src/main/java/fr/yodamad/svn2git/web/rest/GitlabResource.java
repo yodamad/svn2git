@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.GitlabInfo;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.User;
@@ -37,11 +38,7 @@ public class GitlabResource {
     @PostMapping("user/{username}")
     @Timed
     public ResponseEntity<Boolean> checkUser(@PathVariable("username") String userName, @RequestBody GitlabInfo gitlabInfo) {
-        GitlabAdmin gitlab = gitlabAdmin;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)) {
-            gitlabAdmin.setGitLabApi(customApi(gitlabInfo));
-        }
-        Optional<User> user = gitlab.userApi().getOptionalUser(userName);
+        Optional<User> user = overrideGitlab(gitlabInfo).userApi().getOptionalUser(userName);
 
         if (user.isPresent()) {
             return ResponseEntity.ok()
@@ -59,10 +56,7 @@ public class GitlabResource {
     @PostMapping("group/{groupName}")
     @Timed
     public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
-        GitlabAdmin gitlab = gitlabAdmin;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)) {
-            gitlabAdmin.setGitLabApi(customApi(gitlabInfo));
-        }
+        GitlabAdmin gitlab = overrideGitlab(gitlabInfo);
         Optional<Group> group = gitlab.groupApi().getOptionalGroup(groupName);
 
         if (group.isPresent()) {
@@ -73,8 +67,17 @@ public class GitlabResource {
         }
     }
 
-    private GitLabApi customApi(GitlabInfo gitlabInfo) {
-        GitLabApi api = new GitLabApi(gitlabInfo.url, gitlabInfo.token);
-        return api;
+    /**
+     * Override Gitlab default configuration if necessary
+     * @param gitlabInfo Received gitlab info
+     * @return
+     */
+    private GitlabAdmin overrideGitlab(GitlabInfo gitlabInfo) {
+        GitlabAdmin gitlab = gitlabAdmin;
+        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)
+            || !StringUtils.isEmpty(gitlabInfo.token)) {
+            gitlabAdmin.setGitLabApi(new GitLabApi(gitlabInfo.url, gitlabInfo.token));
+        }
+        return gitlab;
     }
 }

@@ -8,13 +8,8 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
-import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.gitlab4j.api.GitLabApi;
-import org.gitlab4j.api.GitLabApiException;
-import org.gitlab4j.api.models.Group;
-import org.gitlab4j.api.models.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -22,12 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
-import static fr.yodamad.svn2git.service.util.MigrationConstants.MASTER;
+import static fr.yodamad.svn2git.service.util.MigrationConstants.*;
 import static fr.yodamad.svn2git.service.util.Shell.*;
 import static java.lang.String.format;
 
@@ -40,7 +34,7 @@ public class MigrationManager {
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
 
     /** Gitlab API. */
-    private GitlabAdmin gitlab;
+
     // Managers
     private final HistoryManager historyMgr;
     private final GitManager gitManager;
@@ -52,14 +46,12 @@ public class MigrationManager {
     private final ApplicationProperties applicationProperties;
 
     public MigrationManager(final Cleaner cleaner,
-                            final GitlabAdmin gitlabAdmin,
                             final GitManager gitManager,
                             final HistoryManager historyManager,
                             final MigrationRepository migrationRepository,
                             final MigrationHistoryRepository migrationHistoryRepository,
                             final ApplicationProperties applicationProperties) {
         this.cleaner = cleaner;
-        this.gitlab = gitlabAdmin;
         this.gitManager = gitManager;
         this.historyMgr = historyManager;
         this.migrationRepository = migrationRepository;
@@ -105,10 +97,10 @@ public class MigrationManager {
             migrationRepository.save(migration);
 
             // 1. Create project on gitlab : OK
-            createGitlabProject(migration);
+            gitManager.createGitlabProject(migration);
 
             // 2. Checkout empty repository : OK
-            String svn = gitManager.gitClone(workUnit);
+            String svn = initDirectory(workUnit);
 
             // 2.2. SVN checkout
             gitManager.gitSvnClone(workUnit);
@@ -131,25 +123,17 @@ public class MigrationManager {
                 history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
                 // Set origin
-                String remoteCommand = format("git remote add origin %s/%s/%s.git",
-                    migration.getGitlabUrl(),
-                    migration.getGitlabGroup(),
-                    svn);
-                execCommand(workUnit.directory, remoteCommand);
+                execCommand(workUnit.directory,
+                    buildRemoteCommand(workUnit, svn, false),
+                    buildRemoteCommand(workUnit, svn, true));
 
                 // if no history option set
                 if (migration.getSvnHistory().equals("nothing")) {
                     gitManager.removeHistory(workUnit, MASTER);
                 } else {
-                    // if using root, additional step
-                    if (StringUtils.isEmpty(migration.getSvnProject())) {
-                        // Push with upstream
-                        gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
-                        execCommand(workUnit.directory, gitCommand);
-                    } else {
-                        gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
-                        execCommand(workUnit.directory, gitCommand);
-                    }
+                    // Push with upstream
+                    gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                    execCommand(workUnit.directory, gitCommand);
                 }
                 historyMgr.endStep(history, StatusEnum.DONE, null);
 
@@ -211,52 +195,45 @@ public class MigrationManager {
     }
 
     /**
-     * Create project in GitLab
-     * @param migration
-     * @throws GitLabApiException
+     * Build command to add remote
+     * @param workUnit Current work unit
+     * @param project Current project
+     * @param safeMode safe mode for logs
+     * @return
      */
-    private void createGitlabProject(Migration migration) throws GitLabApiException {
-        MigrationHistory history = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
+    private String buildRemoteCommand(WorkUnit workUnit, String project, boolean safeMode) {
+        URI uri = URI.create(workUnit.migration.getGitlabUrl());
+        return format("git remote add origin %s://%s:%s@%s/%s/%s.git",
+            uri.getScheme(),
+            workUnit.migration.getGitlabToken() == null ?
+                applicationProperties.gitlab.account : workUnit.migration.getSvnUser(),
+            safeMode ? STARS :
+                (workUnit.migration.getGitlabToken() == null ?
+                    applicationProperties.gitlab.token : workUnit.migration.getGitlabToken()),
+            uri.getAuthority(),
+            workUnit.migration.getGitlabGroup(),
+            project);
+    }
 
-        GitlabAdmin gitlabAdmin = gitlab;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(migration.getGitlabUrl())) {
-            GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
-            gitlabAdmin.setGitLabApi(api);
+    /**
+     * Create empty repository
+     * @param workUnit
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public String initDirectory(WorkUnit workUnit) throws IOException, InterruptedException {
+        String svn = StringUtils.isEmpty(workUnit.migration.getSvnProject()) ?
+            workUnit.migration.getSvnGroup()
+            : workUnit.migration.getSvnProject();
+
+        String mkdir;
+        if (isWindows) {
+            mkdir = format("mkdir %s", workUnit.directory);
+        } else {
+            mkdir = format("mkdir -p %s", workUnit.directory);
         }
-        try {
-            Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
-
-            // If no svn project specified, use svn group instead
-            if (StringUtils.isEmpty(migration.getSvnProject())) {
-                gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
-            } else {
-                // split svn structure to create gitlab elements (group(s), project)
-                String[] structure = migration.getSvnProject().split("/");
-                Integer groupId = group.getId();
-                if (structure.length > 2) {
-                    for (int module = 1; module < structure.length - 2; module++) {
-                        Group gitlabSubGroup = new Group();
-                        gitlabSubGroup.setName(structure[module]);
-                        gitlabSubGroup.setPath(structure[module]);
-                        gitlabSubGroup.setParentId(groupId);
-                        groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
-                    }
-                }
-
-                Optional<Project> project = gitlabAdmin.groupApi().getProjects(groupId)
-                    .stream()
-                    .filter(p -> p.getName().equalsIgnoreCase(structure[structure.length - 1]))
-                    .findFirst();
-                if (!project.isPresent()) {
-                    gitlabAdmin.projectApi().createProject(groupId, structure[structure.length - 1]);
-                } else {
-                    throw new GitLabApiException("Please remove the destination project '"+group.getName()+"/"+structure[structure.length - 1]);
-                }
-            }
-            historyMgr.endStep(history, StatusEnum.DONE, null);
-        } catch (GitLabApiException exc) {
-            historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
-            throw exc;
-        }
+        execCommand(applicationProperties.work.directory, mkdir);
+        return svn;
     }
 }

@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
-import static fr.yodamad.svn2git.service.util.MigrationConstants.MASTER;
+import static fr.yodamad.svn2git.service.util.MigrationConstants.*;
 import static fr.yodamad.svn2git.service.util.Shell.*;
 import static java.lang.String.format;
 
@@ -123,25 +123,17 @@ public class MigrationManager {
                 history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
 
                 // Set origin
-                String remoteCommand = format("git remote add origin %s/%s/%s.git",
-                    migration.getGitlabUrl(),
-                    migration.getGitlabGroup(),
-                    svn);
-                execCommand(workUnit.directory, remoteCommand);
+                execCommand(workUnit.directory,
+                    buildRemoteCommand(workUnit, svn, false),
+                    buildRemoteCommand(workUnit, svn, true));
 
                 // if no history option set
                 if (migration.getSvnHistory().equals("nothing")) {
                     gitManager.removeHistory(workUnit, MASTER);
                 } else {
-                    // if using root, additional step
-                    if (StringUtils.isEmpty(migration.getSvnProject())) {
-                        // Push with upstream
-                        gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
-                        execCommand(workUnit.directory, gitCommand);
-                    } else {
-                        gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
-                        execCommand(workUnit.directory, gitCommand);
-                    }
+                    // Push with upstream
+                    gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                    execCommand(workUnit.directory, gitCommand);
                 }
                 historyMgr.endStep(history, StatusEnum.DONE, null);
 
@@ -200,6 +192,27 @@ public class MigrationManager {
                 historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
             }
         }
+    }
+
+    /**
+     * Build command to add remote
+     * @param workUnit Current work unit
+     * @param project Current project
+     * @param safeMode safe mode for logs
+     * @return
+     */
+    private String buildRemoteCommand(WorkUnit workUnit, String project, boolean safeMode) {
+        URI uri = URI.create(workUnit.migration.getGitlabUrl());
+        return format("git remote add origin %s://%s:%s@%s/%s/%s.git",
+            uri.getScheme(),
+            workUnit.migration.getGitlabToken() == null ?
+                applicationProperties.gitlab.account : workUnit.migration.getSvnUser(),
+            safeMode ? STARS :
+                (workUnit.migration.getGitlabToken() == null ?
+                    applicationProperties.gitlab.token : workUnit.migration.getGitlabToken()),
+            uri.getAuthority(),
+            workUnit.migration.getGitlabGroup(),
+            project);
     }
 
     /**

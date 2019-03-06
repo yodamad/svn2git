@@ -228,3 +228,10 @@ ui bootstrap tweaks
 }
 
 /* jhipster-needle-scss-add-main JHipster will add new css style */
+.tile-align-left > figure.mat-figure {
+    justify-content: end !important;
+}
+
+.tile-align-right > figure.mat-figure {
+    justify-content: flex-end !important;
+}

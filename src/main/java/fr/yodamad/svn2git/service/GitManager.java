@@ -236,7 +236,8 @@ public class GitManager {
                 gitCommand = format("git commit -m \"Apply mappings on %s\"", branch);
                 execCommand(workUnit.directory, gitCommand);
                 // git push
-                execCommand(workUnit.directory, MigrationConstants.GIT_PUSH);
+                gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                execCommand(workUnit.directory, gitCommand);
 
                 historyMgr.endStep(history, StatusEnum.DONE, null);
             } catch (IOException | InterruptedException iEx) {
@@ -355,8 +356,9 @@ public class GitManager {
     private StatusEnum mv(WorkUnit workUnit, String svnDir, String gitDir, String branch) {
         MigrationHistory history = null;
         try {
-            String gitCommand = format("git mv %s %s on %s", svnDir, gitDir, branch);
-            history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, gitCommand);
+            String historyCommand = format("git mv %s %s on %s", svnDir, gitDir, branch);
+            String gitCommand = format("git mv %s %s", svnDir, gitDir);
+            history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, historyCommand);
             // git mv
             int exitCode = execCommand(workUnit.directory, gitCommand);
 

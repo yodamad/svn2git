@@ -16,7 +16,7 @@
         <div class="form-group">
             <label class="form-control-label" jhiTranslate="svn2GitApp.staticMapping.regex" for="field_regex" style="width: 120px;">Regex</label>
             <mat-form-field>
-                <input type="text" class="form-control" name="regex" id="field_regex" matInput
+                <input type="text" class="form-control" name="regex" id="field_regex" matInput required
                    [(ngModel)]="data.staticMapping.regex" />
             </mat-form-field>
         </div>
@@ -32,7 +32,7 @@
         <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="cancel()">
             <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
         </button>
-        <button type="submit" id="save-entity" [disabled]="data.staticMapping.gitDirectory === undefined || data.staticMapping.svnDirectory === undefined" class="btn btn-primary" mat-button [mat-dialog-close]="data.staticMapping">
+        <button type="submit" id="save-entity" [disabled]="isNOK()" class="btn btn-primary" mat-button [mat-dialog-close]="data.staticMapping">
             <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
         </button>
     </div>

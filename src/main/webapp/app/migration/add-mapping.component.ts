@@ -12,4 +12,17 @@ export class JhiAddMappingModalComponent {
     cancel() {
         this.dialogRef.close();
     }
+
+    isNOK(): boolean {
+        const undef =
+            this.data.staticMapping.gitDirectory === undefined ||
+            this.data.staticMapping.svnDirectory === undefined ||
+            this.data.staticMapping.regex === undefined;
+        const empty =
+            this.data.staticMapping.gitDirectory === '' ||
+            this.data.staticMapping.svnDirectory === '' ||
+            this.data.staticMapping.regex === '';
+
+        return undef || empty;
+    }
 }

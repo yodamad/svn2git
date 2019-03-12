@@ -236,7 +236,7 @@ public class GitManager {
                 gitCommand = format("git commit -m \"Apply mappings on %s\"", branch);
                 execCommand(workUnit.directory, gitCommand);
                 // git push
-                gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                gitCommand = format("%s --set-upstream origin %s", GIT_PUSH, branch);
                 execCommand(workUnit.directory, gitCommand);
 
                 historyMgr.endStep(history, StatusEnum.DONE, null);
@@ -389,6 +389,7 @@ public class GitManager {
             // Remove master/trunk
             .filter(b -> !b.contains(MASTER))
             .filter(b -> !b.contains("trunk"))
+            .filter(b -> !b.contains("@"))
             .collect(Collectors.toList());
 
         gitBranches.forEach(b -> {
@@ -408,14 +409,19 @@ public class GitManager {
         branchName = branchName.replaceFirst("origin/", "");
         LOG.debug(format("Branch %s", branchName));
 
+        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName);
+        String gitCommand = format("git checkout -b %s %s", branchName, branch);
+        try {
+            execCommand(workUnit.directory, gitCommand);
+        } catch (IOException | InterruptedException iEx) {
+            LOG.error("Failed to push branch", iEx);
+            historyMgr.endStep(history, StatusEnum.FAILED, iEx.getMessage());
+            return false;
+        }
 
-            if (workUnit.migration.getSvnHistory().equals("all")) {
-                MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName);
+        if (workUnit.migration.getSvnHistory().equals("all")) {
                 try {
-                    String gitCommand = format("git checkout -b %s %s", branchName, branch);
-                    execCommand(workUnit.directory, gitCommand);
                     execCommand(workUnit.directory, MigrationConstants.GIT_PUSH);
-
                     historyMgr.endStep(history, StatusEnum.DONE, null);
                 } catch (IOException | InterruptedException iEx) {
                     LOG.error("Failed to push branch", iEx);
@@ -423,7 +429,7 @@ public class GitManager {
                     return false;
                 }
             } else {
-                removeHistory(workUnit, branchName);
+                removeHistory(workUnit, branchName, history);
             }
             return applyMapping(workUnit, branch);
     }
@@ -488,13 +494,13 @@ public class GitManager {
      * Remove commit history on a given branch
      * @param workUnit Current work unit
      * @param branch Branch to work on
+     * @param history Current history instance
      */
-    public void removeHistory(WorkUnit workUnit, String branch) {
-        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branch);
+    public void removeHistory(WorkUnit workUnit, String branch, MigrationHistory history) {
         try {
             LOG.debug(format("Remove history on %s", branch));
 
-            String gitCommand = "git checkout --orphan TEMP_BRANCH";
+            String gitCommand = format("git checkout --orphan TEMP_BRANCH_%s", branch);
             execCommand(workUnit.directory, gitCommand);
 
             gitCommand = "git add -A";

@@ -129,13 +129,13 @@ public class MigrationManager {
 
                 // if no history option set
                 if (migration.getSvnHistory().equals("nothing")) {
-                    gitManager.removeHistory(workUnit, MASTER);
+                    gitManager.removeHistory(workUnit, MASTER, history);
                 } else {
                     // Push with upstream
                     gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
                     execCommand(workUnit.directory, gitCommand);
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
                 }
-                historyMgr.endStep(history, StatusEnum.DONE, null);
 
                 // Clean pending file(s) removed by BFG
                 gitCommand = "git reset --hard origin/master";

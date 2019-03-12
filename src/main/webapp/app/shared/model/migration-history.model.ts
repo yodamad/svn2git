@@ -8,14 +8,16 @@ export const enum StepEnum {
     GIT_CLEANING = 'GIT_CLEANING',
     GIT_PUSH = 'GIT_PUSH',
     GIT_CLONE = 'GIT_CLONE',
-    CLEANING = 'CLEANING'
+    CLEANING = 'CLEANING',
+    BRANCH_CLEAN = 'BRANCH_CLEAN'
 }
 
 export const enum StatusEnum {
     WAITING = 'WAITING',
     RUNNING = 'RUNNING',
     DONE = 'DONE',
-    FAILED = 'FAILED'
+    FAILED = 'FAILED',
+    DONE_WITH_WARNINGS = 'DONE_WITH_WARNINGS'
 }
 
 export interface IMigrationHistory {

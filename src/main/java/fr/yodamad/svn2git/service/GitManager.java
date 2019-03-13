@@ -291,7 +291,7 @@ public class GitManager {
             if (gitEx instanceof NoSuchFileException) {
                 historyMgr.endStep(history, StatusEnum.IGNORED, null);
             } else {
-                historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());    
+                historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
             }
 
             return StatusEnum.IGNORED;
@@ -427,7 +427,10 @@ public class GitManager {
 
         if (workUnit.migration.getSvnHistory().equals("all")) {
                 try {
-                    execCommand(workUnit.directory, MigrationConstants.GIT_PUSH);
+                    addRemote(workUnit, true);
+
+                    gitCommand = format("%s --set-upstream origin %s", GIT_PUSH, branchName);
+                    execCommand(workUnit.directory, gitCommand);
                     historyMgr.endStep(history, StatusEnum.DONE, null);
                 } catch (IOException | InterruptedException iEx) {
                     LOG.error("Failed to push branch", iEx);
@@ -481,18 +484,7 @@ public class GitManager {
             gitCommand = format("git tag %s tmp_tag", tagName);
             execCommand(workUnit.directory, gitCommand);
 
-            if (workUnit.migration.getTrunk() == null && workUnit.migration.getBranches() == null) {
-                try {
-                    // Set origin
-                    execCommand(workUnit.directory,
-                        buildRemoteCommand(workUnit, null, false),
-                        buildRemoteCommand(workUnit, null, true));
-                } catch (RuntimeException rEx) {
-                    LOG.debug("Origin already added");
-                    // Skip
-                    // TODO : see to refactor, that's pretty ugly
-                }
-             }
+            addRemote(workUnit, false);
 
             gitCommand = format("git push -u origin %s", tagName);
             execCommand(workUnit.directory, gitCommand);
@@ -543,18 +535,7 @@ public class GitManager {
             gitCommand = format("git branch -m %s", branch);
             execCommand(workUnit.directory, gitCommand);
 
-            if (workUnit.migration.getTrunk() == null) {
-                try {
-                    // Set origin
-                    execCommand(workUnit.directory,
-                        buildRemoteCommand(workUnit, null, false),
-                        buildRemoteCommand(workUnit, null, true));
-                } catch (RuntimeException rEx) {
-                    LOG.debug("Origin already added");
-                    // Skip
-                    // TODO : see to refactor, that's pretty ugly
-                }
-            }
+            addRemote(workUnit, true);
 
             gitCommand = format("git push -f origin %s", branch);
             execCommand(workUnit.directory, gitCommand);
@@ -593,5 +574,25 @@ public class GitManager {
             uri.getAuthority(),
             workUnit.migration.getGitlabGroup(),
             project);
+    }
+
+    /**
+     * Add remote url to git folder
+     * @param workUnit Current work unit
+     * @param trunkOnly Only check trunk or not
+     */
+    private void addRemote(WorkUnit workUnit, boolean trunkOnly) {
+        if (workUnit.migration.getTrunk() == null && (trunkOnly || workUnit.migration.getBranches() == null)) {
+            try {
+                // Set origin
+                execCommand(workUnit.directory,
+                    buildRemoteCommand(workUnit, null, false),
+                    buildRemoteCommand(workUnit, null, true));
+            } catch (IOException | InterruptedException | RuntimeException rEx) {
+                LOG.debug("Origin already added");
+                // Skip
+                // TODO : see to refactor, that's pretty ugly
+            }
+        }
     }
 }

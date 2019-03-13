@@ -474,8 +474,20 @@ public class GitManager {
             execCommand(workUnit.directory, gitCommand);
 
             gitCommand = format("git tag %s tmp_tag", tagName);
-
             execCommand(workUnit.directory, gitCommand);
+
+            if (workUnit.migration.getTrunk() == null && workUnit.migration.getBranches() == null) {
+                try {
+                    // Set origin
+                    execCommand(workUnit.directory,
+                        buildRemoteCommand(workUnit, null, false),
+                        buildRemoteCommand(workUnit, null, true));
+                } catch (RuntimeException rEx) {
+                    LOG.debug("Origin already added");
+                    // Skip
+                    // TODO : see to refactor, that's pretty ugly
+                }
+             }
 
             gitCommand = format("git push -u origin %s", tagName);
             execCommand(workUnit.directory, gitCommand);
@@ -527,10 +539,16 @@ public class GitManager {
             execCommand(workUnit.directory, gitCommand);
 
             if (workUnit.migration.getTrunk() == null) {
-                // Set origin
-                execCommand(workUnit.directory,
-                    buildRemoteCommand(workUnit, null, false),
-                    buildRemoteCommand(workUnit, null, true));
+                try {
+                    // Set origin
+                    execCommand(workUnit.directory,
+                        buildRemoteCommand(workUnit, null, false),
+                        buildRemoteCommand(workUnit, null, true));
+                } catch (RuntimeException rEx) {
+                    LOG.debug("Origin already added");
+                    // Skip
+                    // TODO : see to refactor, that's pretty ugly
+                }
             }
 
             gitCommand = format("git push -f origin %s", branch);

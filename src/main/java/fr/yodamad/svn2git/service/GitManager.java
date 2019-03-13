@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -286,9 +287,13 @@ public class GitManager {
                 return mv(workUnit, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
             }
         } catch (IOException gitEx) {
-            LOG.debug("Failed to mv directory", gitEx);
             history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, msg);
-            historyMgr.endStep(history, StatusEnum.IGNORED, null);
+            if (gitEx instanceof NoSuchFileException) {
+                historyMgr.endStep(history, StatusEnum.IGNORED, null);
+            } else {
+                historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());    
+            }
+
             return StatusEnum.IGNORED;
         }
     }

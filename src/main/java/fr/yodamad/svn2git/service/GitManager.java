@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -525,6 +526,13 @@ public class GitManager {
             gitCommand = format("git branch -m %s", branch);
             execCommand(workUnit.directory, gitCommand);
 
+            if (workUnit.migration.getTrunk() == null) {
+                // Set origin
+                execCommand(workUnit.directory,
+                    buildRemoteCommand(workUnit, null, false),
+                    buildRemoteCommand(workUnit, null, true));
+            }
+
             gitCommand = format("git push -f origin %s", branch);
             execCommand(workUnit.directory, gitCommand);
 
@@ -533,5 +541,34 @@ public class GitManager {
             LOG.error("Failed to push branch", gitEx);
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
         }
+    }
+
+
+    /**
+     * Build command to add remote
+     * @param workUnit Current work unit
+     * @param project Current project
+     * @param safeMode safe mode for logs
+     * @return
+     */
+    public String buildRemoteCommand(WorkUnit workUnit, String project, boolean safeMode) {
+
+        if (StringUtils.isEmpty(project)) {
+            project = StringUtils.isEmpty(workUnit.migration.getSvnProject()) ?
+                workUnit.migration.getSvnGroup()
+                : workUnit.migration.getSvnProject();
+        }
+
+        URI uri = URI.create(workUnit.migration.getGitlabUrl());
+        return format("git remote add origin %s://%s:%s@%s/%s/%s.git",
+            uri.getScheme(),
+            workUnit.migration.getGitlabToken() == null ?
+                applicationProperties.gitlab.account : workUnit.migration.getSvnUser(),
+            safeMode ? STARS :
+                (workUnit.migration.getGitlabToken() == null ?
+                    applicationProperties.gitlab.token : workUnit.migration.getGitlabToken()),
+            uri.getAuthority(),
+            workUnit.migration.getGitlabGroup(),
+            project);
     }
 }

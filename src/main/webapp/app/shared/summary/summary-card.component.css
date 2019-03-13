@@ -51,6 +51,12 @@
     text-align: center;
 }
 
+.cell-waiting {
+    background-color: deepskyblue;
+    color: white;
+    text-align: center;
+}
+
 td.mat-cell {
     padding: 9px;
 }

@@ -115,6 +115,9 @@ export class MigrationComponent implements OnInit, OnDestroy {
         if (status === StatusEnum.DONE_WITH_WARNINGS) {
             return 'cell-warning';
         }
+        if (status === StatusEnum.WAITING) {
+            return 'cell-waiting';
+        }
     }
 
     private paginateMigrations(data: IMigration[], headers: HttpHeaders) {

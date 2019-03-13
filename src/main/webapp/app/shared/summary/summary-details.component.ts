@@ -43,5 +43,8 @@ export class DetailsCardComponent implements OnInit {
         if (status === StatusEnum.DONE_WITH_WARNINGS) {
             return 'cell-warning';
         }
+        if (status === StatusEnum.WAITING) {
+            return 'cell-waiting';
+        }
     }
 }

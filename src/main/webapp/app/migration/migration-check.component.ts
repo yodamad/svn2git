@@ -112,6 +112,9 @@ export class MigrationCheckComponent implements OnInit {
         if (status === StatusEnum.RUNNING) {
             return 'badge-primary';
         }
+        if (status === StatusEnum.WAITING) {
+            return 'cell-waiting';
+        }
     }
 
     /**

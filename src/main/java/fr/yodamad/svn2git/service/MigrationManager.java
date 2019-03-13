@@ -118,20 +118,28 @@ public class MigrationManager {
             AtomicBoolean withWarning = new AtomicBoolean(false);
             final List<String> failedBranches = new ArrayList<>();
 
-            // List git branch
-            String gitBranchList = format("git branch -r | sed \"s|^[[:space:]]*||\" | grep -v '^tags/' | sed -e \"s/origin\\///g\" > %s", GIT_BRANCH_LIST);
-            execCommand(workUnit.directory, gitBranchList);
-            // List svn branch
-            String svnBranchList = format("svn ls %s%s/%s/branches | sed \"s|^[[:space:]]*||\" | sed \"s|/$||\" > %s",
-                workUnit.migration.getSvnUrl(), workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), SVN_BRANCH_LIST);
-            execCommand(workUnit.directory, svnBranchList);
-            // Diff git & svn branches
-            String diff = format("diff -u git-branch-list " + SVN_BRANCH_LIST + " | grep \"^-\" | sed \"s|^-||\" | grep -v \"^trunk$\" | grep -v \"^--\" > %s", OLD_BRANCH_LIST);
-            execCommand(workUnit.directory, diff);
+            if (migration.getBranches() != null) {
+                // List git branch
+                String gitBranchList = format("git branch -r | sed \"s|^[[:space:]]*||\" | grep -v '^tags/' | sed -e \"s/origin\\///g\" > %s", GIT_BRANCH_LIST);
+                execCommand(workUnit.directory, gitBranchList);
+                // List svn branch
+                String svnBranchList = format("svn ls %s%s/%s/branches | sed \"s|^[[:space:]]*||\" | sed \"s|/$||\" > %s",
+                    workUnit.migration.getSvnUrl(), workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), SVN_BRANCH_LIST);
+                execCommand(workUnit.directory, svnBranchList);
+                // Diff git & svn branches
+                try {
+                    String diff = format("diff -u %s %s | grep \"^-\" | sed \"s|^-||\" | grep -v \"^trunk$\" | grep -v \"^--\" > %s", GIT_BRANCH_LIST, SVN_BRANCH_LIST, OLD_BRANCH_LIST);
+                    execCommand(workUnit.directory, diff);
+                } catch (RuntimeException rEx) {
+                    if (!StringUtils.isEmpty(rEx.getMessage())) {
+                        throw rEx;
+                    }
+                    // If message is empty, it means that diff returns nothing to manage
+                }
 
-            // Remove none git branches
-            Path oldBranchFile = Paths.get(workUnit.directory, OLD_BRANCH_LIST);
-            try (Stream<String> lines = Files.lines(oldBranchFile)) {
+                // Remove none git branches
+                Path oldBranchFile = Paths.get(workUnit.directory, OLD_BRANCH_LIST);
+                try (Stream<String> lines = Files.lines(oldBranchFile)) {
                     lines.forEach(line -> {
                         try {
                             String cleanCmd = format("git branch -d -r origin/%s", line);
@@ -144,6 +152,7 @@ public class MigrationManager {
                             failedBranches.add(line);
                         }
                     });
+                }
             }
 
             // Cleaning temp files

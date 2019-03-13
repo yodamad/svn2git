@@ -141,12 +141,7 @@ public class GitManager {
             cloneCommand = initCommand(workUnit, applicationProperties.svn.user, escapedPassword);
             safeCommand = initCommand(workUnit, applicationProperties.svn.user, STARS);
         } else {
-            cloneCommand = format("git svn clone --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnProject(),
-                workUnit.migration.getSvnUrl(),
-                workUnit.migration.getSvnGroup());
+            cloneCommand = initCommand(workUnit, null, null);
             safeCommand = cloneCommand;
         }
 
@@ -163,12 +158,12 @@ public class GitManager {
      * @return
      */
     private static String initCommand(WorkUnit workUnit, String username, String secret) {
-        return format("echo %s | git svn clone --username %s --trunk=%s/trunk --branches=%s/branches --tags=%s/tags %s/%s",
-            secret,
-            username,
-            workUnit.migration.getSvnProject(),
-            workUnit.migration.getSvnProject(),
-            workUnit.migration.getSvnProject(),
+        return format("%s git svn clone %s %s %s %s %s/%s",
+            StringUtils.isEmpty(secret) ? "" : format("echo %s |", secret),
+            StringUtils.isEmpty(username) ? "" : format("--username %s", username),
+            workUnit.migration.getTrunk() == null ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
+            workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
+            workUnit.migration.getTags() == null ? "" : format("--tags=%s/tags", workUnit.migration.getSvnProject()),
             workUnit.migration.getSvnUrl(),
             workUnit.migration.getSvnGroup());
     }

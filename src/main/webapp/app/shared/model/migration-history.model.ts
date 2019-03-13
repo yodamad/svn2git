@@ -9,7 +9,8 @@ export const enum StepEnum {
     GIT_PUSH = 'GIT_PUSH',
     GIT_CLONE = 'GIT_CLONE',
     CLEANING = 'CLEANING',
-    BRANCH_CLEAN = 'BRANCH_CLEAN'
+    BRANCH_CLEAN = 'BRANCH_CLEAN',
+    TAG_CLEAN = 'TAG_CLEAN'
 }
 
 export const enum StatusEnum {

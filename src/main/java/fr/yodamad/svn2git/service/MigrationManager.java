@@ -12,18 +12,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.util.Pair;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
 import static fr.yodamad.svn2git.service.util.MigrationConstants.MASTER;
@@ -37,9 +33,6 @@ import static java.lang.String.format;
 public class MigrationManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
-    private static final String GIT_BRANCH_LIST = "git-branch-list";
-    private static final String SVN_BRANCH_LIST = "svn-branch-list";
-    private static final String OLD_BRANCH_LIST = "old-branch-list";
 
     /** Gitlab API. */
 
@@ -115,61 +108,29 @@ public class MigrationManager {
 
             // 2.3. Remove phantom branches
             history = historyMgr.startStep(migration, StepEnum.BRANCH_CLEAN, "Clean removed SVN branches");
-            AtomicBoolean withWarning = new AtomicBoolean(false);
-            final List<String> failedBranches = new ArrayList<>();
 
             if (migration.getBranches() != null) {
-                // List git branch
-                String gitBranchList = format("git branch -r | sed \"s|^[[:space:]]*||\" | grep -v '^tags/' | sed -e \"s/origin\\///g\" > %s", GIT_BRANCH_LIST);
-                execCommand(workUnit.directory, gitBranchList);
-                // List svn branch
-                String svnBranchList = format("svn ls %s%s/%s/branches | sed \"s|^[[:space:]]*||\" | sed \"s|/$||\" > %s",
-                    workUnit.migration.getSvnUrl(), workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), SVN_BRANCH_LIST);
-                execCommand(workUnit.directory, svnBranchList);
-                // Diff git & svn branches
-                try {
-                    String diff = format("diff -u %s %s | grep \"^-\" | sed \"s|^-||\" | grep -v \"^trunk$\" | grep -v \"^--\" > %s", GIT_BRANCH_LIST, SVN_BRANCH_LIST, OLD_BRANCH_LIST);
-                    execCommand(workUnit.directory, diff);
-                } catch (RuntimeException rEx) {
-                    if (!StringUtils.isEmpty(rEx.getMessage())) {
-                        throw rEx;
-                    }
-                    // If message is empty, it means that diff returns nothing to manage
-                }
-
-                // Remove none git branches
-                Path oldBranchFile = Paths.get(workUnit.directory, OLD_BRANCH_LIST);
-                try (Stream<String> lines = Files.lines(oldBranchFile)) {
-                    lines.forEach(line -> {
-                        try {
-                            String cleanCmd = format("git branch -d -r origin/%s", line);
-                            execCommand(workUnit.directory, cleanCmd);
-                            cleanCmd = format("rm -rf .git/svn/refs/remotes/origin/%s", line);
-                            execCommand(workUnit.directory, cleanCmd);
-                        } catch (IOException | InterruptedException ex) {
-                            LOG.error("Cannot remove branch " + line);
-                            withWarning.set(true);
-                            failedBranches.add(line);
-                        }
-                    });
+                Pair<AtomicBoolean, List<String>> pairInfo = cleaner.cleanRemovedElements(workUnit, false);
+                if (pairInfo.getFirst().get()) {
+                    //  Some branches have failed
+                    historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, format("Failed to remove branches %s", pairInfo.getSecond()));
+                } else {
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
                 }
             }
 
-            // Cleaning temp files
-            Path fileToDeletePath = Paths.get(workUnit.directory, GIT_BRANCH_LIST);
-            Files.delete(fileToDeletePath);
-            fileToDeletePath = Paths.get(workUnit.directory, SVN_BRANCH_LIST);
-            Files.delete(fileToDeletePath);
-            fileToDeletePath = Paths.get(workUnit.directory, OLD_BRANCH_LIST);
-            Files.delete(fileToDeletePath);
+            // 2.4. Remove phantom tags
+            history = historyMgr.startStep(migration, StepEnum.TAG_CLEAN, "Clean removed SVN tags");
 
-            if (withWarning.get()) {
-                //  Some branches have failed
-                historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, format("Failed to remove branches %s", failedBranches));
-            } else {
-                historyMgr.endStep(history, StatusEnum.DONE, null);
+            if (migration.getTags() != null) {
+                Pair<AtomicBoolean, List<String>> pairInfo = cleaner.cleanRemovedElements(workUnit, true);
+                if (pairInfo.getFirst().get()) {
+                    //  Some branches have failed
+                    historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, format("Failed to remove tags %s", pairInfo.getSecond()));
+                } else {
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
+                }
             }
-
 
             // 3. Clean files
             boolean cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit);

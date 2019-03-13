@@ -37,6 +37,9 @@ import static java.lang.String.format;
 public class MigrationManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationManager.class);
+    private static final String GIT_BRANCH_LIST = "git-branch-list";
+    private static final String SVN_BRANCH_LIST = "svn-branch-list";
+    private static final String OLD_BRANCH_LIST = "old-branch-list";
 
     /** Gitlab API. */
 
@@ -116,18 +119,18 @@ public class MigrationManager {
             final List<String> failedBranches = new ArrayList<>();
 
             // List git branch
-            String gitBranchList = "git branch -r | sed \"s|^[[:space:]]*||\" | grep -v '^tags/' | sed -e \"s/origin\\///g\" > git-branch-list";
+            String gitBranchList = format("git branch -r | sed \"s|^[[:space:]]*||\" | grep -v '^tags/' | sed -e \"s/origin\\///g\" > %s", GIT_BRANCH_LIST);
             execCommand(workUnit.directory, gitBranchList);
             // List svn branch
-            String svnBranchList = format("svn ls %s%s/%s/branches | sed \"s|^[[:space:]]*||\" | sed \"s|/$||\" > svn-branch-list",
-                workUnit.migration.getSvnUrl(), workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject());
+            String svnBranchList = format("svn ls %s%s/%s/branches | sed \"s|^[[:space:]]*||\" | sed \"s|/$||\" > %s",
+                workUnit.migration.getSvnUrl(), workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), SVN_BRANCH_LIST);
             execCommand(workUnit.directory, svnBranchList);
             // Diff git & svn branches
-            String diff = "diff -u git-branch-list svn-branch-list | grep \"^-\" | sed \"s|^-||\" | grep -v \"^trunk$\" | grep -v \"^--\" > old-branch-list";
+            String diff = format("diff -u git-branch-list " + SVN_BRANCH_LIST + " | grep \"^-\" | sed \"s|^-||\" | grep -v \"^trunk$\" | grep -v \"^--\" > %s", OLD_BRANCH_LIST);
             execCommand(workUnit.directory, diff);
 
             // Remove none git branches
-            Path oldBranchFile = Paths.get(workUnit.directory, "old-branch-list");
+            Path oldBranchFile = Paths.get(workUnit.directory, OLD_BRANCH_LIST);
             try (Stream<String> lines = Files.lines(oldBranchFile)) {
                     lines.forEach(line -> {
                         try {
@@ -142,6 +145,15 @@ public class MigrationManager {
                         }
                     });
             }
+
+            // Cleaning temp files
+            Path fileToDeletePath = Paths.get(workUnit.directory, GIT_BRANCH_LIST);
+            Files.delete(fileToDeletePath);
+            fileToDeletePath = Paths.get(workUnit.directory, SVN_BRANCH_LIST);
+            Files.delete(fileToDeletePath);
+            fileToDeletePath = Paths.get(workUnit.directory, OLD_BRANCH_LIST);
+            Files.delete(fileToDeletePath);
+
             if (withWarning.get()) {
                 //  Some branches have failed
                 historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, format("Failed to remove branches %s", failedBranches));

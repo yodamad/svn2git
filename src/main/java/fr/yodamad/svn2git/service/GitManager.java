@@ -17,6 +17,7 @@ import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.Project;
+import org.gitlab4j.api.models.Visibility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -100,6 +101,7 @@ public class GitManager {
                         Group gitlabSubGroup = new Group();
                         gitlabSubGroup.setName(structure[module]);
                         gitlabSubGroup.setPath(structure[module]);
+                        gitlabSubGroup.setVisibility(Visibility.INTERNAL);
                         currentPath += format("/%s", structure[module]);
                         gitlabSubGroup.setParentId(groupId);
                         try {

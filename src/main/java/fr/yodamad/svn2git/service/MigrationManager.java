@@ -86,13 +86,6 @@ public class MigrationManager {
         WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
 
         try {
-
-            // in retry case, clean gitlab
-            if (retry) {
-                // TODO : Remove gitlab group
-                LOG.info("This a retry, clean gitlab");
-            }
-
             // Start migration
             migration.setStatus(StatusEnum.RUNNING);
             migrationRepository.save(migration);

@@ -3,17 +3,23 @@ package fr.yodamad.svn2git.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.GitlabInfo;
+import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Group;
+import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.User;
 import org.gitlab4j.api.models.Visibility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 /**
  * Controller to use Gitlab API
@@ -21,6 +27,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/gitlab/")
 public class GitlabResource {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GitlabResource.class);
 
     /** Gitlab API wrapper. */
     private final GitlabAdmin gitlabAdmin;
@@ -102,5 +110,25 @@ public class GitlabResource {
             gitlabAdmin.setGitLabApi(new GitLabApi(gitlabInfo.url, gitlabInfo.token));
         }
         return gitlab;
+    }
+
+    /**
+     * Remove an existing group
+     * @param migration Migration containing group information
+     * @throws GitLabApiException Problem when removing
+     */
+    public void removeGroup(Migration migration) throws GitLabApiException {
+        try {
+            String[] elements = migration.getSvnProject().split("/");
+            StringBuffer namespace = new StringBuffer(migration.getGitlabGroup());
+            IntStream.range(1, elements.length)
+                .forEach(i -> namespace.append(String.format("/%s", elements[i])));
+            List<Project> projects = gitlabAdmin.projectApi().getProjects(elements[elements.length-1]);
+            Project project = projects.stream().filter(p -> p.getPathWithNamespace().equalsIgnoreCase(namespace.toString())).findFirst().get();
+            gitlabAdmin.projectApi().deleteProject(project);
+        } catch (GitLabApiException apiEx) {
+            LOG.error("Impossible to remove group", apiEx.getMessage());
+            throw apiEx;
+        }
     }
 }

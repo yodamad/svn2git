@@ -16,6 +16,7 @@ import fr.yodamad.svn2git.web.rest.util.PaginationUtil;
 import fr.yodamad.svn2git.web.rest.util.View;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.gitlab4j.api.GitLabApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -51,11 +52,14 @@ public class MigrationResource {
 
     private final MappingService mappingService;
 
-    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager, MigrationHistoryService migrationHistoryService, MappingService mappingService) {
+    private final GitlabResource gitlabResource;
+
+    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager, MigrationHistoryService migrationHistoryService, MappingService mappingService, GitlabResource gitlabResource) {
         this.migrationRepository = migrationRepository;
         this.migrationManager = migrationManager;
         this.migrationHistoryService = migrationHistoryService;
         this.mappingService = mappingService;
+        this.gitlabResource = gitlabResource;
     }
 
     /**
@@ -89,12 +93,17 @@ public class MigrationResource {
      * @param id Migration ID to be retried
      * @return Migration initialized for retry
      * @throws URISyntaxException
+     * @throws GitLabApiException
      */
     @PostMapping("/migrations/{id}/retry")
     @Timed
-    public ResponseEntity<Long> retryMigraton(@PathVariable Long id) throws URISyntaxException {
+    public ResponseEntity<Long> retryMigraton(@PathVariable Long id, @RequestBody String forceClean) throws URISyntaxException, GitLabApiException {
         log.debug("REST request to retry Migration : {}", id);
         Migration mig = migrationRepository.findById(id).orElseThrow(() -> new BadRequestAlertException("Migration cannot be retried", ENTITY_NAME, "iddonotexist"));
+
+        if (Boolean.valueOf(forceClean)) {
+            gitlabResource.removeGroup(mig);
+        }
 
         log.debug("Create a new migration to retry");
         mig.setId(null);

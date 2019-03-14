@@ -95,10 +95,13 @@ public class MigrationResourceIntTest {
     @Autowired
     private MappingService mappingService;
 
+    @Autowired
+    private GitlabResource gitlabResource;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService);
+        final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService, gitlabResource);
         this.restMigrationMockMvc = MockMvcBuilders.standaloneSetup(migrationResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

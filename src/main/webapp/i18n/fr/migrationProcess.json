@@ -27,6 +27,9 @@
                 "group" : "Vérifier votre groupe Gitlab"
             },
             "clean" : "Avez-vous nettoyé Gitlab avant de réessayer ?",
+            "force" : {
+                "clean" : "Nettoyer pour moi"
+            },
             "group" : "Groupe Gitlab",
             "token" : "Token",
             "url" : "URL Gitlab",

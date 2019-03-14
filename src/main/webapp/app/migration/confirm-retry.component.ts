@@ -5,9 +5,12 @@ import { MigrationService } from 'app/entities/migration';
 
 @Component({
     selector: 'jhi-confirm-retry-modal',
-    templateUrl: './confirm-retry.component.html'
+    templateUrl: './confirm-retry.component.html',
+    styleUrls: ['./migration-check.component.css']
 })
 export class JhiConfirmRetryModalComponent {
+    private forceRemoveGroup = false;
+
     constructor(
         public dialogRef: MatDialogRef<JhiConfirmRetryModalComponent>,
         private _migrationService: MigrationService,
@@ -15,7 +18,11 @@ export class JhiConfirmRetryModalComponent {
     ) {}
 
     retry() {
-        this._migrationService.retry(this.data.migId).subscribe(res => this.dialogRef.close());
+        this._migrationService.retry(this.data.migId, this.forceRemoveGroup).subscribe(res => this.dialogRef.close());
+    }
+
+    select() {
+        this.forceRemoveGroup = !this.forceRemoveGroup;
     }
 
     cancel() {

@@ -27,6 +27,9 @@
                 "group" : "Check your Gitlab group"
             },
             "clean" : "Have you clean Gitlab before retrying ?",
+            "force" : {
+                "clean" : "Clean it for me"
+            },
             "group" : "Gitlab group",
             "token" : "Gitlab token",
             "url" : "Gitlab URL",

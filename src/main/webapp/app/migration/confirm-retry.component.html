@@ -4,9 +4,13 @@
 <div class="modal-body">
     <div>
         <span jhiTranslate="migration-process.gitlab.clean">Clean</span>
-        <hr>
     </div>
-    <div>
+    <div style="margin-top: 15px">
+        <span jhiTranslate="migration-process.gitlab.force.clean">Force clean</span>
+        <mat-checkbox [checked]="forceRemoveGroup" (change)="select()"></mat-checkbox>
+    </div>
+    <hr>
+    <div class="align-buttons">
         <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="cancel()">
             <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
         </button>

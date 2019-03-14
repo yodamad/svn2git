@@ -29,9 +29,9 @@ export class MigrationService {
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
     }
 
-    retry(id: number): Observable<EntityResponseType> {
+    retry(id: number, forceClean: boolean): Observable<EntityResponseType> {
         return this.http
-            .post<IMigration>(`${this.resourceUrl}/${id}/retry`, null, { observe: 'response' })
+            .post<IMigration>(`${this.resourceUrl}/${id}/retry`, forceClean, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => res));
     }
 

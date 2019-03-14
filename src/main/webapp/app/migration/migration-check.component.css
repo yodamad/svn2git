@@ -3,3 +3,10 @@
     color: white;
     text-align: center;
 }
+
+.align-buttons {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 70%;
+}

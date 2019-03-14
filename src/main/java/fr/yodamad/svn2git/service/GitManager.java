@@ -94,13 +94,21 @@ public class GitManager {
                 // split svn structure to create gitlab elements (group(s), project)
                 String[] structure = migration.getSvnProject().split("/");
                 Integer groupId = group.getId();
+                String currentPath = group.getPath();
                 if (structure.length > 2) {
-                    for (int module = 1; module < structure.length - 2; module++) {
+                    for (int module = 1; module < structure.length - 1; module++) {
                         Group gitlabSubGroup = new Group();
                         gitlabSubGroup.setName(structure[module]);
                         gitlabSubGroup.setPath(structure[module]);
+                        currentPath += format("/%s", structure[module]);
                         gitlabSubGroup.setParentId(groupId);
-                        groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+                        try {
+                            groupId = gitlabAdmin.groupApi().addGroup(gitlabSubGroup).getId();
+                        } catch (GitLabApiException gitlabApiEx) {
+                            // Ignore error & get existing groupId
+                            groupId = gitlabAdmin.groupApi().getGroup(currentPath).getId();
+                            continue;
+                        }
                     }
                 }
 

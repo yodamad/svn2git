@@ -17,6 +17,12 @@
             },
             "svn": "Error checking SVN repository"
         },
+        "creates": {
+            "gitlab": {
+                "group": "Error creating Gitlab group"
+            },
+            "svn": "Error checking SVN repository"
+        },
         "no": {
             "result" : "No result found"
         },

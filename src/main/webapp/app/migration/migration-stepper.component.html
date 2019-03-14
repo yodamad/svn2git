@@ -32,6 +32,10 @@
                     <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabGroup">Check</span>
                     <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabGroup">Checking</span>
                 </button>
+                <button type="button" mat-raised-button (click)="createGitlabGroup()" *ngIf="forceGitlabGroupCreation" class="warning">
+                    <span jhiTranslate="migration-process.create" *ngIf="!creatingGitlabGroup">Create it</span>
+                    <span jhiTranslate="migration-process.creating" *ngIf="creatingGitlabGroup">Creating</span>
+                </button>
             </div>
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>

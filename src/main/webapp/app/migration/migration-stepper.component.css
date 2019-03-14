@@ -8,6 +8,11 @@
     color: white;
 }
 
+.warning {
+    background-color: orangered;
+    color: white;
+}
+
 .summary-card {
     width: 500px;
     margin: 20px;

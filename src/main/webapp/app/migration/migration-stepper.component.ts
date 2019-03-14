@@ -53,6 +53,7 @@ export class MigrationStepperComponent implements OnInit {
     useDefaultSvn = true;
     overrideStaticExtensions = false;
     overrideStaticMappings = false;
+    forceGitlabGroupCreation = false;
 
     // Input for migrations
     svnDirectories: SvnStructure = null;
@@ -84,6 +85,7 @@ export class MigrationStepperComponent implements OnInit {
     checkingGitlabUser = false;
     checkingGitlabGroup = false;
     checkingSvnRepo = false;
+    creatingGitlabGroup = false;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -212,7 +214,33 @@ export class MigrationStepperComponent implements OnInit {
                         this.openSnackBar('error.http.504');
                     } else {
                         this.openSnackBar('error.checks.gitlab.group');
+                        this.forceGitlabGroupCreation = true;
                     }
+                }
+            );
+    }
+
+    /**
+     * Create group in gitlab
+     */
+    createGitlabGroup() {
+        this.creatingGitlabGroup = true;
+        this._migrationProcessService
+            .createGroup(
+                this.gitlabFormGroup.controls['gitlabGroup'].value,
+                this.gitlabFormGroup.controls['gitlabURL'].value,
+                this.gitlabFormGroup.controls['gitlabToken'].value
+            )
+            .subscribe(
+                res => {
+                    this.creatingGitlabGroup = false;
+                    this.forceGitlabGroupCreation = false;
+                    this.checkGitlabGroup();
+                },
+                error => {
+                    this.creatingGitlabGroup = false;
+                    this.forceGitlabGroupCreation = false;
+                    this.openSnackBar('error.creates.gitlab.group');
                 }
             );
     }

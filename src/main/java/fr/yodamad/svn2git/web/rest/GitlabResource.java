@@ -6,8 +6,10 @@ import fr.yodamad.svn2git.domain.GitlabInfo;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
+import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.User;
+import org.gitlab4j.api.models.Visibility;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,6 +66,27 @@ public class GitlabResource {
                 .body(group.isPresent());
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Creates a group on Gitlab
+     * @param groupName Group name to create
+     * @return
+     */
+    @PutMapping("group/{groupName}")
+    @Timed
+    public ResponseEntity<Boolean> createGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
+        GitlabAdmin gitlab = overrideGitlab(gitlabInfo);
+        Group group = new Group();
+        group.setName(groupName);
+        group.setPath(groupName);
+        group.setVisibility(Visibility.INTERNAL);
+        try {
+            gitlab.groupApi().addGroup(group);
+            return ResponseEntity.ok().body(true);
+        } catch (GitLabApiException apiEx) {
+            return ResponseEntity.badRequest().build();
         }
     }
 

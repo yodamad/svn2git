@@ -17,6 +17,12 @@
             },
             "svn": "Erreur de vérification du SVN"
         },
+        "creates": {
+            "gitlab": {
+                "group": "Erreur lors de la création du groupe Gitlab"
+            }
+        },
+
         "no": {
             "result" : "Aucun résultat trouvé"
         },

@@ -6,6 +6,8 @@
         "cleaning" : {
             "options" : "Cleaning options"
         },
+        "create" : "Create it !",
+        "creating" : "Creating",
         "date" : "Date",
         "directory" : "Directory",
         "done" : "Done",

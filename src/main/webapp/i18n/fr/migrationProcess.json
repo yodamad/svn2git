@@ -6,6 +6,8 @@
         "cleaning" : {
             "options" : "Nettoyage"
         },
+        "create" : "Créons-le !",
+        "creating" : "En cours",
         "date" : "Date",
         "directory" : "Répertoire",
         "done" : "Fait",

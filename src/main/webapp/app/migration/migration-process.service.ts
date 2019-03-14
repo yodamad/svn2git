@@ -40,6 +40,13 @@ export class MigrationProcessService {
             .pipe(map((res: EntityResponseType) => res));
     }
 
+    createGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
+        const gitlabInfo = new GitlabInfo(url, token);
+        return this.http
+            .put<Boolean>(`${this.groupUrl}/${name}`, gitlabInfo, { observe: 'response' })
+            .pipe(map((res: EntityResponseType) => res));
+    }
+
     checkSvn(name: string, url: string, user: string, password: string): Observable<EntityStructureResponseType> {
         const svnInfo = new SvnInfo(url, user, password);
         return this.http

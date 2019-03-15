@@ -100,9 +100,8 @@ public class MigrationManager {
             gitManager.gitSvnClone(workUnit);
 
             // 2.3. Remove phantom branches
-            history = historyMgr.startStep(migration, StepEnum.BRANCH_CLEAN, "Clean removed SVN branches");
-
             if (migration.getBranches() != null) {
+                history = historyMgr.startStep(migration, StepEnum.BRANCH_CLEAN, "Clean removed SVN branches");
                 Pair<AtomicBoolean, List<String>> pairInfo = cleaner.cleanRemovedElements(workUnit, false);
                 if (pairInfo.getFirst().get()) {
                     //  Some branches have failed
@@ -113,9 +112,8 @@ public class MigrationManager {
             }
 
             // 2.4. Remove phantom tags
-            history = historyMgr.startStep(migration, StepEnum.TAG_CLEAN, "Clean removed SVN tags");
-
             if (migration.getTags() != null) {
+                history = historyMgr.startStep(migration, StepEnum.TAG_CLEAN, "Clean removed SVN tags");
                 Pair<AtomicBoolean, List<String>> pairInfo = cleaner.cleanRemovedElements(workUnit, true);
                 if (pairInfo.getFirst().get()) {
                     //  Some branches have failed

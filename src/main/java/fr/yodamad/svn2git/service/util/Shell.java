@@ -31,7 +31,7 @@ public abstract class Shell {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static String workingDir(String directory, Migration mig) throws IOException, InterruptedException {
+    public static String workingDir(String directory, Migration mig) throws IOException, InterruptedException, RuntimeException {
         String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         if (isWindows) {
             if (!new File(directory).exists()) {

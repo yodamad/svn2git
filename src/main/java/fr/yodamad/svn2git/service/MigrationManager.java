@@ -76,7 +76,7 @@ public class MigrationManager {
             history = historyMgr.startStep(migration, StepEnum.INIT, "Create working directory");
             rootDir = workingDir(applicationProperties.work.directory, migration);
             historyMgr.endStep(history, StatusEnum.DONE,null);
-        } catch (IOException | InterruptedException ex) {
+        } catch (IOException | InterruptedException | RuntimeException ex) {
             historyMgr.endStep(history, StatusEnum.FAILED, format("Failed to create directory : %s", ex.getMessage()));
             migration.setStatus(StatusEnum.FAILED);
             migrationRepository.save(migration);

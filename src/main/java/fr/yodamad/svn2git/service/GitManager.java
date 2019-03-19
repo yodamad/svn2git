@@ -33,8 +33,10 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -270,6 +272,24 @@ public class GitManager {
     private StatusEnum mvDirectory(WorkUnit workUnit, Mapping mapping, String branch) {
         MigrationHistory history;
         String msg = format("git mv %s %s on %s", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
+
+        // If git directory in mapping contains /, we need to create root directories must be manually created
+        if (mapping.getGitDirectory().contains("/") && !mapping.getGitDirectory().equals("/")) {
+            AtomicReference<Path> tmpPath = new AtomicReference<>(Paths.get(workUnit.directory));
+            Arrays.stream(mapping.getGitDirectory().split("/"))
+                .forEach(dir -> {
+                    Path newPath = Paths.get(tmpPath.toString(), dir);
+                    if (!Files.exists(newPath)) {
+                        try {
+                            Files.createDirectory(newPath);
+                        } catch (IOException ioEx) {
+                            ioEx.printStackTrace();
+                        }
+                    }
+                    tmpPath.set(newPath);
+                });
+        }
+
         try (Stream<Path> files = Files.list(Paths.get(workUnit.directory, mapping.getSvnDirectory()))) {
             if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
                 // For root directory, we need to loop for subdirectory
@@ -288,6 +308,22 @@ public class GitManager {
                 }
                 return StatusEnum.DONE;
 
+            } else if (mapping.getGitDirectory().contains("/")) {
+                // For root directory, we need to loop for subdirectory
+                List<StatusEnum> results = files
+                    .map(d -> mv(workUnit, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), mapping.getGitDirectory(), branch))
+                    .collect(Collectors.toList());
+
+                if (results.isEmpty()) {
+                    history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, msg);
+                    historyMgr.endStep(history, StatusEnum.IGNORED, null);
+                    return StatusEnum.IGNORED;
+                }
+
+                if (results.contains(StatusEnum.DONE_WITH_WARNINGS)) {
+                    return StatusEnum.DONE_WITH_WARNINGS;
+                }
+                return StatusEnum.DONE;
             } else {
                 return mv(workUnit, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
             }

@@ -174,7 +174,7 @@ public class GitManager {
             workUnit.migration.getTrunk() == null ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
             workUnit.migration.getTags() == null ? "" : format("--tags=%s/tags", workUnit.migration.getSvnProject()),
-            workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl().endsWith("/") : format("%s/", workUnit.migration.getSvnUrl()),
+            workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl()),
             workUnit.migration.getSvnGroup());
     }
 
@@ -193,7 +193,7 @@ public class GitManager {
         } else {
             builder.command("sh", "-c", command);
         }
-        builder.directory(new File(directory));
+        builder.directory(new File(Shell.formatDirectory(directory)));
 
         Process p = builder.start();
         final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));

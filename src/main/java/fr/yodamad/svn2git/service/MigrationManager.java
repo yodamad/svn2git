@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.util.Shell;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -83,7 +84,7 @@ public class MigrationManager {
             return;
         }
 
-        WorkUnit workUnit = new WorkUnit(migration, rootDir, gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
+        WorkUnit workUnit = new WorkUnit(migration, Shell.formatDirectory(rootDir), gitWorkingDir(rootDir, migration.getSvnGroup()), new AtomicBoolean(false));
 
         try {
             // Start migration
@@ -226,7 +227,9 @@ public class MigrationManager {
 
         String mkdir;
         if (isWindows) {
-            mkdir = format("mkdir %s", workUnit.directory);
+            String path = workUnit.directory.startsWith("/") ? format("%s%s", System.getenv("SystemDrive"), workUnit.directory) : workUnit.directory;
+            path = path.replaceAll("/", "\\\\");
+            mkdir = format("mkdir %s", path);
         } else {
             mkdir = format("mkdir -p %s", workUnit.directory);
         }

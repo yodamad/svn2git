@@ -34,8 +34,9 @@ public abstract class Shell {
     public static String workingDir(String directory, Migration mig) throws IOException, InterruptedException, RuntimeException {
         String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         if (isWindows) {
-            if (!new File(directory).exists()) {
-                String mkdir = format("mkdir %s", directory);
+            String path = format("%s%s", System.getenv("SystemDrive"), directory.replaceAll("/", "\\\\"));
+            if (!new File(path).exists()) {
+                String mkdir = format("mkdir %s", path);
                 execCommand(System.getenv("SystemDrive"), mkdir);
             }
             return directory + "\\" + today + "_" + mig.getId();
@@ -55,7 +56,7 @@ public abstract class Shell {
      */
     public static String gitWorkingDir(String root, String sub) {
         if (isWindows) {
-            return root + "\\" + sub;
+            return Shell.formatDirectory(root + "\\" + sub);
         }
         return root + "/" + sub;
     }
@@ -81,16 +82,17 @@ public abstract class Shell {
      */
     public static int execCommand(String directory, String command, String securedCommandToPrint) throws InterruptedException, IOException {
         ProcessBuilder builder = new ProcessBuilder();
+        String execDir = formatDirectory(directory);
         if (isWindows) {
             builder.command("cmd.exe", "/c", command);
         } else {
             builder.command("sh", "-c", command);
         }
 
-        builder.directory(new File(directory));
+        builder.directory(new File(execDir));
 
         LOG.debug(format("Exec command : %s", securedCommandToPrint));
-        LOG.debug(format("in %s", directory));
+        LOG.debug(format("in %s", execDir));
 
         Process process = builder.start();
         StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), LOG::debug);
@@ -126,5 +128,20 @@ public abstract class Shell {
             new BufferedReader(new InputStreamReader(inputStream)).lines()
                 .forEach(consumer);
         }
+    }
+
+    /**
+     * Format directory to fit f*** windows behavior
+     * @param directory Directory to format
+     * @return formatted directory
+     */
+    public static String formatDirectory(String directory) {
+        String execDir = directory;
+        if (isWindows) {
+            execDir = directory.startsWith(System.getenv("SystemDrive")) ?
+                directory
+                : format("%s%s", System.getenv("SystemDrive"), directory).replaceAll("/", "\\\\");
+        }
+        return execDir;
     }
 }

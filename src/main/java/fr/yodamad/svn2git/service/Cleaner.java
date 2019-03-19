@@ -112,8 +112,9 @@ public class Cleaner {
             GIT_LIST);
         execCommand(workUnit.directory, gitBranchList);
         // List svn branch
+        String svnUrl = workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl());
         String svnBranchList = format("svn ls %s%s/%s/%s | sed \"s|^[[:space:]]*||\" | sed \"s|/$||\" > %s",
-            workUnit.migration.getSvnUrl(), workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), tags ? "tags" : "branches", SVN_LIST);
+            svnUrl, workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), tags ? "tags" : "branches", SVN_LIST);
         execCommand(workUnit.directory, svnBranchList);
         // Diff git & svn branches
         try {

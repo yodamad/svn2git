@@ -174,7 +174,7 @@ public class GitManager {
             workUnit.migration.getTrunk() == null ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
             workUnit.migration.getTags() == null ? "" : format("--tags=%s/tags", workUnit.migration.getSvnProject()),
-            workUnit.migration.getSvnUrl(),
+            workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl().endsWith("/") : format("%s/", workUnit.migration.getSvnUrl()),
             workUnit.migration.getSvnGroup());
     }
 

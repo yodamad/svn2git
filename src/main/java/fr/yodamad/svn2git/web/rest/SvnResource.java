@@ -21,6 +21,8 @@ import org.tmatesoft.svn.core.wc2.SvnTarget;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.String.format;
+
 /**
  * Controller to use SVN
  */
@@ -108,10 +110,11 @@ public class SvnResource {
 
         list.setRevision(revision);
         try {
+            String svnUrl = svnInfo.url.endsWith("/") ? svnInfo.url : format("%s/", svnInfo.url);
             if (module == null) {
-                list.addTarget(SvnTarget.fromURL(SVNURL.parseURIEncoded(svnInfo.url + repo), revision));
+                list.addTarget(SvnTarget.fromURL(SVNURL.parseURIEncoded(format("%s%s",svnUrl, repo)), revision));
             } else {
-                list.addTarget(SvnTarget.fromURL(SVNURL.parseURIEncoded(svnInfo.url + repo + module.path), revision));
+                list.addTarget(SvnTarget.fromURL(SVNURL.parseURIEncoded(format("%s%s%s", svnUrl, repo, module.path)), revision));
             }
         } catch (SVNException e) {}
 

@@ -9,7 +9,7 @@ import { MigrationService } from 'app/entities/migration';
     styleUrls: ['./migration-check.component.css']
 })
 export class JhiConfirmRetryModalComponent {
-    private forceRemoveGroup = false;
+    forceRemoveGroup = false;
 
     constructor(
         public dialogRef: MatDialogRef<JhiConfirmRetryModalComponent>,

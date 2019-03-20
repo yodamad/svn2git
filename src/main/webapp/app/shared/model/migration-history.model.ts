@@ -10,7 +10,8 @@ export const enum StepEnum {
     GIT_CLONE = 'GIT_CLONE',
     CLEANING = 'CLEANING',
     BRANCH_CLEAN = 'BRANCH_CLEAN',
-    TAG_CLEAN = 'TAG_CLEAN'
+    TAG_CLEAN = 'TAG_CLEAN',
+    README_MD = 'README_MD'
 }
 
 export const enum StatusEnum {

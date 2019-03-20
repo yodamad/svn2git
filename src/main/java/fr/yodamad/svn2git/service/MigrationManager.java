@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.util.MarkdownGenerator;
 import fr.yodamad.svn2git.service.util.Shell;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -186,6 +189,23 @@ public class MigrationManager {
                 historyMgr.endStep(history, StatusEnum.IGNORED, "Skip tags");
             }
 
+            // Generate summary
+            try {
+                history = historyMgr.startStep(migration, StepEnum.README_MD, "Generate README.md to summarize migration");
+                String content = MarkdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.getId()));
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+                Files.write(Paths.get(workUnit.directory, "README.md"), content.getBytes());
+                gitCommand = "git add README.md";
+                execCommand(workUnit.directory, gitCommand);
+                gitCommand = "git commit -m \"Add generated README.md\"";
+                execCommand(workUnit.directory, gitCommand);
+                execCommand(workUnit.directory, GIT_PUSH);
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+            } catch (Exception exc) {
+                historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+            }
+
+            // Finalize migration
             if (workUnit.warnings.get()) {
                 migration.setStatus(StatusEnum.DONE_WITH_WARNINGS);
             } else{

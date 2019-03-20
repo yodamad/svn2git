@@ -5,7 +5,10 @@ import fr.yodamad.svn2git.domain.MigrationHistory;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
+import fr.yodamad.svn2git.repository.MigrationRepository;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
@@ -16,9 +19,11 @@ import java.time.Instant;
 public class HistoryManager {
 
     private final MigrationHistoryRepository migrationHistoryRepository;
+    private final MigrationRepository migrationRepository;
 
-    public HistoryManager(final MigrationHistoryRepository mhr) {
+    public HistoryManager(final MigrationHistoryRepository mhr, final MigrationRepository mr) {
         this.migrationHistoryRepository = mhr;
+        this.migrationRepository = mr;
     }
 
     /**
@@ -51,4 +56,19 @@ public class HistoryManager {
         if (data != null) history.setData(data);
         migrationHistoryRepository.save(history);
     }
+
+    /**
+     * Load eagerly a migration
+     * @param migId Migration ID
+     * @return migration loaded
+     */
+    @Transactional
+    public Migration loadMigration(Long migId) {
+        Migration migration = migrationRepository.getOne(migId);
+        Hibernate.initialize(migration);
+        Hibernate.initialize(migration.getHistories());
+        Hibernate.initialize(migration.getMappings());
+        return migration;
+    }
+
 }

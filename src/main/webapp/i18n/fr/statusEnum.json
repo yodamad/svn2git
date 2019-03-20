@@ -5,7 +5,7 @@
             "WAITING": "En attente",
             "RUNNING": "En cours",
             "DONE": "OK",
-            "DONE_WITH_WARNINGS": "Partiellement OK",
+            "DONE_WITH_WARNINGS": "OK (avec avertissements)",
             "FAILED": "KO"
         }
     }

@@ -114,11 +114,11 @@ logging:
 
 application:
     password.cipher: svn2git
-    work.directory: d:\tmpsvn\
+    work.directory: /tmp/svn2git
     gitlab:
         url: http://localhost/
-        account: svc-gitlab
-        token: snikiuSUbxDYCsAnWWtE
+        account: root
+        token: SKSNAQs8tzFKKX_aL6xZ
         credentials: optional
     svn:
         url: svn://localhost/

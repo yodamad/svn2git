@@ -28,7 +28,8 @@
             },
             "clean" : "Avez-vous nettoyé Gitlab avant de réessayer ?",
             "force" : {
-                "clean" : "Nettoyer pour moi"
+                "clean" : "Nettoyer pour moi",
+                "error" : "Nettoyage impossible automatiquement"
             },
             "group" : "Groupe Gitlab",
             "token" : "Token",

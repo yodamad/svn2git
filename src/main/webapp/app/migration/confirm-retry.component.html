@@ -7,15 +7,21 @@
     </div>
     <div style="margin-top: 15px">
         <span jhiTranslate="migration-process.gitlab.force.clean">Force clean</span>
-        <mat-checkbox [checked]="forceRemoveGroup" (change)="select()"></mat-checkbox>
+        <mat-checkbox [checked]="forceRemoveGroup && !errorCleaning" (change)="select()" [disabled]="errorCleaning"></mat-checkbox>
     </div>
     <hr>
     <div class="align-buttons">
-        <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="cancel()">
+        <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="cancel()" *ngIf="!cleaning">
             <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
         </button>
-        <button type="submit" id="save-entity" class="btn btn-primary" mat-button (click)="retry()">
+        <button type="submit" id="save-entity" class="btn btn-primary" mat-button (click)="retry()" *ngIf="!cleaning">
             <fa-icon [icon]="'sync'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.retry">Retry</span>
         </button>
+        <button type="submit" id="cleaning" class="btn btn-secondary" mat-button *ngIf="cleaning && forceRemoveGroup" [disabled]="true">
+            <span jhiTranslate="entity.action.cleaning">Cleaning</span>
+        </button>
+    </div>
+    <div>
+        <span jhiTranslate="migration-process.gitlab.force.error" *ngIf="errorCleaning" style="color: firebrick">Error cleaning</span>
     </div>
 </div>

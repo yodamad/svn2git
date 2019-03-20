@@ -102,6 +102,7 @@
             "addimage": "Ajouter image",
             "back": "Retour",
             "cancel": "Annuler",
+            "cleaning" : "Nettoyage en cours...",
             "edit": "Editer",
             "delete": "Supprimer",
             "open": "Ouvrir",

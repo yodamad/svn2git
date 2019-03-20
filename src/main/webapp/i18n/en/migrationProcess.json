@@ -28,7 +28,8 @@
             },
             "clean" : "Have you clean Gitlab before retrying ?",
             "force" : {
-                "clean" : "Clean it for me"
+                "clean" : "Clean it for me",
+                "error" : "Impossible to automatically clean project"
             },
             "group" : "Gitlab group",
             "token" : "Gitlab token",

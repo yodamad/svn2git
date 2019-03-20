@@ -9,7 +9,10 @@ import { MigrationService } from 'app/entities/migration';
     styleUrls: ['./migration-check.component.css']
 })
 export class JhiConfirmRetryModalComponent {
+    // Flags
     forceRemoveGroup = false;
+    cleaning = false;
+    errorCleaning = false;
 
     constructor(
         public dialogRef: MatDialogRef<JhiConfirmRetryModalComponent>,
@@ -18,7 +21,19 @@ export class JhiConfirmRetryModalComponent {
     ) {}
 
     retry() {
-        this._migrationService.retry(this.data.migId, this.forceRemoveGroup).subscribe(res => this.dialogRef.close());
+        this.cleaning = true;
+        this.errorCleaning = false;
+        this._migrationService.retry(this.data.migId, this.forceRemoveGroup).subscribe(
+            res => {
+                this.dialogRef.close();
+                this.cleaning = false;
+            },
+            err => {
+                this.cleaning = false;
+                this.errorCleaning = true;
+                this.forceRemoveGroup = false;
+            }
+        );
     }
 
     select() {

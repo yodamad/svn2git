@@ -54,6 +54,7 @@ import static java.nio.file.Files.walk;
 public class GitManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(GitManager.class);
+    private static final String FAILED_TO_PUSH_BRANCH = "Failed to push branch";
 
     private GitlabAdmin gitlab;
     // Manager & repository
@@ -291,41 +292,30 @@ public class GitManager {
         }
 
         try (Stream<Path> files = Files.list(Paths.get(workUnit.directory, mapping.getSvnDirectory()))) {
-            if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".")) {
+            if (mapping.getGitDirectory().equals("/") || mapping.getGitDirectory().equals(".") || mapping.getGitDirectory().contains("/")) {
+                history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, msg);
+                StatusEnum result = StatusEnum.DONE;
+                boolean useGitDir = mapping.getGitDirectory().contains("/");
                 // For root directory, we need to loop for subdirectory
                 List<StatusEnum> results = files
-                    .map(d -> mv(workUnit, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), d.getFileName().toString(), branch))
+                    .map(d -> mv(workUnit, 
+                        format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), 
+                        useGitDir ? mapping.getGitDirectory() : d.getFileName().toString(), 
+                        branch, false))
                     .collect(Collectors.toList());
 
                 if (results.isEmpty()) {
-                    history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, msg);
-                    historyMgr.endStep(history, StatusEnum.IGNORED, null);
-                    return StatusEnum.IGNORED;
+                    result = StatusEnum.IGNORED;
                 }
 
                 if (results.contains(StatusEnum.DONE_WITH_WARNINGS)) {
-                    return StatusEnum.DONE_WITH_WARNINGS;
+                    result = StatusEnum.DONE_WITH_WARNINGS;
                 }
-                return StatusEnum.DONE;
-
-            } else if (mapping.getGitDirectory().contains("/")) {
-                // For root directory, we need to loop for subdirectory
-                List<StatusEnum> results = files
-                    .map(d -> mv(workUnit, format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), mapping.getGitDirectory(), branch))
-                    .collect(Collectors.toList());
-
-                if (results.isEmpty()) {
-                    history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, msg);
-                    historyMgr.endStep(history, StatusEnum.IGNORED, null);
-                    return StatusEnum.IGNORED;
-                }
-
-                if (results.contains(StatusEnum.DONE_WITH_WARNINGS)) {
-                    return StatusEnum.DONE_WITH_WARNINGS;
-                }
-                return StatusEnum.DONE;
+                historyMgr.endStep(history, result, null);
+                return result;
+                
             } else {
-                return mv(workUnit, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
+                return mv(workUnit, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch, true);
             }
         } catch (IOException gitEx) {
             history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, msg);
@@ -338,10 +328,10 @@ public class GitManager {
             return StatusEnum.IGNORED;
         }
     }
-
+    
     /**
      * Apply git mv
-     * @param workUnit
+     * @param workUnit Current work unit
      * @param mapping Mapping to apply
      * @param branch Current branch
      */
@@ -400,25 +390,25 @@ public class GitManager {
      * @param gitDir Target Git element
      * @param branch Current branch
      */
-    private StatusEnum mv(WorkUnit workUnit, String svnDir, String gitDir, String branch) {
+    private StatusEnum mv(WorkUnit workUnit, String svnDir, String gitDir, String branch, boolean traceStep) {
         MigrationHistory history = null;
         try {
             String historyCommand = format("git mv %s %s on %s", svnDir, gitDir, branch);
             String gitCommand = format("git mv %s %s", svnDir, gitDir);
-            history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, historyCommand);
+            if (traceStep) history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, historyCommand);
             // git mv
             int exitCode = execCommand(workUnit.directory, gitCommand);
 
             if (MigrationConstants.ERROR_CODE == exitCode) {
-                historyMgr.endStep(history, StatusEnum.IGNORED, null);
+                if (traceStep) historyMgr.endStep(history, StatusEnum.IGNORED, null);
                 return StatusEnum.IGNORED;
             } else {
-                historyMgr.endStep(history, StatusEnum.DONE, null);
+                if (traceStep) historyMgr.endStep(history, StatusEnum.DONE, null);
                 return StatusEnum.DONE;
             }
         } catch (IOException | InterruptedException gitEx) {
             LOG.error("Failed to mv directory", gitEx);
-            historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
+            if (traceStep) historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
             return StatusEnum.DONE_WITH_WARNINGS;
         }
     }
@@ -461,7 +451,7 @@ public class GitManager {
         try {
             execCommand(workUnit.directory, gitCommand);
         } catch (IOException | InterruptedException iEx) {
-            LOG.error("Failed to push branch", iEx);
+            LOG.error(FAILED_TO_PUSH_BRANCH, iEx);
             historyMgr.endStep(history, StatusEnum.FAILED, iEx.getMessage());
             return false;
         }
@@ -474,7 +464,7 @@ public class GitManager {
                     execCommand(workUnit.directory, gitCommand);
                     historyMgr.endStep(history, StatusEnum.DONE, null);
                 } catch (IOException | InterruptedException iEx) {
-                    LOG.error("Failed to push branch", iEx);
+                    LOG.error(FAILED_TO_PUSH_BRANCH, iEx);
                     historyMgr.endStep(history, StatusEnum.FAILED, iEx.getMessage());
                     return false;
                 }
@@ -535,7 +525,7 @@ public class GitManager {
 
             historyMgr.endStep(history, StatusEnum.DONE, null);
         } catch (IOException | InterruptedException gitEx) {
-            LOG.error("Failed to push branch", gitEx);
+            LOG.error(FAILED_TO_PUSH_BRANCH, gitEx);
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
         }
         return false;
@@ -583,7 +573,7 @@ public class GitManager {
 
             historyMgr.endStep(history, StatusEnum.DONE, format("Push %s with no history", branch));
         } catch (IOException | InterruptedException gitEx) {
-            LOG.error("Failed to push branch", gitEx);
+            LOG.error(FAILED_TO_PUSH_BRANCH, gitEx);
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
         }
     }

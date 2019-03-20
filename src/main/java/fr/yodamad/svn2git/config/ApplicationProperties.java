@@ -81,6 +81,8 @@ public class ApplicationProperties {
         public String token;
         /** Flag for credentials. */
         public String credentials;
+        /** Max waiting time. */
+        public Integer wait;
 
         public String getUrl() {
             return url;
@@ -112,6 +114,14 @@ public class ApplicationProperties {
 
         public void setCredentials(String credentials) {
             this.credentials = credentials;
+        }
+
+        public Integer getWait() {
+            return wait;
+        }
+
+        public void setWait(Integer wait) {
+            this.wait = wait;
         }
     }
 

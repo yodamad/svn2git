@@ -120,6 +120,7 @@ application:
         account: root
         token: SKSNAQs8tzFKKX_aL6xZ
         credentials: optional
+        wait: 15
     svn:
         url: svn://localhost/
         user:

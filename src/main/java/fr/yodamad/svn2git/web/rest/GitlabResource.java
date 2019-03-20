@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -126,7 +128,15 @@ public class GitlabResource {
             List<Project> projects = gitlabAdmin.projectApi().getProjects(elements[elements.length-1]);
             Project project = projects.stream().filter(p -> p.getPathWithNamespace().equalsIgnoreCase(namespace.toString())).findFirst().get();
             gitlabAdmin.projectApi().deleteProject(project);
+            // Waiting for gitlab to delete it completely
+            LocalDateTime maxAge =  LocalDateTime.now().plus(applicationProperties.gitlab.wait, ChronoUnit.SECONDS);
+            while(gitlabAdmin.projectApi().getProject(project.getId()) != null || maxAge.isAfter( LocalDateTime.now())) {}
         } catch (GitLabApiException apiEx) {
+            if (apiEx.getReason().equalsIgnoreCase("Not Found")) {
+                // Project already deleted
+                LOG.info("Unknown project, cannot delete it (or maybe already deleted)");
+                return;
+            }
             LOG.error("Impossible to remove group", apiEx.getMessage());
             throw apiEx;
         }

@@ -106,7 +106,7 @@ public class Cleaner {
         AtomicBoolean withWarning = new AtomicBoolean();
         List<String> failedBranches = new ArrayList<>();
         // List git branch
-        String gitBranchList = format("git branch -r | sed \"s|^[[:space:]]*||\" | grep %s '^tags/' | sed -e \"s/origin\\///g\" %s > %s",
+        String gitBranchList = format("git branch -r | sed \"s|^[[:space:]]*||\" | grep %s 'tags/' | sed -e \"s/origin\\///g\" %s > %s",
             tags ? "" : "-v",
             tags ? "| sed -e \"s/tags\\///g\"" : "",
             GIT_LIST);

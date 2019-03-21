@@ -192,14 +192,17 @@ public class MigrationManager {
             // Generate summary
             try {
                 history = historyMgr.startStep(migration, StepEnum.README_MD, "Generate README.md to summarize migration");
-                String content = MarkdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.getId()));
+                gitCommand = "git checkout master";
+                execCommand(workUnit.directory, gitCommand);
                 historyMgr.endStep(history, StatusEnum.DONE, null);
+                String content = MarkdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.getId()));
                 Files.write(Paths.get(workUnit.directory, "README.md"), content.getBytes());
                 gitCommand = "git add README.md";
                 execCommand(workUnit.directory, gitCommand);
                 gitCommand = "git commit -m \"Add generated README.md\"";
                 execCommand(workUnit.directory, gitCommand);
-                execCommand(workUnit.directory, GIT_PUSH);
+                gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
+                execCommand(workUnit.directory, gitCommand);
                 historyMgr.endStep(history, StatusEnum.DONE, null);
             } catch (Exception exc) {
                 historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());

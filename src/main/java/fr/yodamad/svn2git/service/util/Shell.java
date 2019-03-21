@@ -138,9 +138,9 @@ public abstract class Shell {
     public static String formatDirectory(String directory) {
         String execDir = directory;
         if (isWindows) {
-            execDir = directory.startsWith(System.getenv("SystemDrive")) ?
-                directory
-                : format("%s%s", System.getenv("SystemDrive"), directory).replaceAll("/", "\\\\");
+            execDir = directory.startsWith("/") ?
+                format("%s%s", System.getenv("SystemDrive"), directory).replaceAll("/", "\\\\")
+                : directory;
         }
         return execDir;
     }

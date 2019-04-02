@@ -4,7 +4,7 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>1.16</version>
+    <version>1.17-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>Svn 2 GitLab</name>
 

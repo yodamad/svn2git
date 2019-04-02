@@ -18,6 +18,7 @@ export class ConfigurationService {
     private overrideUrl = this.resourceUrl + 'override/';
     private extensionsUrl = this.overrideUrl + 'extensions';
     private mappingsUrl = this.overrideUrl + 'mappings';
+    private flagsUrl = this.resourceUrl + 'flags';
 
     constructor(private http: HttpClient) {}
 
@@ -61,6 +62,10 @@ export class ConfigurationService {
      */
     overrideStaticMappings(): Observable<boolean> {
         return this.http.get(`${this.mappingsUrl}`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
+    }
+
+    flagProjectCleaning(): Observable<boolean> {
+        return this.http.get(`${this.flagsUrl}/projectCleaningOption`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
     }
 
     /**

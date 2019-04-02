@@ -83,4 +83,12 @@ public class ConfigurationResource {
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.override.mappings);
     }
+
+    @Timed
+    @GetMapping("flags/projectCleaningOption")
+    public ResponseEntity<Boolean> getProjectCleaningOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(applicationProperties.flags.projectCleaningOption);
+    }
 }

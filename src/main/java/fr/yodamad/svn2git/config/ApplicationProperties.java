@@ -16,6 +16,7 @@ public class ApplicationProperties {
     public Gitlab gitlab = new Gitlab();
     public Password password = new Password();
     public Override override = new Override();
+    public Flags flags = new Flags();
 
     public static class Work {
         public String directory = System.getenv("java.io.tmpdir");
@@ -158,6 +159,17 @@ public class ApplicationProperties {
         }
     }
 
+    public static class Flags {
+        public boolean projectCleaningOption = false;
+
+        public boolean isProjectCleaningOption() {
+            return projectCleaningOption;
+        }
+
+        public void setProjectCleaningOption(boolean projectCleaningOption) {
+            this.projectCleaningOption = projectCleaningOption;
+        }
+    }
 
     public Work getWork() {
         return work;
@@ -198,4 +210,8 @@ public class ApplicationProperties {
     public void setOverride(Override override) {
         this.override = override;
     }
+
+    public Flags getFlags() { return flags; }
+
+    public void setFlags(Flags flags) { this.flags = flags; }
 }

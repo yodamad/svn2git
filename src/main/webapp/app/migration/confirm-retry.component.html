@@ -5,7 +5,7 @@
     <div>
         <span jhiTranslate="migration-process.gitlab.clean">Clean</span>
     </div>
-    <div style="margin-top: 15px">
+    <div style="margin-top: 15px" *ngIf="authorizeCleaning">
         <span jhiTranslate="migration-process.gitlab.force.clean">Force clean</span>
         <mat-checkbox [checked]="forceRemoveGroup && !errorCleaning" (change)="select()" [disabled]="errorCleaning"></mat-checkbox>
     </div>

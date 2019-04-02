@@ -2,6 +2,7 @@ package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonView;
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationHistory;
@@ -54,12 +55,20 @@ public class MigrationResource {
 
     private final GitlabResource gitlabResource;
 
-    public MigrationResource(MigrationRepository migrationRepository, MigrationManager migrationManager, MigrationHistoryService migrationHistoryService, MappingService mappingService, GitlabResource gitlabResource) {
+    private final ApplicationProperties applicationProperties;
+
+    public MigrationResource(MigrationRepository migrationRepository,
+                             MigrationManager migrationManager,
+                             MigrationHistoryService migrationHistoryService,
+                             MappingService mappingService,
+                             GitlabResource gitlabResource,
+                             ApplicationProperties applicationProperties) {
         this.migrationRepository = migrationRepository;
         this.migrationManager = migrationManager;
         this.migrationHistoryService = migrationHistoryService;
         this.mappingService = mappingService;
         this.gitlabResource = gitlabResource;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -101,7 +110,7 @@ public class MigrationResource {
         log.debug("REST request to retry Migration : {}", id);
         Migration mig = migrationRepository.findById(id).orElseThrow(() -> new BadRequestAlertException("Migration cannot be retried", ENTITY_NAME, "iddonotexist"));
 
-        if (Boolean.valueOf(forceClean)) {
+        if (Boolean.valueOf(forceClean) && applicationProperties.flags.projectCleaningOption) {
             gitlabResource.removeGroup(mig);
         }
 

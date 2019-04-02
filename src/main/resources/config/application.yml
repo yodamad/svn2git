@@ -115,10 +115,12 @@ logging:
 application:
     password.cipher: svn2git
     work.directory: /tmp/svn2git
+    flags:
+        projectCleaningOption: true
     gitlab:
         url: http://localhost/
-        account: root
-        token: SKSNAQs8tzFKKX_aL6xZ
+        account: mvt
+        token: kYXpL6Mau5SQhFhTPD4J
         credentials: optional
         wait: 15
     svn:

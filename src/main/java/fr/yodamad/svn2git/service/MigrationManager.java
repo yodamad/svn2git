@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -194,6 +195,19 @@ public class MigrationManager {
                 history = historyMgr.startStep(migration, StepEnum.README_MD, "Generate README.md to summarize migration");
                 gitCommand = "git checkout master";
                 execCommand(workUnit.directory, gitCommand);
+
+                // If master not migrated, clean it to add only README.md
+                if (migration.getTrunk() == null) {
+                    Arrays.stream(new File(workUnit.directory).listFiles())
+                        .filter(f -> !f.getName().equalsIgnoreCase(".git"))
+                        .forEach(f -> {
+                            try { FileUtils.forceDelete(f);
+                            } catch (IOException e) { e.printStackTrace(); }
+                        });
+                    gitCommand = "git commit -am \"Clean master not migrated to add futur REAMDE.md\"";
+                    execCommand(workUnit.directory, gitCommand);
+                }
+
                 historyMgr.endStep(history, StatusEnum.DONE, null);
                 String content = MarkdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.getId()));
                 Files.write(Paths.get(workUnit.directory, "README.md"), content.getBytes());

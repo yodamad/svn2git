@@ -152,7 +152,7 @@ public class MigrationManager {
 
                 // if no history option set
                 if (migration.getSvnHistory().equals("nothing")) {
-                    gitManager.removeHistory(workUnit, MASTER, history);
+                    gitManager.removeHistory(workUnit, MASTER, false, history);
                 } else {
                     // Push with upstream
                     gitCommand = format("%s --set-upstream origin master", GIT_PUSH);

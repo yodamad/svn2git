@@ -470,7 +470,7 @@ public class GitManager {
                     return false;
                 }
             } else {
-                removeHistory(workUnit, branchName, history);
+                removeHistory(workUnit, branchName, false, history);
             }
             return applyMapping(workUnit, branch);
     }
@@ -507,8 +507,14 @@ public class GitManager {
             String tagName = tag.replaceFirst(ORIGIN_TAGS, "");
             LOG.debug(format("Tag %s", tagName));
 
+            boolean noHistory = !workUnit.migration.getSvnHistory().equals("all");
+
             String gitCommand = format("git checkout -b tmp_tag %s", tag);
             execCommand(workUnit.directory, gitCommand);
+
+            if (noHistory) {
+                removeHistory(workUnit, "tmp_tag", true, history);
+            }
 
             gitCommand = "git checkout master";
             execCommand(workUnit.directory, gitCommand);
@@ -536,9 +542,10 @@ public class GitManager {
      * Remove commit history on a given branch
      * @param workUnit Current work unit
      * @param branch Branch to work on
+     * @param isTag Flag to check if working on a tag
      * @param history Current history instance
      */
-    public void removeHistory(WorkUnit workUnit, String branch, MigrationHistory history) {
+    public void removeHistory(WorkUnit workUnit, String branch, boolean isTag, MigrationHistory history) {
         try {
             LOG.debug(format("Remove history on %s", branch));
 
@@ -567,12 +574,15 @@ public class GitManager {
             gitCommand = format("git branch -m %s", branch);
             execCommand(workUnit.directory, gitCommand);
 
-            addRemote(workUnit, true);
+            if (!isTag) {
+                addRemote(workUnit, true);
 
-            gitCommand = format("git push -f origin %s", branch);
-            execCommand(workUnit.directory, gitCommand);
+                gitCommand = format("git push -f origin %s", branch);
+                execCommand(workUnit.directory, gitCommand);
 
-            historyMgr.endStep(history, StatusEnum.DONE, format("Push %s with no history", branch));
+                historyMgr.endStep(history, StatusEnum.DONE, format("Push %s with no history", branch));
+            }
+
         } catch (IOException | InterruptedException gitEx) {
             LOG.error(FAILED_TO_PUSH_BRANCH, gitEx);
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());

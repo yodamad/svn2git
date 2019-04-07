@@ -114,7 +114,9 @@ logging:
 
 application:
     password.cipher: svn2git
-    work.directory: /tmp/svn2git
+    work:
+        directory: /tmp/svn2git
+        maxSvnLevel: 3
     flags:
         projectCleaningOption: true
     gitlab:

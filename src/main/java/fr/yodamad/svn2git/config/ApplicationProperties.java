@@ -21,6 +21,8 @@ public class ApplicationProperties {
     public static class Work {
         public String directory = System.getenv("java.io.tmpdir");
 
+        public Integer maxSvnLevel = 3;
+
         public String getDirectory() {
             return directory;
         }
@@ -28,6 +30,10 @@ public class ApplicationProperties {
         public void setDirectory(String directory) {
             this.directory = directory;
         }
+
+        public Integer getMaxSvnLevel() { return maxSvnLevel; }
+
+        public void setMaxSvnLevel(Integer maxSvnLevel) { this.maxSvnLevel = maxSvnLevel; }
     }
 
     public static class Svn {

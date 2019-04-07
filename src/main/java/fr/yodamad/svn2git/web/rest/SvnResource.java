@@ -19,6 +19,7 @@ import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -75,7 +76,7 @@ public class SvnResource {
      */
     private SvnStructure listSVN(SvnInfo svnInfo, String repo) {
         SvnStructure structure = new SvnStructure(repo);
-        structure.modules = listModulesSVN(svnInfo, repo, null);
+        structure.modules = listModulesSVN(svnInfo, repo, null, 1);
         structure.flat = structure.modules.isEmpty();
         log.info("SVN structure found : {}", structure);
         return structure;
@@ -88,7 +89,13 @@ public class SvnResource {
      * @param module Current module inspected
      * @return Complete module structure
      */
-    private List<SvnStructure.SvnModule> listModulesSVN(SvnInfo svnInfo, String repo, SvnStructure.SvnModule module) {
+    private List<SvnStructure.SvnModule> listModulesSVN(SvnInfo svnInfo, String repo, SvnStructure.SvnModule module, final int level) {
+
+        if (level == applicationProperties.work.maxSvnLevel) {
+            log.info("Reaching max levels authorized for discovery, stop here");
+            return Collections.emptyList();
+        }
+
         List<SvnStructure.SvnModule> modules = new ArrayList<>();
         log.info("Check for modules in {}", module);
 
@@ -135,7 +142,7 @@ public class SvnResource {
         } catch (SVNException ex) {}
 
         if (!modules.isEmpty()) {
-            modules.forEach(svnSubMod -> svnSubMod.subModules.addAll(listModulesSVN(svnInfo, repo, svnSubMod)));
+            modules.forEach(svnSubMod -> svnSubMod.subModules.addAll(listModulesSVN(svnInfo, repo, svnSubMod, level + 1)));
         }
 
         log.debug("SVN modules found in {} : {}", module, modules);

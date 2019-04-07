@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import static fr.yodamad.svn2git.service.util.MigrationConstants.STARS;
+
 /**
  * Controller to use Gitlab API
  */
@@ -137,7 +139,8 @@ public class GitlabResource {
                 LOG.info("Unknown project, cannot delete it (or maybe already deleted)");
                 return;
             }
-            LOG.error("Impossible to remove group", apiEx.getMessage());
+            String message = apiEx.getMessage().replace(applicationProperties.gitlab.token, STARS);
+            LOG.error("Impossible to remove group", message);
             throw apiEx;
         }
     }

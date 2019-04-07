@@ -130,7 +130,8 @@ public class GitManager {
                 }
             }
         } catch (GitLabApiException exc) {
-            historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+            String message = exc.getMessage().replace(applicationProperties.gitlab.token, STARS);
+            historyMgr.endStep(history, StatusEnum.FAILED, message);
             throw exc;
         }
     }

@@ -246,7 +246,7 @@ public class GitManager {
                 gitCommand = format("git commit -m \"Apply mappings on %s\"", branch);
                 execCommand(workUnit.directory, gitCommand);
                 // git push
-                gitCommand = format("%s --set-upstream origin %s", GIT_PUSH, branch);
+                gitCommand = format("%s --set-upstream origin %s", GIT_PUSH, branch.replace("origin/", ""));
                 execCommand(workUnit.directory, gitCommand);
 
                 historyMgr.endStep(history, StatusEnum.DONE, null);

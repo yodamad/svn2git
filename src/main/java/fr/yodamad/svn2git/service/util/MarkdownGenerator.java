@@ -45,17 +45,18 @@ public abstract class MarkdownGenerator {
             md.append(mappingTableBuilder.build()).append(EMPTY_LINE);
         }
 
-        if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions()) || !StringUtils.isEmpty(migration.getMaxFileSize())) {
+        if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions()) ||
+            (!StringUtils.isEmpty(migration.getMaxFileSize()) && Character.isDigit(migration.getMaxFileSize().charAt(0)))) {
             // Cleaning
             md.append(new Heading("Cleaning options", 3)).append(EMPTY_LINE);
             Table.Builder cleaningTableBuilder = new Table.Builder()
                 .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
-                .addRow("", "");
+                .addRow("Option", "Value");
 
             if (!StringUtils.isEmpty(migration.getMaxFileSize())) {
                 cleaningTableBuilder.addRow("Max file size", migration.getMaxFileSize());
             }
-            if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions())) {
+            if (!StringUtils.isEmpty(migration.getForbiddenFileExtensions()) && Character.isDigit(migration.getMaxFileSize().charAt(0))) {
                 cleaningTableBuilder.addRow("Files extension(s) removed", migration.getForbiddenFileExtensions());
             }
             md.append(cleaningTableBuilder.build()).append(EMPTY_LINE);

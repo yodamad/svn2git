@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static fr.yodamad.svn2git.service.util.Shell.execCommand;
 import static java.lang.String.format;
@@ -106,52 +106,58 @@ public class Cleaner {
         AtomicBoolean withWarning = new AtomicBoolean();
         List<String> failedBranches = new ArrayList<>();
         // List git branch
-        String gitBranchList = format("git branch -r | sed \"s|^[[:space:]]*||\" | grep %s 'tags/' | sed -e \"s/origin\\///g\" %s > %s",
-            tags ? "" : "-v",
-            tags ? "| sed -e \"s/tags\\///g\"" : "",
-            GIT_LIST);
+        String gitBranchList = format("git branch -r > %s", GIT_LIST);
         execCommand(workUnit.directory, gitBranchList);
-        // List svn branch
-        String svnUrl = workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl());
-        String svnBranchList = format("svn ls %s%s/%s/%s | sed \"s|^[[:space:]]*||\" | sed \"s|/$||\" > %s",
-            svnUrl, workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), tags ? "tags" : "branches", SVN_LIST);
-        execCommand(workUnit.directory, svnBranchList);
-        // Diff git & svn branches
-        try {
-            String diff = format("diff -u %s %s | grep \"^-\" | sed \"s|^-||\" | grep -v \"^trunk$\" | grep -v \"^--\" > %s", GIT_LIST, SVN_LIST, DIFF_LIST);
-            execCommand(workUnit.directory, diff);
-        } catch (RuntimeException rEx) {
-            if (!StringUtils.isEmpty(rEx.getMessage())) {
-                throw rEx;
-            }
-            // If message is empty, it means that diff returns nothing to manage
+
+        List<String> gitElements;
+        if (tags) {
+            gitElements = Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
+                .stream()
+                .map(l -> l.trim().replace("origin/", ""))
+                .filter(t -> t.startsWith("tags"))
+                .map(l -> l.replace("tags/", ""))
+                .filter(l -> !l.equalsIgnoreCase("trunk"))
+                .collect(Collectors.toList());
+        } else {
+            gitElements = Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
+                .stream()
+                .map(l -> l.trim().replace("origin/", ""))
+                .filter(l -> !l.startsWith("tags/"))
+                .filter(l -> !l.equalsIgnoreCase("trunk"))
+                .collect(Collectors.toList());
         }
 
+        // List svn branch
+        String svnUrl = workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl());
+        String svnBranchList = format("svn ls %s%s/%s/%s > %s", svnUrl, workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), tags ? "tags" : "branches", SVN_LIST);
+        execCommand(workUnit.directory, svnBranchList);
+
+        List<String> svnElements = Files.readAllLines(Paths.get(workUnit.directory, SVN_LIST))
+            .stream()
+            .map(l -> l.trim().replace("/", ""))
+            .collect(Collectors.toList());
+
+        // Diff git & svn branches
+        gitElements.removeAll(svnElements);
+
         // Remove none git branches
-        Path oldBranchFile = Paths.get(workUnit.directory, DIFF_LIST);
-        try (Stream<String> lines = Files.lines(oldBranchFile)) {
-            lines.forEach(line -> {
-                try {
-                    String cleanCmd = format("git branch -d -r origin/%s",
-                        format("%s%s", tags ? "tags/" : "", line));
-                    execCommand(workUnit.directory, cleanCmd);
-                    cleanCmd = format("rm -rf .git/svn/refs/remotes/origin/%s",
-                        format("%s%s", tags ? "tags/" : "", line));
-                    execCommand(workUnit.directory, cleanCmd);
-                } catch (IOException | InterruptedException ex) {
-                    LOG.error("Cannot remove : " + line);
-                    withWarning.set(true);
-                    failedBranches.add(line);
-                }
-            });
-        }
+        gitElements.stream().forEach(line -> {
+            try {
+                String cleanCmd = format("git branch -d -r origin/%s", format("%s%s", tags ? "tags/" : "", line));
+                execCommand(workUnit.directory, cleanCmd);
+                cleanCmd = format("rm -rf .git/svn/refs/remotes/origin/%s", format("%s%s", tags ? "tags/" : "", line));
+                execCommand(workUnit.directory, cleanCmd);
+            } catch (IOException | InterruptedException ex) {
+                LOG.error("Cannot remove : " + line);
+                withWarning.set(true);
+                failedBranches.add(line);
+            }
+        });
 
         // Cleaning temp files
         Path fileToDeletePath = Paths.get(workUnit.directory, GIT_LIST);
         Files.delete(fileToDeletePath);
         fileToDeletePath = Paths.get(workUnit.directory, SVN_LIST);
-        Files.delete(fileToDeletePath);
-        fileToDeletePath = Paths.get(workUnit.directory, DIFF_LIST);
         Files.delete(fileToDeletePath);
 
         return Pair.of(withWarning, failedBranches);

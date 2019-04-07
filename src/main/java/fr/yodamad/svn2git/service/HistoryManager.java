@@ -71,4 +71,11 @@ public class HistoryManager {
         return migration;
     }
 
+    /**
+     * Force flush for summary
+     */
+    public void forceFlush() {
+        migrationHistoryRepository.flush();
+        migrationRepository.flush();
+    }
 }

@@ -204,11 +204,14 @@ public class MigrationManager {
                             try { FileUtils.forceDelete(f);
                             } catch (IOException e) { e.printStackTrace(); }
                         });
-                    gitCommand = "git commit -am \"Clean master not migrated to add futur REAMDE.md\"";
+                    gitCommand = "git commit -am \"Clean master not migrated to add future REAMDE.md\"";
                     execCommand(workUnit.directory, gitCommand);
                 }
 
                 historyMgr.endStep(history, StatusEnum.DONE, null);
+
+                historyMgr.forceFlush();
+
                 String content = MarkdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.getId()));
                 Files.write(Paths.get(workUnit.directory, "README.md"), content.getBytes());
                 gitCommand = "git add README.md";

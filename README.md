@@ -2,6 +2,6 @@
 
 This application helps you to migrate from SVN to Gitlab.
 
-This application was generated using JHipster 5.4.2, you can find documentation and help at [jhipster](https://www.jhipster.tech/documentation-archive/v5.4.2).
+This application was generated using JHipster (5.4.2), you can find documentation and help at [jhipster](https://www.jhipster.tech/documentation-archive/v5.4.2).
 
 All documentation can be find in [wiki](https://github.com/yodamad/svn2git/wiki) section 

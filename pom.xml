@@ -4,7 +4,7 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>1.17</version>
+    <version>1.17.1</version>
     <packaging>war</packaging>
     <name>Svn 2 GitLab</name>
 
@@ -331,13 +331,11 @@
         </dependency>
         <dependency>
             <groupId>com.madgag</groupId>
-            <artifactId>bfg</artifactId>
-            <version>1.13.0</version>
+	    <artifactId>bfg</artifactId>
+	    <version>custom</version>
+	    <systemPath>${project.basedir}/external/bfg-custom.jar</systemPath>
+	    <scope>system</scope>
             <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-library</artifactId>
@@ -573,6 +571,7 @@
                     <mainClass>${start-class}</mainClass>
                     <executable>true</executable>
                     <fork>true</fork>
+					<includeSystemScope>true</includeSystemScope>
                     <!--
                     Enable the line below to have remote debugging of your application on port 5005
                     <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments>
@@ -751,9 +750,6 @@
                                     <includes>
                                         <include>WEB-INF/**</include>
                                     </includes>
-									<excludes>
-										<exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
-									</excludes>
                                 </resource>
                             </webResources>
                         </configuration>
@@ -800,9 +796,6 @@
                                     <includes>
                                         <include>WEB-INF/**</include>
                                     </includes>
-									<excludes>
-										<exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
-									</excludes>
                                 </resource>
                             </webResources>
                         </configuration>
@@ -852,9 +845,6 @@
                                     <includes>
                                         <include>WEB-INF/**</include>
                                     </includes>
-									<excludes>
-										<exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
-									</excludes>
                                 </resource>
                             </webResources>
                         </configuration>

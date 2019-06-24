@@ -53,6 +53,12 @@ public class GitlabResource {
     @Timed
     public ResponseEntity<Boolean> checkUser(@PathVariable("username") String userName, @RequestBody GitlabInfo gitlabInfo) {
         Optional<User> user = overrideGitlab(gitlabInfo).userApi().getOptionalUser(userName);
+        GitLabApiException exception = GitLabApi.getOptionalException(user);
+
+        if (exception != null) {
+            LOG.error("Fail to access gitlab", exception.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
 
         if (user.isPresent()) {
             return ResponseEntity.ok()

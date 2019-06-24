@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.*;
 import static fr.yodamad.svn2git.service.util.Shell.execCommand;
+import static fr.yodamad.svn2git.service.util.Shell.isWindows;
 import static java.lang.String.format;
 import static java.nio.file.Files.walk;
 
@@ -173,7 +174,7 @@ public class GitManager {
      */
     private static String initCommand(WorkUnit workUnit, String username, String secret) {
         return format("%s git svn clone %s %s %s %s %s/%s",
-            StringUtils.isEmpty(secret) ? "" : format("echo %s |", secret),
+            StringUtils.isEmpty(secret) ? "" : isWindows ? format("echo(%s|", secret) : format("echo %s |", secret),
             StringUtils.isEmpty(username) ? "" : format("--username %s", username),
             workUnit.migration.getTrunk() == null ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),

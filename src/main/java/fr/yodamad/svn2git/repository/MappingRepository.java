@@ -14,5 +14,7 @@ import java.util.List;
 @Repository
 public interface MappingRepository extends JpaRepository<Mapping, Long> {
 
-    List<Mapping> findAllByMigration(Long migrationId);
+    List<Mapping> findByMigration(Long migrationId);
+
+    List<Mapping> findByMigrationAndSvnDirectoryDelete(Long migrationId, Boolean svnDirectoryDelete);
 }

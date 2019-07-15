@@ -113,6 +113,7 @@ public class Migration implements Serializable {
     private String branchesToMigrate;
 
     @OneToMany(mappedBy = "migration")
+    @OrderBy("id ASC")
     private Set<MigrationHistory> histories = new HashSet<>();
     @OneToMany(mappedBy = "migration")
     private Set<Mapping> mappings = new HashSet<>();

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
 import static fr.yodamad.svn2git.service.util.MigrationConstants.MASTER;
@@ -50,19 +52,23 @@ public class MigrationManager {
     private final MigrationHistoryRepository migrationHistoryRepository;
     // Configuration
     private final ApplicationProperties applicationProperties;
+    // MarkdownGenerator
+    private final MarkdownGenerator markdownGenerator;
 
     public MigrationManager(final Cleaner cleaner,
                             final GitManager gitManager,
                             final HistoryManager historyManager,
                             final MigrationRepository migrationRepository,
                             final MigrationHistoryRepository migrationHistoryRepository,
-                            final ApplicationProperties applicationProperties) {
+                            final ApplicationProperties applicationProperties,
+                            final MarkdownGenerator markdownGenerator) {
         this.cleaner = cleaner;
         this.gitManager = gitManager;
         this.historyMgr = historyManager;
         this.migrationRepository = migrationRepository;
         this.migrationHistoryRepository = migrationHistoryRepository;
         this.applicationProperties = applicationProperties;
+        this.markdownGenerator = markdownGenerator;
     }
 
     /**
@@ -101,8 +107,33 @@ public class MigrationManager {
             // 2. Checkout empty repository : OK
             String svn = initDirectory(workUnit);
 
+            // 2.1 Avoid implicit git gc that may trigger error: fatal: gc is already running on machine '<servername>' pid 124077 (use --force if not)
+            //     Note: Git GC will be triggered following git svn clone (on large projects) which causes a crash in following steps.
+            history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CONFIG_GLOBAL_GC_AUTO_OFF, "Assure Git Garbage Collection doesn't run in background to avoid conflicts.");
+            gitCommand = "git config --global gc.auto 0";
+            execCommand(workUnit.directory, gitCommand);
+            historyMgr.endStep(history, StatusEnum.DONE, null);
+
+            // Log all git config before
+            logGitConfig(workUnit);
+
             // 2.2. SVN checkout
             gitManager.gitSvnClone(workUnit);
+
+            // Apply dynamic local configuration
+            applicationProperties.
+                getGitlab().
+                getDynamicLocalConfig().
+                stream().
+                map(s -> s.split(",")).
+                collect(Collectors.toMap(a -> a[0].trim(), a -> a[1].trim())).
+                forEach((key, value) -> {
+                    try {
+                        addDynamicLocalConfig(workUnit, key, value);
+                    } catch (IOException | InterruptedException e) {
+                        LOG.error("Failed to apply dynamic configuration", e);
+                    }
+                });
 
             // 2.3. Remove phantom branches
             if (migration.getBranches() != null) {
@@ -129,10 +160,16 @@ public class MigrationManager {
             }
 
             // 3. Clean files
+            // 3.1 List files to remove. uploads binaries to Artifactory.
+            cleaner.listCleanedFiles(workUnit);
+
+            // 3.2 Remove
+            boolean cleanFolderWithBFG = cleaner.cleanFolderWithBFG(workUnit);
             boolean cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit);
             boolean cleanLargeFiles = cleaner.cleanLargeFiles(workUnit);
 
-            if (cleanExtensions || cleanLargeFiles) {
+
+            if (cleanExtensions || cleanLargeFiles || cleanFolderWithBFG) {
                 gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
                 execCommand(workUnit.directory, gitCommand);
                 gitCommand = "git reset HEAD";
@@ -173,7 +210,7 @@ public class MigrationManager {
             }
 
             // 6. List branches & tags
-            List<String> remotes = GitManager.branchList(workUnit.directory);
+            List<String> remotes = GitManager.listRemotes(workUnit.directory);
             // Extract branches
             if (!StringUtils.isEmpty(migration.getBranches()) && migration.getBranches().equals("*")) {
                 gitManager.manageBranches(workUnit, remotes);
@@ -202,7 +239,7 @@ public class MigrationManager {
                         .filter(f -> !f.getName().equalsIgnoreCase(".git"))
                         .forEach(f -> {
                             try { FileUtils.forceDelete(f);
-                            } catch (IOException e) { e.printStackTrace(); }
+                            } catch (IOException e) { LOG.error("Failed to delete", e); }
                         });
                     gitCommand = "git commit -am \"Clean master not migrated to add future REAMDE.md\"";
                     execCommand(workUnit.directory, gitCommand);
@@ -212,7 +249,7 @@ public class MigrationManager {
 
                 historyMgr.forceFlush();
 
-                String content = MarkdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.getId()));
+                String content = markdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.getId()));
                 Files.write(Paths.get(workUnit.directory, "README.md"), content.getBytes());
                 gitCommand = "git add README.md";
                 execCommand(workUnit.directory, gitCommand);
@@ -232,6 +269,10 @@ public class MigrationManager {
                 migration.setStatus(StatusEnum.DONE);
             }
             migrationRepository.save(migration);
+
+            // Log all git config after operations
+            logGitConfig(workUnit);
+
         } catch (Throwable exc) {
             history = migrationHistoryRepository.findFirstByMigration_IdOrderByIdDesc(migrationId);
             if (history != null) {
@@ -242,15 +283,62 @@ public class MigrationManager {
             migration.setStatus(StatusEnum.FAILED);
             migrationRepository.save(migration);
         } finally {
-            // 7. Clean work directory
-            history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));
-            try {
-                FileUtils.deleteDirectory(new File(workUnit.root));
-                historyMgr.endStep(history, StatusEnum.DONE, null);
-            } catch (Exception exc) {
-                historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+
+            if (applicationProperties.getFlags().getCleanupWorkDirectory()) {
+                // 7. Clean work directory
+                history = historyMgr.startStep(migration, StepEnum.CLEANING, format("Remove %s", workUnit.root));
+                try {
+                    FileSystemUtils.deleteRecursively(new File(workUnit.root));
+                    historyMgr.endStep(history, StatusEnum.DONE, null);
+                } catch (Exception exc) {
+                    LOG.error("Failed deleteDirectory: ", exc);
+                    historyMgr.endStep(history, StatusEnum.FAILED, exc.getMessage());
+                }
+            } else {
+                LOG.info("Not cleaning up working directory");
             }
         }
+    }
+
+    private void logGitConfig(WorkUnit workUnit) throws IOException, InterruptedException {
+
+        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_SHOW_CONFIG, "Log Git Config and origin of config.");
+        String gitCommand = "git config --list --show-origin";
+        execCommand(workUnit.directory, gitCommand);
+        historyMgr.endStep(history, StatusEnum.DONE, null);
+    }
+
+    private void addDynamicLocalConfig(WorkUnit workUnit, String dynamicLocalConfig, String dynamicLocalConfigDesc) throws IOException, InterruptedException {
+
+        if (StringUtils.isNotEmpty(dynamicLocalConfig) && StringUtils.isNotEmpty(dynamicLocalConfigDesc)) {
+
+            String[] configParts = dynamicLocalConfig.split(" ");
+
+            if (configParts.length == 2) {
+
+                MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_DYNAMIC_LOCAL_CONFIG, dynamicLocalConfigDesc);
+
+                LOG.info("Setting Git Config");
+                // apply new local config
+                String gitCommand = "git config " + dynamicLocalConfig;
+                execCommand(workUnit.directory, gitCommand);
+
+                //display value after
+                LOG.info("Checking Git Config");
+                gitCommand = "git config " + configParts[0];
+                execCommand(workUnit.directory, gitCommand);
+
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+
+            } else {
+                LOG.warn("Problem applying dynamic git local configuration!!!");
+            }
+
+        } else {
+            LOG.warn("Problem applying dynamic git local configuration!!!");
+        }
+
+
     }
 
     /**

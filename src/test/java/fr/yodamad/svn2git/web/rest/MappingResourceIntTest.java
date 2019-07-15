@@ -1,12 +1,10 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +45,9 @@ public class MappingResourceIntTest {
 
     private static final String DEFAULT_GIT_DIRECTORY = "AAAAAAAAAA";
     private static final String UPDATED_GIT_DIRECTORY = "BBBBBBBBBB";
+
+    private static final Boolean DEFAULT_SVN_DIRECTORY_DELETE = false;
+    private static final Boolean UPDATED_SVN_DIRECTORY_DELETE = true;
 
     @Autowired
     private MappingRepository mappingRepository;
@@ -92,7 +92,8 @@ public class MappingResourceIntTest {
         Mapping mapping = new Mapping()
             .svnDirectory(DEFAULT_SVN_DIRECTORY)
             .regex(DEFAULT_REGEX)
-            .gitDirectory(DEFAULT_GIT_DIRECTORY);
+            .gitDirectory(DEFAULT_GIT_DIRECTORY)
+            .svnDirectoryDelete(DEFAULT_SVN_DIRECTORY_DELETE);
         return mapping;
     }
 
@@ -119,6 +120,7 @@ public class MappingResourceIntTest {
         assertThat(testMapping.getSvnDirectory()).isEqualTo(DEFAULT_SVN_DIRECTORY);
         assertThat(testMapping.getRegex()).isEqualTo(DEFAULT_REGEX);
         assertThat(testMapping.getGitDirectory()).isEqualTo(DEFAULT_GIT_DIRECTORY);
+        assertThat(testMapping.isSvnDirectoryDelete()).isEqualTo(DEFAULT_SVN_DIRECTORY_DELETE);
     }
 
     @Test
@@ -153,7 +155,8 @@ public class MappingResourceIntTest {
             .andExpect(jsonPath("$.[*].id").value(hasItem(mapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnDirectory").value(hasItem(DEFAULT_SVN_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].regex").value(hasItem(DEFAULT_REGEX.toString())))
-            .andExpect(jsonPath("$.[*].gitDirectory").value(hasItem(DEFAULT_GIT_DIRECTORY.toString())));
+            .andExpect(jsonPath("$.[*].gitDirectory").value(hasItem(DEFAULT_GIT_DIRECTORY.toString())))
+            .andExpect(jsonPath("$.[*].svnDirectoryDelete").value(hasItem(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue())));
     }
     
     @Test
@@ -169,7 +172,8 @@ public class MappingResourceIntTest {
             .andExpect(jsonPath("$.id").value(mapping.getId().intValue()))
             .andExpect(jsonPath("$.svnDirectory").value(DEFAULT_SVN_DIRECTORY.toString()))
             .andExpect(jsonPath("$.regex").value(DEFAULT_REGEX.toString()))
-            .andExpect(jsonPath("$.gitDirectory").value(DEFAULT_GIT_DIRECTORY.toString()));
+            .andExpect(jsonPath("$.gitDirectory").value(DEFAULT_GIT_DIRECTORY.toString()))
+            .andExpect(jsonPath("$.svnDirectoryDelete").value(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue()));
     }
 
     @Test
@@ -195,7 +199,8 @@ public class MappingResourceIntTest {
         updatedMapping
             .svnDirectory(UPDATED_SVN_DIRECTORY)
             .regex(UPDATED_REGEX)
-            .gitDirectory(UPDATED_GIT_DIRECTORY);
+            .gitDirectory(UPDATED_GIT_DIRECTORY)
+            .svnDirectoryDelete(UPDATED_SVN_DIRECTORY_DELETE);
 
         restMappingMockMvc.perform(put("/api/mappings")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
@@ -209,6 +214,7 @@ public class MappingResourceIntTest {
         assertThat(testMapping.getSvnDirectory()).isEqualTo(UPDATED_SVN_DIRECTORY);
         assertThat(testMapping.getRegex()).isEqualTo(UPDATED_REGEX);
         assertThat(testMapping.getGitDirectory()).isEqualTo(UPDATED_GIT_DIRECTORY);
+        assertThat(testMapping.isSvnDirectoryDelete()).isEqualTo(UPDATED_SVN_DIRECTORY_DELETE);
     }
 
     @Test

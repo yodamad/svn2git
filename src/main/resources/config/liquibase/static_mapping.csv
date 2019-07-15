@@ -1,0 +1,15 @@
+svn_directory;regex;git_directory;svn_directory_delete
+00_projects;*;documentation/;false
+01_plans;*;documentation/;false
+02_studies;*;documentation/;false
+03_req;*;documentation/;false
+04_design;*;documentation/;false
+05_impl/0_src;*;.;false
+05_impl/1_bin;*;archive/05_impl/1_bin/;false
+05_impl/3_test;*;ci/test/;false
+05_impl/4_ci;*;ci/;false
+05_impl/5_scripts;*;scripts/;false
+05_impl/2_tools;*;tools/;false
+06_test;*;documentation/test/;false
+07_bookshelf;*;documentation/;false
+08_history;;;true

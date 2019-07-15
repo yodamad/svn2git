@@ -14,6 +14,7 @@ import org.gitlab4j.api.models.User;
 import org.gitlab4j.api.models.Visibility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,18 +35,25 @@ public class GitlabResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(GitlabResource.class);
 
-    /** Gitlab API wrapper. */
-    private final GitlabAdmin gitlabAdmin;
+    /**
+     * Get freshinstance of GitlabAdmin object when called.
+     *
+     * @return GitlabAdmin
+     */
+    @Lookup
+    public GitlabAdmin getGitlabAdminPrototype() {
+        return null;
+    }
+
     private final ApplicationProperties applicationProperties;
 
-    public GitlabResource(GitlabAdmin gitlabAdmin,
-                          ApplicationProperties applicationProperties) {
-        this.gitlabAdmin = gitlabAdmin;
+    public GitlabResource(ApplicationProperties applicationProperties) {
         this.applicationProperties = applicationProperties;
     }
 
     /**
      * Check if a user exists on Gitlab
+     *
      * @param userName User ID search
      * @return if user found
      */
@@ -70,6 +78,7 @@ public class GitlabResource {
 
     /**
      * Check if a group exists on Gitlab
+     *
      * @param groupName Group name search
      * @return if group found
      */
@@ -89,6 +98,7 @@ public class GitlabResource {
 
     /**
      * Creates a group on Gitlab
+     *
      * @param groupName Group name to create
      * @return
      */
@@ -110,35 +120,58 @@ public class GitlabResource {
 
     /**
      * Override Gitlab default configuration if necessary
+     *
      * @param gitlabInfo Received gitlab info
      * @return
      */
     private GitlabAdmin overrideGitlab(GitlabInfo gitlabInfo) {
-        GitlabAdmin gitlab = gitlabAdmin;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)
-            || !StringUtils.isEmpty(gitlabInfo.token)) {
-            gitlabAdmin.setGitLabApi(new GitLabApi(gitlabInfo.url, gitlabInfo.token));
+
+        GitlabAdmin gitlabAdmin = getGitlabAdminPrototype();
+
+        // If gitlabInfo.token is empty assure using values found in application.yml.
+        // i.e. those in default GitlabAdmin object
+        if (StringUtils.isEmpty(gitlabInfo.token)) {
+
+            LOG.info("Already using default url and token");
+
+        } else {
+
+            // If gitlabInfo.token has a value we overide as appropriate
+            if (!gitlabAdmin.api().getGitLabServerUrl().equalsIgnoreCase(gitlabInfo.url) ||
+                !gitlabAdmin.api().getAuthToken().equalsIgnoreCase(gitlabInfo.token)) {
+
+                LOG.info("Overiding gitlab url and token");
+                gitlabAdmin.setGitLabApi(new GitLabApi(gitlabInfo.url, gitlabInfo.token));
+
+            }
         }
-        return gitlab;
+
+        return gitlabAdmin;
     }
 
     /**
      * Remove an existing group
+     *
      * @param migration Migration containing group information
      * @throws GitLabApiException Problem when removing
      */
     public void removeGroup(Migration migration) throws GitLabApiException {
+
+        //Get default GitlabAdmin object
+        GitlabAdmin gitlabAdmin = getGitlabAdminPrototype();
+
         try {
             String[] elements = migration.getSvnProject().split("/");
             StringBuffer namespace = new StringBuffer(migration.getGitlabGroup());
             IntStream.range(1, elements.length)
                 .forEach(i -> namespace.append(String.format("/%s", elements[i])));
-            List<Project> projects = gitlabAdmin.projectApi().getProjects(elements[elements.length-1]);
+            List<Project> projects = gitlabAdmin.projectApi().getProjects(elements[elements.length - 1]);
             Project project = projects.stream().filter(p -> p.getPathWithNamespace().equalsIgnoreCase(namespace.toString())).findFirst().get();
             gitlabAdmin.projectApi().deleteProject(project);
             // Waiting for gitlab to delete it completely
-            LocalDateTime maxAge =  LocalDateTime.now().plus(applicationProperties.gitlab.wait, ChronoUnit.SECONDS);
-            while(gitlabAdmin.projectApi().getProject(project.getId()) != null || maxAge.isAfter( LocalDateTime.now())) {}
+            LocalDateTime maxAge = LocalDateTime.now().plus(applicationProperties.gitlab.wait, ChronoUnit.SECONDS);
+            while (gitlabAdmin.projectApi().getProject(project.getId()) != null || maxAge.isAfter(LocalDateTime.now())) {
+            }
         } catch (GitLabApiException apiEx) {
             if (apiEx.getReason().equalsIgnoreCase("Not Found")) {
                 // Project already deleted

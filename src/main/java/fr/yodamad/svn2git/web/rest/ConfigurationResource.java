@@ -84,11 +84,25 @@ public class ConfigurationResource {
             .body(applicationProperties.override.mappings);
     }
 
+    /**
+     * @return Flag to drop project on retry
+     */
     @Timed
     @GetMapping("flags/projectCleaningOption")
     public ResponseEntity<Boolean> getProjectCleaningOption() {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.flags.projectCleaningOption);
+    }
+
+    /**
+     * @return Flag to authorize or not dynamic Gitlab project creation
+     */
+    @Timed
+    @GetMapping("flags/gitlabGroupCreationOption")
+    public ResponseEntity<Boolean> getGitlabGroupCreationOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(applicationProperties.flags.gitlabGroupCreationOption);
     }
 }

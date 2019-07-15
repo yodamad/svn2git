@@ -335,10 +335,10 @@
         </dependency>
         <dependency>
             <groupId>com.madgag</groupId>
-	    <artifactId>bfg</artifactId>
-	    <version>custom</version>
-	    <systemPath>${project.basedir}/external/bfg-custom.jar</systemPath>
-	    <scope>system</scope>
+            <artifactId>bfg</artifactId>
+            <version>custom</version>
+            <systemPath>${project.basedir}/external/bfg-custom.jar</systemPath>
+            <scope>system</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>

@@ -14,6 +14,7 @@ import fr.yodamad.svn2git.service.util.ZipUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +60,7 @@ public class Cleaner {
     private final ArtifactoryAdmin artifactoryAdmin;
 
     public Cleaner(final HistoryManager historyManager, final MigrationRemovedFileRepository repository,
-                   final ApplicationProperties applicationProperties, final ArtifactoryAdmin artifactoryAdmin) {
+                   final ApplicationProperties applicationProperties, @Autowired(required = false) final ArtifactoryAdmin artifactoryAdmin) {
         this.historyMgr = historyManager;
         this.mrfRepo = repository;
         this.artifactory = applicationProperties.artifactory;

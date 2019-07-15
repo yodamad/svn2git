@@ -5,6 +5,7 @@ import org.jfrog.artifactory.client.Artifactory;
 import org.jfrog.artifactory.client.ArtifactoryClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -13,6 +14,10 @@ import java.io.File;
  * Artifactory administration tool to interact with the tool
  */
 @Component
+@ConditionalOnProperty(
+    value="application.artifactory.enabled",
+    havingValue = "true",
+    matchIfMissing = false)
 public class ArtifactoryAdmin {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArtifactoryAdmin.class);

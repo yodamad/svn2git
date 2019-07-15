@@ -132,9 +132,10 @@ public class MigrationResource {
     private Migration init(Migration migration) {
         Migration result = migrationRepository.save(migration);
 
+        // Save any mapping where git directory is not empty Or is flagged for svnDirectoryDelete
         if (migration.getMappings() != null && !migration.getMappings().isEmpty()) {
             migration.getMappings().stream()
-                .filter(mp -> !StringUtils.isEmpty(mp.getGitDirectory()))
+                .filter(mp -> (!mp.isSvnDirectoryDelete() && !StringUtils.isEmpty(mp.getGitDirectory())) || mp.isSvnDirectoryDelete())
                 .forEach(mapping -> {
                     // Remove ID from static mapping
                     mapping.setId(0L);
@@ -230,7 +231,7 @@ public class MigrationResource {
 
     /**
      * GET  /migrations/:id : get the "id" migration.
-     *'
+     *
      * @param id the id of the migration to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the migration, or with status 404 (Not Found)
      */

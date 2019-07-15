@@ -126,7 +126,7 @@ application:
         skipMvOnError: false
         preserveEmptyDirs: false
     artifactory:
-        enabled: true
+        enabled: false
         url: http://localhost:8081/artifactory
         user: admin
         password: TO_REPLACE

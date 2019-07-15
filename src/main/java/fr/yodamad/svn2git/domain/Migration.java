@@ -104,6 +104,14 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private String svnHistory;
 
+    @Column(name = "tags_to_migrate")
+    @JsonView(View.Public.class)
+    private String tagsToMigrate;
+
+    @Column(name = "branches_to_migrate")
+    @JsonView(View.Public.class)
+    private String branchesToMigrate;
+
     @OneToMany(mappedBy = "migration")
     private Set<MigrationHistory> histories = new HashSet<>();
     @OneToMany(mappedBy = "migration")
@@ -351,6 +359,32 @@ public class Migration implements Serializable {
         this.svnHistory = svnHistory;
     }
 
+    public String getTagsToMigrate() {
+        return tagsToMigrate;
+    }
+
+    public Migration tagsToMigrate(String tagsToMigrate) {
+        this.tagsToMigrate = tagsToMigrate;
+        return this;
+    }
+
+    public void setTagsToMigrate(String tagsToMigrate) {
+        this.tagsToMigrate = tagsToMigrate;
+    }
+
+    public String getBranchesToMigrate() {
+        return branchesToMigrate;
+    }
+
+    public Migration branchesToMigrate(String branchesToMigrate) {
+        this.branchesToMigrate = branchesToMigrate;
+        return this;
+    }
+
+    public void setBranchesToMigrate(String branchesToMigrate) {
+        this.branchesToMigrate = branchesToMigrate;
+    }
+
     public Set<MigrationHistory> getHistories() {
         return histories;
     }
@@ -442,6 +476,8 @@ public class Migration implements Serializable {
             ", branches='" + getBranches() + "'" +
             ", tags='" + getTags() + "'" +
             ", svnHistory='" + getSvnHistory() + "'" +
+            ", tagsToMigrate='" + getTagsToMigrate() + "'" +
+            ", branchesToMigrate='" + getBranchesToMigrate() + "'" +
             "}";
     }
 }

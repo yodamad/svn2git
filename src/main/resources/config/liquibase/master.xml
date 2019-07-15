@@ -10,8 +10,16 @@
     <include file="config/liquibase/changelog/20181109153011_added_entity_Mapping.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20181109211009_added_entity_StaticMapping.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20190206173520_added_entity_StaticExtension.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190625124859_added_entity_MigrationRemovedFile.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20181024090448_added_entity_constraints_MigrationHistory.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190625124859_added_entity_constraints_MigrationRemovedFile.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <include file="config/liquibase/changelog/20190304092800_update_MigrationHistory_constraint.xml" relativeToChangelogFile="false"/>
+
+    <include file="config/liquibase/changelog/2019061712000000_AddColSvnDirectoryDelete.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2019061712000000_updatenulls_Mapping_StaticMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2019061812000000_loaddata_StaticExtension.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2019061812000000_loaddata_StaticMapping.xml" relativeToChangelogFile="false"/>
+
 </databaseChangeLog>

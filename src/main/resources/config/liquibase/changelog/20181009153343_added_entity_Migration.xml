@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <databaseChangeLog
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd
-                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
     <property name="now" value="now()" dbms="h2"/>
 
@@ -91,6 +89,14 @@
             </column>
 
             <column name="svn_history" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tags_to_migrate" type="varchar(1024)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="branches_to_migrate" type="varchar(1024)">
                 <constraints nullable="true" />
             </column>
 

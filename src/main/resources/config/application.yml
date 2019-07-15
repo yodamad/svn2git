@@ -118,13 +118,36 @@ application:
         directory: /tmp/svn2git
         maxSvnLevel: 3
     flags:
-        projectCleaningOption: true
+        projectCleaningOption: false
+        gitlabGroupCreationOption: false
+        cleanup-work-directory: true
+    git:
+        forceMvOnError: true
+        skipMvOnError: false
+        preserveEmptyDirs: false
+    artifactory:
+        enabled: true
+        url: http://localhost:8081/artifactory
+        user: admin
+        password: TO_REPLACE
+        repository: libs-release-svn2git-local
+        groupIdPrefix: com.michelin
+        binariesDirectory: 05_impl\1_bin
+        # Attention any folder called this will be deleted wherever it is. Leave blank if not used. Done before Mappings (unfortunately)
+        # Can be coomma separated list
+        deleteFolderWithBFG:
     gitlab:
         url: http://localhost/
-        account: mvt
-        token: kYXpL6Mau5SQhFhTPD4J
+        account: TO_REPLACE
+        token: TO_REPLACE
         credentials: optional
         wait: 15
+        dynamic-local-config[0]: pack.deltaCacheSize 256m,Limiting deltaCacheSize to 256m (default)
+        dynamic-local-config[1]: pack.windowMemory 512m,Limiting window memory size to 512m
+#        dynamic-local-config[2]: pack.threads 1,Limiting number of threads to 1
+#        dynamic-local-config[3]: pack.packSizeLimit 128m,Limiting packSizeLimit to 128m
+#        dynamic-local-config[4]: core.packedGitLimit 128m,Limiting packedGitLimit to 128m
+#        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
     svn:
         url: svn://localhost/
         user:

@@ -1,7 +1,9 @@
 package fr.yodamad.svn2git.domain;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * SVN repository structure (only modules)
@@ -35,6 +37,8 @@ public class SvnStructure {
      */
     public static class SvnModule extends SvnStructure {
 
+        /** Used to trace if trunk, branches, tags associated with the module **/
+        public Set<String> layoutElements = new LinkedHashSet<>();
         /** Path in repository. */
         public String path;
         /** Potential submodules. */

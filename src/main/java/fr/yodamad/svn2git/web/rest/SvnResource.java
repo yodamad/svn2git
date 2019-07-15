@@ -136,6 +136,11 @@ public class SvnResource {
                     modules.add(new SvnStructure.SvnModule(name, module.path));
                 }
             }
+
+            if (module != null && name != null && !name.isEmpty() && KEYWORDS.contains(name)) {
+                log.info(format("Module %s with layout %s", module.name, name));
+                module.layoutElements.add(name);
+            }
         });
         try {
             list.run();

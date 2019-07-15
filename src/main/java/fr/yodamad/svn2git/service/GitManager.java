@@ -20,6 +20,7 @@ import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Visibility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -32,10 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +42,6 @@ import java.util.stream.Stream;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.*;
 import static fr.yodamad.svn2git.service.util.Shell.execCommand;
-import static fr.yodamad.svn2git.service.util.Shell.isWindows;
 import static java.lang.String.format;
 import static java.nio.file.Files.walk;
 
@@ -57,20 +54,28 @@ public class GitManager {
     private static final Logger LOG = LoggerFactory.getLogger(GitManager.class);
     private static final String FAILED_TO_PUSH_BRANCH = "Failed to push branch";
 
-    private GitlabAdmin gitlab;
+    /**
+     * Get freshinstance of GitlabAdmin object when called.
+     *
+     * @return GitlabAdmin
+     */
+    @Lookup
+    public GitlabAdmin getGitlabAdminPrototype() {
+        return null;
+    }
+
+
     // Manager & repository
     private final HistoryManager historyMgr;
     private final MappingRepository mappingRepository;
-    private final ApplicationProperties applicationProperties;
+    private static ApplicationProperties applicationProperties;
 
-    public GitManager(final GitlabAdmin gitlab,
-                      final HistoryManager historyManager,
+    public GitManager(final HistoryManager historyManager,
                       final MappingRepository mappingRepository,
                       final ApplicationProperties applicationProperties) {
-        this.gitlab = gitlab;
         this.historyMgr = historyManager;
         this.mappingRepository = mappingRepository;
-        this.applicationProperties = applicationProperties;
+        GitManager.applicationProperties = applicationProperties;
     }
 
     /**
@@ -81,12 +86,23 @@ public class GitManager {
     public String createGitlabProject(Migration migration) throws GitLabApiException {
         MigrationHistory history = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.getGitlabUrl() + migration.getGitlabGroup());
 
-        GitlabAdmin gitlabAdmin = gitlab;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(migration.getGitlabUrl())
-            || !StringUtils.isEmpty(migration.getGitlabToken())) {
-            GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
-            gitlabAdmin.setGitLabApi(api);
+
+        GitlabAdmin gitlabAdmin = getGitlabAdminPrototype();
+
+        // If gitlabInfo.token is empty assure using values found in application.yml.
+        // i.e. those in default GitlabAdmin object
+        if (StringUtils.isEmpty(migration.getGitlabToken())) {
+            LOG.info("Already using default url and token");
+        } else {
+            // If gitlabInfo.token has a value we overide as appropriate
+            if (!gitlabAdmin.api().getGitLabServerUrl().equalsIgnoreCase(migration.getGitlabUrl()) ||
+                !gitlabAdmin.api().getAuthToken().equalsIgnoreCase(migration.getGitlabToken())) {
+
+                LOG.info("Overiding gitlab url and token");
+                gitlabAdmin.setGitLabApi(new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken()));
+            }
         }
+
         try {
             Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
 
@@ -172,15 +188,189 @@ public class GitManager {
      * @param secret Escaped password
      * @return
      */
-    private static String initCommand(WorkUnit workUnit, String username, String secret) {
-        return format("%s git svn clone %s %s %s %s %s/%s",
-            StringUtils.isEmpty(secret) ? "" : isWindows ? format("echo(%s|", secret) : format("echo %s |", secret),
+    private String initCommand(WorkUnit workUnit, String username, String secret) {
+
+        // Get list of svnDirectoryDelete
+        List<String> svnDirectoryDeleteList = getSvnDirectoryDeleteList(workUnit.migration.getId());
+        // Initialise ignorePaths string that will be passed to git svn clone
+        String ignorePaths =
+            generateIgnorePaths(
+                workUnit.migration.getTrunk(),
+                workUnit.migration.getTags(),
+                workUnit.migration.getBranches(),
+                workUnit.migration.getSvnProject(),
+                svnDirectoryDeleteList);
+
+        // regex with negative look forward allows us to choose the branch and tag names to keep
+        String ignoreRefs = generateIgnoreRefs(workUnit.migration.getBranchesToMigrate(), workUnit.migration.getTagsToMigrate());
+
+        String sCommand = format("%s git svn clone %s %s %s %s %s %s %s %s%s",
+            StringUtils.isEmpty(secret) ? "" : format("echo %s |", secret),
             StringUtils.isEmpty(username) ? "" : format("--username %s", username),
             workUnit.migration.getTrunk() == null ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
             workUnit.migration.getTags() == null ? "" : format("--tags=%s/tags", workUnit.migration.getSvnProject()),
+            StringUtils.isEmpty(ignorePaths) ? "" : ignorePaths,
+            StringUtils.isEmpty(ignoreRefs) ? "" : ignoreRefs,
+            applicationProperties.getGit().isPreserveEmptyDirs() ? "--preserve-empty-dirs" : "",
             workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl()),
             workUnit.migration.getSvnGroup());
+
+        // replace any multiple whitespaces and return
+        return sCommand.replaceAll("\\s{2,}", " ").trim();
+    }
+
+    /**
+     * Generate all ignore references for git svn clone
+     * @param branchesToMigrate
+     * @param tagsToMigrate
+     * @return
+     */
+    private String generateIgnoreRefs(String branchesToMigrate, String tagsToMigrate) {
+
+        List<String> branchesToMigrateList = new ArrayList<>();
+        if (StringUtils.isNotEmpty(branchesToMigrate)) {
+            String[] branchesToMigrateArray = branchesToMigrate.split(",");
+
+            if (branchesToMigrateArray.length > 0) {
+                branchesToMigrateList = Arrays.asList(branchesToMigrateArray);
+            }
+        }
+
+        List<String> tagsToMigrateList = new ArrayList<>();
+        if (StringUtils.isNotEmpty(tagsToMigrate)) {
+            String[] tagsToMigrateArray = tagsToMigrate.split(",");
+
+            if (tagsToMigrateArray.length > 0) {
+                tagsToMigrateList = Arrays.asList(tagsToMigrateArray);
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (!branchesToMigrateList.isEmpty() || !tagsToMigrateList.isEmpty()) {
+
+            sb.append("--ignore-refs=\"^refs/remotes/origin/(?!");
+
+            // FIXME : optimize
+            Iterator<String> iter = branchesToMigrateList.iterator();
+            while (iter.hasNext()) {
+                String branch =  iter.next();
+                sb.append(branch.trim().replace(".", "\\."));
+
+                if (iter.hasNext() || !tagsToMigrateList.isEmpty()) {
+                    sb.append("|");
+                }
+            }
+
+            // FIXME : optimize
+            iter = tagsToMigrateList.iterator();
+            while (iter.hasNext()) {
+                String tag =  iter.next();
+                sb.append("tags/");
+                sb.append(tag.trim());
+
+                if (iter.hasNext()) {
+                    sb.append("|");
+                }
+            }
+            return sb.append(").*$\"").toString();
+        }
+        return "";
+    }
+
+    /**
+     * return list of svnDirectories to delete from a Set of Mappings
+     * @param migrationId
+     * @return
+     */
+    private List<String> getSvnDirectoryDeleteList(Long migrationId) {
+
+        List<Mapping> mappings = mappingRepository.findByMigrationAndSvnDirectoryDelete(migrationId, true);
+
+        List<String> svnDirectoryDeleteList = new ArrayList<>();
+
+        // FIXME : optimize
+        Iterator<Mapping> it = mappings.iterator();
+        while (it.hasNext()) {
+            Mapping mp = it.next();
+            if (mp.isSvnDirectoryDelete()) {
+                svnDirectoryDeleteList.add(mp.getSvnDirectory());
+            }
+        }
+
+        return svnDirectoryDeleteList;
+    }
+
+    /**
+     * Genereate ignored paths for git svn clone
+     * @param trunk
+     * @param tags
+     * @param branches
+     * @param svnProject
+     * @param deleteSvnFolderList
+     * @return
+     */
+    private static String generateIgnorePaths(String trunk, String tags, String branches, String svnProject, List<String> deleteSvnFolderList) {
+
+        if (deleteSvnFolderList == null || deleteSvnFolderList.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("--ignore-paths=");
+
+        // Whole expression surrounded by quotation marks
+        sb.append("\"");
+
+        // Dynamic Block SVN Paths ignored according to whether trunk, branches or tags selected
+        sb.append("^(");
+
+        if (trunk != null) {
+            sb.append(svnProject.replaceFirst("/", "/?"))
+                .append("/trunk/");
+
+            if (tags != null || branches != null) {
+                sb.append("|");
+            }
+        }
+
+        if (tags != null) {
+            sb.append(svnProject.replaceFirst("/", "/?"))
+                .append("/tags/[^/]+/");
+
+            if (branches != null) {
+                sb.append("|");
+            }
+        }
+
+        // branches regex is just like trunk in fact
+        if (branches != null) {
+            sb.append(svnProject.replaceFirst("/", "/?"))
+                .append("/branches/");
+        }
+
+        sb.append(")(");
+
+        // FIXME : optimize
+        Iterator it = deleteSvnFolderList.iterator();
+        while (it.hasNext()) {
+
+            sb.append(it.next())
+                .append("/");
+
+            if (it.hasNext()) {
+                sb.append("|");
+            }
+        }
+
+        sb.append(").*");
+
+        // END Quotation marks
+        sb.append("\"");
+
+        // NOTE : Apparently can't select to ignore-path of trunk and keep same path of tag
+        return sb.toString();
+
     }
 
     /**
@@ -190,7 +380,7 @@ public class GitManager {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static List<String> branchList(String directory) throws InterruptedException, IOException {
+    static List<String> listRemotes(String directory) throws InterruptedException, IOException {
         String command = "git branch -r";
         ProcessBuilder builder = new ProcessBuilder();
         if (Shell.isWindows) {
@@ -218,7 +408,8 @@ public class GitManager {
      * @param branch Branch to process
      */
     public boolean applyMapping(WorkUnit workUnit, String branch) {
-        List<Mapping> mappings = mappingRepository.findAllByMigration(workUnit.migration.getId());
+        // Get only the mappings (i.e. where svnDirectoryDelete is false)
+        List<Mapping> mappings = mappingRepository.findByMigrationAndSvnDirectoryDelete(workUnit.migration.getId(), false);
         boolean workDone = false;
         List<StatusEnum> results = null;
         if (!CollectionUtils.isEmpty(mappings)) {
@@ -274,7 +465,10 @@ public class GitManager {
      */
     private StatusEnum mvDirectory(WorkUnit workUnit, Mapping mapping, String branch) {
         MigrationHistory history;
-        String msg = format("git mv %s %s on %s", mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
+        String msg = format("git mv %s %s \"%s\" \"%s\" on %s",
+            (applicationProperties.getGit().forceMvOnError ? "-f" : ""),
+            (applicationProperties.getGit().skipMvOnError ? "-k" : ""),
+            mapping.getSvnDirectory(), mapping.getGitDirectory(), branch);
 
         // If git directory in mapping contains /, we need to create root directories must be manually created
         if (mapping.getGitDirectory().contains("/") && !mapping.getGitDirectory().equals("/")) {
@@ -300,9 +494,9 @@ public class GitManager {
                 boolean useGitDir = mapping.getGitDirectory().contains("/");
                 // For root directory, we need to loop for subdirectory
                 List<StatusEnum> results = files
-                    .map(d -> mv(workUnit, 
-                        format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()), 
-                        useGitDir ? mapping.getGitDirectory() : d.getFileName().toString(), 
+                    .map(d -> mv(workUnit,
+                        format("%s/%s", mapping.getSvnDirectory(), d.getFileName().toString()),
+                        useGitDir ? mapping.getGitDirectory() : d.getFileName().toString(),
                         branch, false))
                     .collect(Collectors.toList());
 
@@ -315,7 +509,7 @@ public class GitManager {
                 }
                 historyMgr.endStep(history, result, null);
                 return result;
-                
+
             } else {
                 return mv(workUnit, mapping.getSvnDirectory(), mapping.getGitDirectory(), branch, true);
             }
@@ -330,7 +524,7 @@ public class GitManager {
             return StatusEnum.IGNORED;
         }
     }
-    
+
     /**
      * Apply git mv
      * @param workUnit Current work unit
@@ -338,7 +532,10 @@ public class GitManager {
      * @param branch Current branch
      */
     private StatusEnum mvRegex(WorkUnit workUnit, Mapping mapping, String branch) {
-        String msg = format("git mv %s %s based on regex %s on %s", mapping.getSvnDirectory(), mapping.getGitDirectory(), mapping.getRegex(), branch);
+        String msg = format("git mv %s %s \"%s\" \"%s\" based on regex %s on %s",
+            (applicationProperties.getGit().forceMvOnError ? "-f" : ""),
+            (applicationProperties.getGit().skipMvOnError ? "-k" : ""),
+            mapping.getSvnDirectory(), mapping.getGitDirectory(), mapping.getRegex(), branch);
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, msg);
 
         String regex = mapping.getRegex();
@@ -366,7 +563,9 @@ public class GitManager {
                         if (!Files.exists(gitPath)) {
                             Files.createDirectories(gitPath);
                         }
-                        return execCommand(workUnit.directory, format("git mv %s %s", el, Paths.get(mapping.getGitDirectory(), el).toString()));
+                        return execCommand(workUnit.directory,
+                            format("git mv %s %s \"%s\" \"%s\"", (applicationProperties.getGit().forceMvOnError ? "-f" : ""),
+                            (applicationProperties.getGit().skipMvOnError ? "-k" : ""), el, Paths.get(mapping.getGitDirectory(), el).toString()));
                     } catch (InterruptedException | IOException e) {
                         return MigrationConstants.ERROR_CODE;
                     }
@@ -395,8 +594,15 @@ public class GitManager {
     private StatusEnum mv(WorkUnit workUnit, String svnDir, String gitDir, String branch, boolean traceStep) {
         MigrationHistory history = null;
         try {
-            String historyCommand = format("git mv %s %s on %s", svnDir, gitDir, branch);
-            String gitCommand = format("git mv %s %s", svnDir, gitDir);
+            String historyCommand = format("git mv %s %s \"%s\" \"%s\" on %s",
+                (applicationProperties.getGit().forceMvOnError ? "-f" : ""),
+                (applicationProperties.getGit().skipMvOnError ? "-k" : ""),
+                svnDir, gitDir, branch);
+
+            String gitCommand = format("git mv %s %s \"%s\" \"%s\"",
+                (applicationProperties.getGit().forceMvOnError ? "-f" : ""),
+                (applicationProperties.getGit().skipMvOnError ? "-k" : ""), svnDir, gitDir);
+
             if (traceStep) history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, historyCommand);
             // git mv
             int exitCode = execCommand(workUnit.directory, gitCommand);
@@ -416,12 +622,12 @@ public class GitManager {
     }
 
     /**
-     * Manage branches extracted from SVN
-     * @param workUnit
-     * @param remotes
+     * List only branches
+     * @param remotes Remote list
+     * @return list containing only branches
      */
-    public void manageBranches(WorkUnit workUnit, List<String> remotes) {
-        List<String> gitBranches = remotes.stream()
+    static List<String> listBranchesOnly(List<String> remotes) {
+        return remotes.stream()
             .map(String::trim)
             // Remove tags
             .filter(b -> !b.startsWith(ORIGIN_TAGS))
@@ -430,8 +636,15 @@ public class GitManager {
             .filter(b -> !b.contains("trunk"))
             .filter(b -> !b.contains("@"))
             .collect(Collectors.toList());
+    }
 
-        gitBranches.forEach(b -> {
+    /**
+     * Manage branches extracted from SVN
+     * @param workUnit
+     * @param remotes
+     */
+    void manageBranches(WorkUnit workUnit, List<String> remotes) {
+        listBranchesOnly(remotes).forEach(b -> {
                 final boolean warn = pushBranch(workUnit, b);
                 workUnit.warnings.set(workUnit.warnings.get() || warn);
             }
@@ -443,7 +656,7 @@ public class GitManager {
      * @param workUnit
      * @param branch Branch to migrate
      */
-    public boolean pushBranch(WorkUnit workUnit, String branch) throws RuntimeException {
+    boolean pushBranch(WorkUnit workUnit, String branch) throws RuntimeException {
         String branchName = branch.replaceFirst("refs/remotes/origin/", "");
         branchName = branchName.replaceFirst("origin/", "");
         LOG.debug(format("Branch %s", branchName));
@@ -477,20 +690,27 @@ public class GitManager {
     }
 
     /**
-     * Manage tags extracted from SVN
-     * @param workUnit
-     * @param remotes
+     * List only tags
+     * @param remotes Remote list
+     * @return list containing only tags
      */
-    public void manageTags(WorkUnit workUnit, List<String> remotes) {
-        List<String> gitTags = remotes.stream()
+    static List<String> listTagsOnly(List<String> remotes) {
+        return remotes.stream()
             .map(String::trim)
             // Only tags
             .filter(b -> b.startsWith(ORIGIN_TAGS))
             // Remove temp tags
             .filter(b -> !b.contains("@"))
             .collect(Collectors.toList());
+    }
 
-        gitTags.forEach(t -> {
+    /**
+     * Manage tags extracted from SVN
+     * @param workUnit
+     * @param remotes
+     */
+    void manageTags(WorkUnit workUnit, List<String> remotes) {
+        listTagsOnly(remotes).forEach(t -> {
                 final boolean warn = pushTag(workUnit, t);
                 workUnit.warnings.set(workUnit.warnings.get() || warn);
             }
@@ -505,38 +725,101 @@ public class GitManager {
     private boolean pushTag(WorkUnit workUnit, String tag) {
         MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, tag);
         try {
+
+            // derive local tagName from remote tag name
             String tagName = tag.replaceFirst(ORIGIN_TAGS, "");
             LOG.debug(format("Tag %s", tagName));
 
+            // determine noHistory flag i.e was all selected or not
             boolean noHistory = !workUnit.migration.getSvnHistory().equals("all");
 
+            // checkout a new branch using local tagName and remote tag name
             String gitCommand = format("git checkout -b tmp_tag %s", tag);
             execCommand(workUnit.directory, gitCommand);
 
-            if (noHistory) {
-                removeHistory(workUnit, "tmp_tag", true, history);
+            // If this tag does not contain any files we will ignore it and add warning to logs.
+            if (!isFileInFolder(workUnit.directory)) {
+
+                // Switch over to master
+                gitCommand = "git checkout master";
+                execCommand(workUnit.directory, gitCommand);
+
+                // Now we can delete the branch tmp_tag
+                gitCommand = "git branch -D tmp_tag";
+                execCommand(workUnit.directory, gitCommand);
+
+                historyMgr.endStep(history, StatusEnum.IGNORED, "Ignoring Tag: " + tag + " : Because there are no files to commit.");
+
+            } else {
+
+                // creates a temporary orphan branch and renames it to tmp_tag
+                if (noHistory) {
+                    removeHistory(workUnit, "tmp_tag", true, history);
+                }
+
+                // Checkout master.
+                gitCommand = "git checkout master";
+                execCommand(workUnit.directory, gitCommand);
+
+                // create tag from tmp_tag branch.
+                gitCommand = format("git tag %s tmp_tag", tagName);
+                execCommand(workUnit.directory, gitCommand);
+
+                // add remote to master
+                addRemote(workUnit, false);
+
+                // push the tag to remote
+                // crashes if branch with same name so prefixing with refs/tags/
+                gitCommand = format("git push -u origin refs/tags/%s", tagName);
+                execCommand(workUnit.directory, gitCommand);
+
+                // delete the tmp_tag branch now that the tag has been created.
+                gitCommand = "git branch -D tmp_tag";
+                execCommand(workUnit.directory, gitCommand);
+
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+
             }
 
-            gitCommand = "git checkout master";
-            execCommand(workUnit.directory, gitCommand);
-
-            gitCommand = format("git tag %s tmp_tag", tagName);
-            execCommand(workUnit.directory, gitCommand);
-
-            addRemote(workUnit, false);
-
-            gitCommand = format("git push -u origin %s", tagName);
-            execCommand(workUnit.directory, gitCommand);
-
-            gitCommand = "git branch -D tmp_tag";
-            execCommand(workUnit.directory, gitCommand);
-
-            historyMgr.endStep(history, StatusEnum.DONE, null);
         } catch (IOException | InterruptedException gitEx) {
             LOG.error(FAILED_TO_PUSH_BRANCH, gitEx);
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.getMessage());
         }
         return false;
+    }
+
+    // FIXME : optimize & rename
+    static private boolean isFileInFolder(String dirPath) {
+
+        boolean isFileInFolder = false;
+
+        File f = new File(dirPath);
+        File[] files = f.listFiles();
+
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+
+                File file = files[i];
+                // Only check subfolders if haven't found a file yet
+                if (file.isDirectory()) {
+                    if (!file.getName().equalsIgnoreCase(".git")) {
+
+                        isFileInFolder = isFileInFolder(file.getAbsolutePath());
+                        if (isFileInFolder) {
+                            return true;
+                        }
+                    } else {
+                        LOG.info("Skipping check for files in .git folder");
+                    }
+                } else {
+                    LOG.info("Found at least one file in this folder: " + file.getAbsolutePath());
+                    return true;
+                }
+            }
+        }
+
+        return false;
+
     }
 
     /**
@@ -550,13 +833,19 @@ public class GitManager {
         try {
             LOG.debug(format("Remove history on %s", branch));
 
+            // Create new orphan branch and switch to it. The first commit made on this new branch
+            // will have no parents and it will be the root of a new history totally disconnected from all the
+            // other branches and commits
             String gitCommand = format("git checkout --orphan TEMP_BRANCH_%s", branch);
             execCommand(workUnit.directory, gitCommand);
 
+            // Stage All (new, modified, deleted) files. Equivalent to git add . (in Git Version 2.x)
             gitCommand = "git add -A";
             execCommand(workUnit.directory, gitCommand);
 
             try {
+                // Create a new commit. Runs git add on any file that is 'tracked' and provide a message
+                // for the commit
                 gitCommand = format("git commit -am \"Reset history on %s\"", branch);
                 execCommand(workUnit.directory, gitCommand);
             } catch (RuntimeException ex) {
@@ -564,6 +853,7 @@ public class GitManager {
             }
 
             try {
+                // Delete (with force) the passed in branch name
                 gitCommand = format("git branch -D %s", branch);
                 execCommand(workUnit.directory, gitCommand);
             } catch (RuntimeException ex) {
@@ -572,12 +862,20 @@ public class GitManager {
                 }
             }
 
+            // move/rename a branch and the corresponing reflog
+            // (i.e. rename the orphan branch - without history - to the passed in branch name)
+            // Note : This fails with exit code 128 (git branch -m tmp_tag) when only folders in the subversion tag.
+            // git commit -am above fails because no files
             gitCommand = format("git branch -m %s", branch);
             execCommand(workUnit.directory, gitCommand);
 
+            // i.e. if it is a branch
             if (!isTag) {
+
+                // create the remote
                 addRemote(workUnit, true);
 
+                // push to remote
                 gitCommand = format("git push -f origin %s", branch);
                 execCommand(workUnit.directory, gitCommand);
 

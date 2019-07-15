@@ -14,9 +14,10 @@
 }
 
 .summary-card {
-    width: 500px;
+    width: 600px;
     margin: 20px;
     min-height: 550px;
+    overflow-y: auto;
 }
 
 .my-header {
@@ -39,4 +40,8 @@
     width: 22px;
     height: 22px;
     cursor: pointer;
+}
+
+.tagsbranches-to-migrate {
+    width: 400px;
 }

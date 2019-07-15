@@ -26,7 +26,7 @@
                 "account" : "Check your Gitlab account",
                 "group" : "Check your Gitlab group"
             },
-            "clean" : "Have you clean Gitlab before retrying ?",
+            "clean" : "Have you cleaned Gitlab before retrying ?",
             "force" : {
                 "clean" : "Clean it for me",
                 "error" : "Impossible to automatically clean project"
@@ -35,7 +35,7 @@
             "token" : "Gitlab token",
             "url" : "Gitlab URL",
             "use" : {
-                "default" : "Use default URL"
+                "default" : "Use default URL and user"
             },
             "user" : "Gitlab user"
         },
@@ -44,7 +44,11 @@
             "trunk-only" : "Trunk only",
             "no" : "Nothing",
             "option" : "History option",
-            "options" : "History options"
+            "options" : "History options",
+            "tags-to-migrate" : "Tags To Keep",
+            "branches-to-migrate" : "Branches To Keep",
+            "tags-to-migrate-placeholder" : "Tags To Keep (Comma Separated)",
+            "branches-to-migrate-placeholder" : "Branches To Keep (Comma Separated)"
         },
         "home" : "Home",
         "info" : "Info",
@@ -81,6 +85,8 @@
             "user" : "User"
         },
         "step" : "Step",
-        "status" : "Status"
+        "apply-mapping" : "Apply Mapping",
+        "status" : "Status",
+        "svn-directory-delete" : "Not Migrated From SVN"
     }
 }

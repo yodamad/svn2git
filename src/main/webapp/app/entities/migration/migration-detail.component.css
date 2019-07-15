@@ -9,8 +9,9 @@
 }
 
 .summary-card {
-    width: 500px;
+    width: 600px;
     margin: 20px;
+    overflow-y: auto;
 }
 
 .my-header {

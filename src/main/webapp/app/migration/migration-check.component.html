@@ -14,16 +14,6 @@
         <table class="table table-striped">
             <tbody infinite-scroll [infiniteScrollDistance]="0">
             <tr *ngFor="let migration of migrations">
-                <td>{{migration.id}}</td>
-                <td>{{migration.svnGroup}}</td>
-                <td>{{migration.svnProject}}</td>
-                <td>{{migration.user}}</td>
-                <td>{{migration.date | date:'mediumDate'}}</td>
-                <td>{{migration.gitlabGroup}}</td>
-                <td>{{migration.gitlabProject}}</td>
-                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
-                <td>{{migration.maxFileSize}}</td>
-                <td>{{migration.forbiddenFileExtensions}}</td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"
@@ -39,10 +29,22 @@
                         </button>
                     </div>
                 </td>
+                <td>{{migration.id}}</td>
+                <td>{{migration.svnGroup}}</td>
+                <td>{{migration.svnProject}}</td>
+                <td>{{migration.user}}</td>
+                <td>{{migration.date | date:'mediumDate'}}</td>
+                <td>{{migration.gitlabGroup}}</td>
+                <td>{{migration.gitlabProject}}</td>
+                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
+                <td>{{migration.maxFileSize}}</td>
+                <td>{{migration.svnHistory}}</td>
+                <td style="width: 200px; word-break: break-word;">{{migration.forbiddenFileExtensions}}</td>
             </tr>
             </tbody>
             <thead>
             <tr jhiSort>
+                <th></th>
                 <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="svnGroup"><span jhiTranslate="svn2GitApp.migration.svnGroup">Svn Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="svnProject"><span jhiTranslate="svn2GitApp.migration.svnProject">Svn Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
@@ -52,8 +54,8 @@
                 <th jhiSortBy="gitlabProject"><span jhiTranslate="svn2GitApp.migration.gitlabProject">Gitlab Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="maxFileSize"><span jhiTranslate="svn2GitApp.migration.maxFileSize">Max File Size</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="svnHistory"><span jhiTranslate="svn2GitApp.migration.history">Subversion History</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="forbiddenFileExtensions"><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th></th>
             </tr>
             </thead>
         </table>

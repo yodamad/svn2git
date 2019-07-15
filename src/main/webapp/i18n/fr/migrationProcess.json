@@ -35,7 +35,7 @@
             "token" : "Token",
             "url" : "URL Gitlab",
             "use" : {
-                "default" : "URL par défaut"
+                "default" : "URL par défaut et utilisateur"
             },
             "user" : "Utilisateur"
         },
@@ -44,7 +44,11 @@
             "trunk-only" : "Trunk seulement",
             "no" : "Rien",
             "option" : "Choix de conservation de l'historique",
-            "options" : "Options d'historique"
+            "options" : "Options d'historique",
+            "tags-to-migrate" : "Tags à garder",
+            "branches-to-migrate" : "Branches à garder",
+            "tags-to-migrate-placeholder" : "Tags à garder (Séparées par des virgules)",
+            "branches-to-migrate-placeholder" : "Branches à garder (Séparées par des virgules)"
         },
         "home" : "Accueil",
         "info" : "Infos",
@@ -81,6 +85,8 @@
             "user" : "Utilisateur"
         },
         "step" : "Etape",
-        "status" : "Statut"
+        "apply-mapping" : "Appliquer Mapping",
+        "status" : "Statut",
+        "svn-directory-delete" : "Non Migré de Subversion"
     }
 }

@@ -6,7 +6,8 @@
             "RUNNING": "En cours",
             "DONE": "OK",
             "DONE_WITH_WARNINGS": "OK (avec avertissements)",
-            "FAILED": "KO"
+            "FAILED": "KO",
+            "IGNORED": "IGNORED"
         }
     }
 }

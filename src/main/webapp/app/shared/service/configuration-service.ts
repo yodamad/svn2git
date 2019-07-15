@@ -68,6 +68,10 @@ export class ConfigurationService {
         return this.http.get(`${this.flagsUrl}/projectCleaningOption`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
     }
 
+    flagGitlabGroupCreation(): Observable<boolean> {
+        return this.http.get(`${this.flagsUrl}/gitlabGroupCreationOption`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
+    }
+
     /**
      * Init static configuration
      */

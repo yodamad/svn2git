@@ -1,3 +1,4 @@
+
 {
     "svn2GitApp": {
         "migration" : {
@@ -30,6 +31,12 @@
             "svnUrl": "Svn Url",
             "svnUser": "Svn User",
             "svnPassword": "Svn Password",
+            "trunk": "Trunk",
+            "branches": "Branches",
+            "tags": "Tags",
+            "svnHistory": "Svn History",
+            "tagsToMigrate": "Tags To Migrate",
+            "branchesToMigrate": "Branches To Migrate",
             "history": "History",
             "mappings": "Mappings"
         }

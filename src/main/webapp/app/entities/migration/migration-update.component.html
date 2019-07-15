@@ -81,6 +81,8 @@
                         <option value="RUNNING">{{'svn2GitApp.StatusEnum.RUNNING' | translate}}</option>
                         <option value="DONE">{{'svn2GitApp.StatusEnum.DONE' | translate}}</option>
                         <option value="FAILED">{{'svn2GitApp.StatusEnum.FAILED' | translate}}</option>
+                        <option value="IGNORED">{{'svn2GitApp.StatusEnum.IGNORED' | translate}}</option>
+                        <option value="DONE_WITH_WARNINGS">{{'svn2GitApp.StatusEnum.DONE_WITH_WARNINGS' | translate}}</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -92,6 +94,61 @@
                     <label class="form-control-label" jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions" for="field_forbiddenFileExtensions">Forbidden File Extensions</label>
                     <input type="text" class="form-control" name="forbiddenFileExtensions" id="field_forbiddenFileExtensions"
                         [(ngModel)]="migration.forbiddenFileExtensions" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabUrl" for="field_gitlabUrl">Gitlab Url</label>
+                    <input type="text" class="form-control" name="gitlabUrl" id="field_gitlabUrl"
+                        [(ngModel)]="migration.gitlabUrl" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.gitlabToken" for="field_gitlabToken">Gitlab Token</label>
+                    <input type="text" class="form-control" name="gitlabToken" id="field_gitlabToken"
+                        [(ngModel)]="migration.gitlabToken" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnUrl" for="field_svnUrl">Svn Url</label>
+                    <input type="text" class="form-control" name="svnUrl" id="field_svnUrl"
+                        [(ngModel)]="migration.svnUrl" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnUser" for="field_svnUser">Svn User</label>
+                    <input type="text" class="form-control" name="svnUser" id="field_svnUser"
+                        [(ngModel)]="migration.svnUser" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnPassword" for="field_svnPassword">Svn Password</label>
+                    <input type="text" class="form-control" name="svnPassword" id="field_svnPassword"
+                        [(ngModel)]="migration.svnPassword" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.trunk" for="field_trunk">Trunk</label>
+                    <input type="text" class="form-control" name="trunk" id="field_trunk"
+                        [(ngModel)]="migration.trunk" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.branches" for="field_branches">Branches</label>
+                    <input type="text" class="form-control" name="branches" id="field_branches"
+                        [(ngModel)]="migration.branches" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.tags" for="field_tags">Tags</label>
+                    <input type="text" class="form-control" name="tags" id="field_tags"
+                        [(ngModel)]="migration.tags" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.svnHistory" for="field_svnHistory">Svn History</label>
+                    <input type="text" class="form-control" name="svnHistory" id="field_svnHistory"
+                        [(ngModel)]="migration.svnHistory" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.tagsToMigrate" for="field_tagsToMigrate">Tags To Migrate</label>
+                    <input type="text" class="form-control" name="tagsToMigrate" id="field_tagsToMigrate"
+                        [(ngModel)]="migration.tagsToMigrate" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.branchesToMigrate" for="field_branchesToMigrate">Branches To Migrate</label>
+                    <input type="text" class="form-control" name="branchesToMigrate" id="field_branchesToMigrate"
+                        [(ngModel)]="migration.branchesToMigrate" />
                 </div>
 
             </div>

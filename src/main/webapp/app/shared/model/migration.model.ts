@@ -31,6 +31,8 @@ export interface IMigration {
     branches?: string;
     tags?: string;
     svnHistory?: string;
+    tagsToMigrate?: string;
+    branchesToMigrate?: string;
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
 }
@@ -56,6 +58,8 @@ export class Migration implements IMigration {
         public branches?: string,
         public tags?: string,
         public svnHistory?: string,
+        public tagsToMigrate?: string,
+        public branchesToMigrate?: string,
         public histories?: IMigrationHistory[],
         public mappings?: IMapping[]
     ) {}

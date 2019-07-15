@@ -1,12 +1,12 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="svn2GitApp.migration.home.title">Migrations</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-migration" [routerLink]="['/migration/new']">
-            <fa-icon [icon]="'plus'"></fa-icon>
-            <span  jhiTranslate="svn2GitApp.migration.home.createLabel">
-            Create new Migration
-            </span>
-        </button>
+<!--        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-migration" [routerLink]="['/migration/new']">-->
+<!--            <fa-icon [icon]="'plus'"></fa-icon>-->
+<!--            <span  jhiTranslate="svn2GitApp.migration.home.createLabel">-->
+<!--            Create new Migration-->
+<!--            </span>-->
+<!--        </button>-->
     </h2>
     <jhi-alert></jhi-alert>
     <br/>
@@ -24,6 +24,12 @@
             <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="maxFileSize"><span jhiTranslate="svn2GitApp.migration.maxFileSize">Max File Size</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="forbiddenFileExtensions"><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="trunk"><span jhiTranslate="svn2GitApp.migration.trunk">Trunk</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="branches"><span jhiTranslate="svn2GitApp.migration.branches">Branches</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="tags"><span jhiTranslate="svn2GitApp.migration.tags">Tags</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="svnHistory"><span jhiTranslate="svn2GitApp.migration.svnHistory">Svn History</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="tagsToMigrate"><span jhiTranslate="svn2GitApp.migration.tagsToMigrate">Tags To Migrate</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="branchesToMigrate"><span jhiTranslate="svn2GitApp.migration.branchesToMigrate">Branches To Migrate</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -36,9 +42,15 @@
                 <td>{{migration.date | date:'mediumDate'}}</td>
                 <td>{{migration.gitlabGroup}}</td>
                 <td>{{migration.gitlabProject}}</td>
-                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
+                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}">{{migration.status}}</td>
                 <td>{{migration.maxFileSize}}</td>
                 <td>{{migration.forbiddenFileExtensions}}</td>
+                <td>{{migration.trunk}}</td>
+                <td>{{migration.branches}}</td>
+                <td>{{migration.tags}}</td>
+                <td>{{migration.svnHistory}}</td>
+                <td>{{migration.tagsToMigrate}}</td>
+                <td>{{migration.branchesToMigrate}}</td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"
@@ -47,12 +59,12 @@
                             <fa-icon [icon]="'eye'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
                         </button>
-                        <button type="submit"
-                                [routerLink]="['/migration', migration.id, 'edit']"
-                                class="btn btn-primary btn-sm">
-                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
-                        </button>
+<!--                        <button type="submit"-->
+<!--                                [routerLink]="['/migration', migration.id, 'edit']"-->
+<!--                                class="btn btn-primary btn-sm">-->
+<!--                            <fa-icon [icon]="'pencil-alt'"></fa-icon>-->
+<!--                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>-->
+<!--                        </button>-->
                         <button type="submit"
                                 [routerLink]="['/', { outlets: { popup: 'migration/'+ migration.id + '/delete'} }]"
                                 replaceUrl="true"

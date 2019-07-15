@@ -3,20 +3,20 @@
     <mat-step [stepControl]="gitlabFormGroup">
         <form [formGroup]="gitlabFormGroup">
             <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Create your Gitlab account</span></ng-template>
-            <div style="margin-bottom: 10px">
-                <span jhiTranslate="migration-process.gitlab.use.default">Use default URL</span>
+            <div style="margin-bottom: 10px;" >
+                <span style="width:250px" jhiTranslate="migration-process.gitlab.use.default">Use default URL and User</span>
                 <mat-checkbox [checked]="useDefaultGitlab" (change)="reverseGitlab()" [disabled]="gitlabCredsOption === 'required'"></mat-checkbox>
             </div>
             <div>
-                <mat-form-field>
-                    <input matInput placeholder="{{'migration-process.gitlab.url' | translate}}" [(disabled)]="useDefaultGitlab" formControlName="gitlabURL" required>
+                <mat-form-field style="width:250px">
+                    <input matInput placeholder="{{'migration-process.gitlab.url' | translate}}" [disabled]="useDefaultGitlab" formControlName="gitlabURL" required>
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultGitlab">
                     <input matInput placeholder="{{'migration-process.gitlab.token' | translate}}" formControlName="gitlabToken" [required]="gitlabCredsOption === 'required'">
                 </mat-form-field>
             </div>
             <div>
-                <mat-form-field>
+                <mat-form-field style="width:250px">
                     <input matInput placeholder="{{'migration-process.gitlab.user' | translate}}" formControlName="gitlabUser" required>
                 </mat-form-field>
                 <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)" [disabled]="checkingGitlabUser">
@@ -25,7 +25,7 @@
                 </button>
             </div>
             <div>
-                <mat-form-field>
+                <mat-form-field style="width:250px">
                     <input matInput placeholder="{{'migration-process.gitlab.group' | translate}}" formControlName="gitlabGroup" required>
                 </mat-form-field>
                 <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)" [disabled]="checkingGitlabGroup">
@@ -53,7 +53,7 @@
                 <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()" [disabled]="svnCredsOption === 'required'"></mat-checkbox>
             </div>
             <div>
-                <mat-form-field>
+                <mat-form-field style="width:250px">
                     <input matInput placeholder="{{'migration-process.svn.url' | translate}}" formControlName="svnURL">
                 </mat-form-field>
                 <mat-form-field *ngIf="!useDefaultSvn">
@@ -64,7 +64,7 @@
                 </mat-form-field>
             </div>
             <div>
-                <mat-form-field>
+                <mat-form-field style="width:250px">
                     <input matInput placeholder="{{'migration-process.svn.repo.name' | translate}}" formControlName="svnRepository" required>
                 </mat-form-field>
                 <button type="button" mat-raised-button (click)="checkSvnRepository()"
@@ -78,7 +78,7 @@
                     <li>
                         <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
                         <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
-                        <table mat-table [(dataSource)]="svnDirectories.modules" class="large-table">
+                        <table mat-table [dataSource]="svnDirectories.modules" class="large-table">
                             <ng-container matColumnDef="svnDir">
                                 <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
                                 <td mat-cell *matCellDef="let directory">{{ directory.path }}</td>
@@ -93,7 +93,8 @@
                                 <td mat-cell *matCellDef="let directory" style="width: 70px">
                                     <mat-checkbox (click)="$event.stopPropagation()"
                                                   (change)="svnToggle($event, directory.path)"
-                                                  [checked]="svnChecked(directory.path)">
+                                                  [checked]="svnChecked(directory.path)"
+                                                  [disabled]="isSvnOnlyTags(directory)">
                                     </mat-checkbox>
                                 </td>
                             </ng-container>
@@ -106,7 +107,7 @@
                         <span class="fa-li"><fa-icon [icon]="'check'"></fa-icon></span>
                         <span>
                             <span jhiTranslate="migration-process.svn.root-directory">Or use root folder</span>
-                            <mat-checkbox [(checked)]="useSvnRootFolder" (change)="onSelectionChange($event)"></mat-checkbox>
+                            <mat-checkbox [checked]="useSvnRootFolder" (change)="onSelectionChange($event)" [disabled]="isOneSvnOnlyTags()"></mat-checkbox>
                         </span>
                     </li>
                 </ul>
@@ -114,63 +115,78 @@
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext (click)="historyStepSetDisabledBranchesTags()" [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
 
     <!-- History step -->
     <mat-step [stepControl]="historyFormGroup">
-        <ng-template matStepLabel><span jhiTranslate="migration-process.history.options">History options</span></ng-template>
-        <ul class="fa-ul">
-            <li>
-                <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
-                <table mat-table [(dataSource)]="staticDirectories" class="large-table">
-                    <ng-container matColumnDef="svnDir">
-                        <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
-                        <td mat-cell *matCellDef="let directory">{{ directory }}</td>
-                    </ng-container>
-                    <ng-container matColumnDef="selectSvn">
-                        <th mat-header-cell *matHeaderCellDef style="width: 70px">
-                            <mat-checkbox (change)="$event ? masterHistoryToggle() : null"
-                                          [checked]="historySelection.hasValue() && isAllHistoriesSelected()"
-                                          [indeterminate]="historySelection.hasValue() && !isAllHistoriesSelected()">
-                            </mat-checkbox>
-                        </th>
-                        <td mat-cell *matCellDef="let directory" style="width: 70px">
-                            <mat-checkbox (click)="$event.stopPropagation()"
-                                          (change)="historyToggle($event, directory)"
-                                          [checked]="historyChecked(directory)">
-                            </mat-checkbox>
-                        </td>
-                    </ng-container>
 
-                    <tr mat-header-row *matHeaderRowDef="svnDisplayedColumns"></tr>
-                    <tr mat-row *matRowDef="let directory; columns: svnDisplayedColumns;"></tr>
-                </table>
-            </li>
-            <li>
-                <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                <span jhiTranslate="migration-process.history.option">History</span> :
-                <mat-radio-group [(ngModel)]="historyOption">
-                    <mat-radio-button [value]="'trunk'"><span jhiTranslate="migration-process.history.trunk-only">Trunk</span></mat-radio-button>
-                    <mat-radio-button [value]="'nothing'"><span jhiTranslate="migration-process.history.no">No History</span></mat-radio-button>
-                    <mat-radio-button [value]="'all'"><span jhiTranslate="migration-process.history.all">All History</span></mat-radio-button>
-                </mat-radio-group>
-            </li>
-        </ul>
-        <mat-divider style="margin-bottom: 10px"></mat-divider>
-        <div>
-            <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-            <button mat-stroked-button matStepperNext [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
-        </div>
+            <ng-template matStepLabel><span jhiTranslate="migration-process.history.options">History options</span></ng-template>
+            <ul class="fa-ul">
+                <li>
+                    <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                    <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
+                    <table mat-table [dataSource]="staticDirectories" class="large-table">
+                        <ng-container matColumnDef="svnDir">
+                            <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
+                            <td mat-cell *matCellDef="let directory">{{ directory }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="selectSvn">
+                            <th mat-header-cell *matHeaderCellDef style="width: 70px">
+                                <mat-checkbox (change)="$event ? masterHistoryToggle() : null"
+                                              [checked]="historySelection.hasValue() && isAllHistoriesSelected()"
+                                              [indeterminate]="historySelection.hasValue() && !isAllHistoriesSelected()">
+                                </mat-checkbox>
+                            </th>
+                            <td mat-cell *matCellDef="let directory" style="width: 70px">
+                                <mat-checkbox (click)="$event.stopPropagation()"
+                                              (change)="$event ? historyToggle(directory) : null"
+                                              [checked]="historyChecked(directory)">
+                                </mat-checkbox>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="svnDisplayedColumns"></tr>
+                        <tr mat-row *matRowDef="let directory; columns: svnDisplayedColumns;"></tr>
+                    </table>
+                </li>
+                <li>
+                    <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                    <span jhiTranslate="migration-process.history.option">History</span> :
+                    <mat-radio-group [(ngModel)]="historyOption">
+                        <mat-radio-button [value]="'trunk'"><span jhiTranslate="migration-process.history.trunk-only">Trunk</span></mat-radio-button>
+                        <mat-radio-button [value]="'nothing'"><span jhiTranslate="migration-process.history.no">No History</span></mat-radio-button>
+                        <mat-radio-button [value]="'all'"><span jhiTranslate="migration-process.history.all">All History</span></mat-radio-button>
+                    </mat-radio-group>
+                </li>
+                <form [formGroup]="historyFormGroup">
+                <li>
+                    <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                        <input matInput placeholder="{{'migration-process.history.branches-to-migrate-placeholder' | translate}}" formControlName="branchesToMigrate">
+                    </mat-form-field>
+                </li>
+                <li>
+                    <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                        <input matInput placeholder="{{'migration-process.history.tags-to-migrate-placeholder' | translate}}" formControlName="tagsToMigrate">
+                    </mat-form-field>
+                </li>
+                </form>
+            </ul>
+            <mat-divider style="margin-bottom: 10px"></mat-divider>
+            <div>
+                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+            </div>
     </mat-step>
 
     <!-- Mapping options step -->
     <mat-step [stepControl]="mappingFormGroup">
         <form [formGroup]="mappingFormGroup">
-            <table mat-table [(dataSource)]="mappings" class="large-table">
+            <table mat-table [dataSource]="mappings" class="large-table">
                 <ng-container matColumnDef="svn">
                     <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.svn.directory">SVN directory</span></th>
                     <td mat-cell *matCellDef="let mapping">{{ mapping.svnDirectory }}</td>
@@ -185,17 +201,33 @@
                 </ng-container>
                 <ng-container matColumnDef="selectMapping">
                     <th mat-header-cell *matHeaderCellDef>
-                        <mat-checkbox (change)="$event ? masterToggle() : null"
-                                      [checked]="selection.hasValue() && isAllSelected()"
-                                      [indeterminate]="selection.hasValue() && !isAllSelected()">
-                        </mat-checkbox>
+                       <mat-checkbox (change)="$event ? masterToggleMapping() : null"
+                                      [checked]="selectionMapping.hasValue() && isAllSelectedMapping()"
+                                      [indeterminate]="selectionMapping.hasValue() && !isAllSelectedMapping()">
+                        </mat-checkbox> <span jhiTranslate="migration-process.apply-mapping">Git directory</span>
                     </th>
                     <td mat-cell *matCellDef="let row">
                         <mat-checkbox *ngIf="row.svnDirectory !== undefined"
                             (click)="$event.stopPropagation()"
-                            (change)="$event ? selection.toggle(row) : null"
-                            [checked]="selection.isSelected(row)"
-                            [disabled]="row.isStatic && !overrideStaticMappings">
+                            (change)="$event ? toggleMappingEntryType(row) : null"
+                            [checked]="selectionMapping.isSelected(row)"
+                            [disabled]="(row.isStatic && !overrideStaticMappings) || isOriginSvnDeleteDirectory(row)">
+                        </mat-checkbox>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="svnDirectoryDelete">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <mat-checkbox (change)="$event ? masterToggleSvnDirectoryDelete() : null"
+                                      [checked]="selectionSvnDirectoryDelete.hasValue() && isAllSelectedSvnDirectoryDelete()"
+                                      [indeterminate]="selectionSvnDirectoryDelete.hasValue() && !isAllSelectedSvnDirectoryDelete()">
+                        </mat-checkbox> <span jhiTranslate="migration-process.svn-directory-delete">Not Migrated From SVN</span>
+                    </th>
+                    <td mat-cell *matCellDef="let row">
+                        <mat-checkbox *ngIf="row.svnDirectory !== undefined"
+                                      (click)="$event.stopPropagation()"
+                                      (change)="$event ? toggleSvnDirectoryDeleteType(row) : null"
+                                      [checked]="selectionSvnDirectoryDelete.isSelected(row)"
+                                      [disabled]="(row.isStatic && !overrideStaticMappings)">
                         </mat-checkbox>
                         <mat-icon *ngIf="row.svnDirectory === undefined" class="add-icon" (click)="addMapping()">add</mat-icon>
                     </td>
@@ -219,7 +251,7 @@
         <form [formGroup]="cleaningFormGroup">
             <br/>
             <div><b><span jhiTranslate="migration-process.file.size">Max size authorized for a file</span></b>:</div>
-            <mat-form-field style="max-width: 35px;">
+            <mat-form-field style="max-width: 60px;">
                 <input matInput type="number" formControlName="fileMaxSize" min="1" />
             </mat-form-field>
             <mat-select (selectionChange)="fileSizeUnit($event)" style="max-width: 35px" value="M">
@@ -230,7 +262,7 @@
             <br/>
             <mat-divider></mat-divider>
             <b><span jhiTranslate="migration-process.file.extensions">File extensions to clean</span></b>:
-            <table mat-table [(dataSource)]="staticExtensions" class="large-table">
+            <table mat-table [dataSource]="staticExtensions" class="large-table">
                 <ng-container matColumnDef="extensionPattern">
                     <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.pattern">Pattern</span></th>
                     <td mat-cell *matCellDef="let extension">{{ extension.description !== null ? extension.description : extension.value }}</td>
@@ -246,7 +278,7 @@
                         <mat-checkbox (click)="$event.stopPropagation()"
                                       (change)="extensionToggle($event, extension)"
                                       [checked]="extensionSelection.isSelected(extension)"
-                                      [(disabled)]="extension.isStatic && !overrideStaticExtensions" >
+                                      [disabled]="extension.isStatic && !overrideStaticExtensions" >
                         </mat-checkbox>
                     </td>
                 </ng-container>
@@ -271,7 +303,7 @@
     <!-- Summary step -->
     <mat-step>
         <ng-template matStepLabel><span jhiTranslate="migration-process.ready">Ready</span></ng-template>
-        <mat-grid-list cols="2" rowHeight="600px">
+        <mat-grid-list cols="2" rowHeight="700px">
             <mat-grid-tile>
                 <mat-card class="summary-card">
                     <mat-card-header class="card-header">

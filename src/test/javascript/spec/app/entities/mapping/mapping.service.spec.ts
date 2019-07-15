@@ -21,7 +21,7 @@ describe('Service Tests', () => {
             service = injector.get(MappingService);
             httpMock = injector.get(HttpTestingController);
 
-            elemDefault = new Mapping(0, 'AAAAAAA', 'AAAAAAA', 'AAAAAAA');
+            elemDefault = new Mapping(0, 'AAAAAAA', 'AAAAAAA', 'AAAAAAA', 1, false, false);
         });
 
         describe('Service methods', async () => {
@@ -57,7 +57,8 @@ describe('Service Tests', () => {
                     {
                         svnDirectory: 'BBBBBB',
                         regex: 'BBBBBB',
-                        gitDirectory: 'BBBBBB'
+                        gitDirectory: 'BBBBBB',
+                        svnDirectoryDelete: true
                     },
                     elemDefault
                 );
@@ -76,14 +77,18 @@ describe('Service Tests', () => {
                     {
                         svnDirectory: 'BBBBBB',
                         regex: 'BBBBBB',
-                        gitDirectory: 'BBBBBB'
+                        gitDirectory: 'BBBBBB',
+                        svnDirectoryDelete: true
                     },
                     elemDefault
                 );
                 const expected = Object.assign({}, returnedFromService);
                 service
                     .query(expected)
-                    .pipe(take(1), map(resp => resp.body))
+                    .pipe(
+                        take(1),
+                        map(resp => resp.body)
+                    )
                     .subscribe(body => expect(body).toContainEqual(expected));
                 const req = httpMock.expectOne({ method: 'GET' });
                 req.flush(JSON.stringify([returnedFromService]));

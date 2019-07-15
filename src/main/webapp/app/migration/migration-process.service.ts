@@ -88,7 +88,7 @@ export class SvnStructure {
 }
 
 export class SvnModule {
-    constructor(public name: string, public path: string, public subModules: SvnModule[]) {}
+    constructor(public layoutElements: string[], public name: string, public path: string, public subModules: SvnModule[]) {}
 }
 
 export class SvnFlatModule {

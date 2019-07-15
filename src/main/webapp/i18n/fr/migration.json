@@ -33,7 +33,13 @@
             "svnUser": "Utilisateur Svn",
             "svnPassword": "Mdp Svn",
             "history": "Historique",
-            "mappings": "Mappings"
+            "mappings": "Mappings",
+            "trunk": "Trunk",
+            "branches": "Branches",
+            "tags": "Tags",
+            "svnHistory": "Svn History",
+            "tagsToMigrate": "Tags To Migrate",
+            "branchesToMigrate": "Branches To Migrate"
         }
     }
 }

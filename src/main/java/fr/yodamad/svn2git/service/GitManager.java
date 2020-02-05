@@ -23,16 +23,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StreamUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -252,27 +250,18 @@ public class GitManager {
 
             sb.append("--ignore-refs=\"^refs/remotes/origin/(?!");
 
-            // FIXME : optimize
-            Iterator<String> iter = branchesToMigrateList.iterator();
-            while (iter.hasNext()) {
-                String branch =  iter.next();
-                sb.append(branch.trim().replace(".", "\\."));
+            String branches = branchesToMigrateList.stream()
+                .map(branch ->  branch.trim().replace(".", "\\."))
+                .collect(Collectors.joining("|"));
 
-                if (iter.hasNext() || !tagsToMigrateList.isEmpty()) {
-                    sb.append("|");
-                }
-            }
+            sb.append(branches);
 
-            // FIXME : optimize
-            iter = tagsToMigrateList.iterator();
-            while (iter.hasNext()) {
-                String tag =  iter.next();
-                sb.append("tags/");
-                sb.append(tag.trim());
-
-                if (iter.hasNext()) {
-                    sb.append("|");
-                }
+            if (!tagsToMigrateList.isEmpty()) {
+                if (StringUtils.isNotEmpty(branches)) sb.append("|");
+                String tags = tagsToMigrateList.stream()
+                    .map(tag -> "tags/" + tag.trim())
+                    .collect(Collectors.joining("|"));
+                sb.append(tags);
             }
             return sb.append(").*$\"").toString();
         }
@@ -288,18 +277,10 @@ public class GitManager {
 
         List<Mapping> mappings = mappingRepository.findByMigrationAndSvnDirectoryDelete(migrationId, true);
 
-        List<String> svnDirectoryDeleteList = new ArrayList<>();
-
-        // FIXME : optimize
-        Iterator<Mapping> it = mappings.iterator();
-        while (it.hasNext()) {
-            Mapping mp = it.next();
-            if (mp.isSvnDirectoryDelete()) {
-                svnDirectoryDeleteList.add(mp.getSvnDirectory());
-            }
-        }
-
-        return svnDirectoryDeleteList;
+        return mappings.stream()
+            .filter(Mapping::isSvnDirectoryDelete)
+            .map(Mapping::getSvnDirectory)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -352,18 +333,11 @@ public class GitManager {
 
         sb.append(")(");
 
-        // FIXME : optimize
-        Iterator it = deleteSvnFolderList.iterator();
-        while (it.hasNext()) {
+        String list = deleteSvnFolderList.stream()
+            .map(folder -> folder + "/")
+            .collect(Collectors.joining("|"));
 
-            sb.append(it.next())
-                .append("/");
-
-            if (it.hasNext()) {
-                sb.append("|");
-            }
-        }
-
+        sb.append(list);
         sb.append(").*");
 
         // END Quotation marks
@@ -739,7 +713,7 @@ public class GitManager {
             execCommand(workUnit.directory, gitCommand);
 
             // If this tag does not contain any files we will ignore it and add warning to logs.
-            if (!isFileInFolder(workUnit.directory)) {
+            if (!isEmptyDirectory(workUnit.directory)) {
 
                 // Switch over to master
                 gitCommand = "git checkout master";
@@ -789,38 +763,17 @@ public class GitManager {
         return false;
     }
 
-    // FIXME : optimize & rename
-    static private boolean isFileInFolder(String dirPath) {
-
-        boolean isFileInFolder = false;
-
-        File f = new File(dirPath);
-        File[] files = f.listFiles();
-
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-
-                File file = files[i];
-                // Only check subfolders if haven't found a file yet
-                if (file.isDirectory()) {
-                    if (!file.getName().equalsIgnoreCase(".git")) {
-
-                        isFileInFolder = isFileInFolder(file.getAbsolutePath());
-                        if (isFileInFolder) {
-                            return true;
-                        }
-                    } else {
-                        LOG.info("Skipping check for files in .git folder");
-                    }
-                } else {
-                    LOG.info("Found at least one file in this folder: " + file.getAbsolutePath());
-                    return true;
-                }
-            }
+    /**
+     * Check if a repository is empty (expect .git folder)
+     * @param dirPath
+     * @return
+     * @throws IOException
+     */
+    private static boolean isEmptyDirectory(String dirPath) throws IOException {
+        DirectoryStream.Filter<Path> pathFilter = path -> !path.toFile().isDirectory() && !path.endsWith(".git");
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dirPath), pathFilter)) {
+            return stream.iterator().hasNext();
         }
-
-        return false;
-
     }
 
     /**

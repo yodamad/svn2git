@@ -311,11 +311,8 @@ public class MigrationManager {
     private void addDynamicLocalConfig(WorkUnit workUnit, String dynamicLocalConfig, String dynamicLocalConfigDesc) throws IOException, InterruptedException {
 
         if (StringUtils.isNotEmpty(dynamicLocalConfig) && StringUtils.isNotEmpty(dynamicLocalConfigDesc)) {
-
             String[] configParts = dynamicLocalConfig.split(" ");
-
             if (configParts.length == 2) {
-
                 MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_DYNAMIC_LOCAL_CONFIG, dynamicLocalConfigDesc);
 
                 LOG.info("Setting Git Config");
@@ -327,18 +324,13 @@ public class MigrationManager {
                 LOG.info("Checking Git Config");
                 gitCommand = "git config " + configParts[0];
                 execCommand(workUnit.directory, gitCommand);
-
                 historyMgr.endStep(history, StatusEnum.DONE, null);
-
             } else {
                 LOG.warn("Problem applying dynamic git local configuration!!!");
             }
-
         } else {
             LOG.warn("Problem applying dynamic git local configuration!!!");
         }
-
-
     }
 
     /**

@@ -214,7 +214,6 @@ public class Cleaner {
 
                 // Remove file after uploading to avoid git commit
                 Files.deleteIfExists(Paths.get(zipName));
-
                 historyMgr.endStep(history, StatusEnum.DONE, format("Uploading Zip file to Artifactory : %s : %s", pathForHistoryMgr, artifactPath));
 
             } else {
@@ -244,32 +243,15 @@ public class Cleaner {
         try (DirectoryStream<Path> dirStream = newDirectoryStream(workingPath, pathFilter)) {
             for (Path p : dirStream) {
                 Reason reason = isForbiddenExtension(workUnit, p) ? Reason.EXTENSION : Reason.SIZE;
-                Long fileSize = getFileSize(p);
                 MigrationRemovedFile mrf = new MigrationRemovedFile()
                     .migration(workUnit.migration)
                     .svnLocation(svnLocation)
                     .path(initialPath.relativize(p).toString())
                     .reason(reason)
-                    .fileSize(fileSize);
+                    .fileSize(Files.size(p));
 
                 this.mrfRepo.save(mrf);
             }
-        }
-
-    }
-
-    /**
-     * Get File Size of the file found at path.
-     * @param path The path of a file
-     * @return
-     */
-    private Long getFileSize(Path path) {
-
-        File file = path.toFile();
-        if (!file.exists() || !file.isFile()) {
-            return -1L;
-        } else {
-            return Long.valueOf(file.length());
         }
 
     }
@@ -318,13 +300,11 @@ public class Cleaner {
                     break;
             }
 
-            FileChannel imageFileChannel = FileChannel.open(path);
-
-            boolean isImageFileChannel = imageFileChannel.size() > digits;
-            imageFileChannel.close();
-
+            boolean isImageFileChannel;
+            try (FileChannel imageFileChannel = FileChannel.open(path)) {
+                isImageFileChannel = imageFileChannel.size() > digits;
+            }
             return isImageFileChannel;
-
         }
         return false;
     }

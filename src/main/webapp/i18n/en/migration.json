@@ -37,6 +37,8 @@
             "svnHistory": "Svn History",
             "tagsToMigrate": "Tags To Migrate",
             "branchesToMigrate": "Branches To Migrate",
+            "createdTimestamp": "Created Timestamp",
+            "workingDirectory": "Working Directory",
             "history": "History",
             "mappings": "Mappings"
         }

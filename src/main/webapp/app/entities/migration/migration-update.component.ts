@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import * as moment from 'moment';
+import { DATE_TIME_FORMAT } from 'app/shared/constants/input.constants';
 
 import { IMigration } from 'app/shared/model/migration.model';
 import { MigrationService } from './migration.service';
@@ -15,6 +16,7 @@ export class MigrationUpdateComponent implements OnInit {
     migration: IMigration;
     isSaving: boolean;
     dateDp: any;
+    createdTimestamp: string;
 
     constructor(private migrationService: MigrationService, private activatedRoute: ActivatedRoute) {}
 
@@ -22,6 +24,8 @@ export class MigrationUpdateComponent implements OnInit {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ migration }) => {
             this.migration = migration;
+            this.createdTimestamp =
+                this.migration.createdTimestamp != null ? this.migration.createdTimestamp.format(DATE_TIME_FORMAT) : null;
         });
     }
 
@@ -31,6 +35,7 @@ export class MigrationUpdateComponent implements OnInit {
 
     save() {
         this.isSaving = true;
+        this.migration.createdTimestamp = this.createdTimestamp != null ? moment(this.createdTimestamp, DATE_TIME_FORMAT) : null;
         if (this.migration.id !== undefined) {
             this.subscribeToSaveResponse(this.migrationService.update(this.migration));
         } else {

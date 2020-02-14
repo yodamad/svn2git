@@ -4,9 +4,19 @@ import com.fasterxml.jackson.annotation.JsonView;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.web.rest.util.View;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Objects;
@@ -111,6 +121,14 @@ public class Migration implements Serializable {
     @Column(name = "branches_to_migrate")
     @JsonView(View.Public.class)
     private String branchesToMigrate;
+
+    @Column(name = "created_timestamp")
+    @JsonView(View.Public.class)
+    private Instant createdTimestamp;
+
+    @Column(name = "working_directory")
+    @JsonView(View.Public.class)
+    private String workingDirectory;
 
     @OneToMany(mappedBy = "migration")
     @OrderBy("id ASC")
@@ -386,6 +404,32 @@ public class Migration implements Serializable {
         this.branchesToMigrate = branchesToMigrate;
     }
 
+    public Instant getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    public Migration createdTimestamp(Instant createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
+        return this;
+    }
+
+    public void setCreatedTimestamp(Instant createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
+    }
+
+    public String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public Migration workingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
+        return this;
+    }
+
+    public void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
+    }
+
     public Set<MigrationHistory> getHistories() {
         return histories;
     }
@@ -479,6 +523,8 @@ public class Migration implements Serializable {
             ", svnHistory='" + getSvnHistory() + "'" +
             ", tagsToMigrate='" + getTagsToMigrate() + "'" +
             ", branchesToMigrate='" + getBranchesToMigrate() + "'" +
+            ", createdTimestamp='" + getCreatedTimestamp() + "'" +
+            ", workingDirectory='" + getWorkingDirectory() + "'" +
             "}";
     }
 }

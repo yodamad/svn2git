@@ -50,10 +50,11 @@ export class MigrationStepperComponent implements OnInit {
     svnRepoKO = true;
     mappings: IMapping[] = [];
     useDefaultGitlab = true;
-    useDefaultSvn = true;
     overrideStaticExtensions = false;
     overrideStaticMappings = false;
     forceGitlabGroupCreation = false;
+    useDefaultSvn = true;
+    svnUrlModifiable = true;
 
     // Input for migrations
     svnDirectories: SvnStructure = null;
@@ -173,11 +174,13 @@ export class MigrationStepperComponent implements OnInit {
             }
         });
         this._configurationService.svnCredsOption().subscribe(res => {
+            // a value of svnCredsOption 'required' results in necessity to enter credentials
             this.svnCredsOption = res;
-            this.useDefaultSvn = res !== REQUIRED;
-            if (!this.useDefaultSvn) {
-                this.svnFormGroup.get('svnURL').enable();
-            }
+        });
+
+        this._configurationService.svnUrlModifiable().subscribe((res: boolean) => {
+            // real boolean value see JSON.parse in svnUrlModifiable
+            this.svnUrlModifiable = res;
         });
 
         this._configurationService
@@ -650,7 +653,7 @@ export class MigrationStepperComponent implements OnInit {
         this.gitlabGroupKO = true;
     }
 
-    /** Reverse flag for svn default url. */
+    /** Reverse flag for svn default url. can only be invoked if svnUrlModifiable in config */
     reverseSvn() {
         this.useDefaultSvn = !this.useDefaultSvn;
         if (this.useDefaultSvn) {
@@ -704,8 +707,11 @@ export class MigrationStepperComponent implements OnInit {
      * @param directory
      */
     svnChecked(directory: string) {
-        this.svnRepoKO = this.svnSelection.selected.length === 0;
         return this.svnSelection.isSelected(directory);
+    }
+
+    getSvnRepoKo(): boolean {
+        return this.svnSelection.selected.length === 0;
     }
 
     /**
@@ -845,26 +851,24 @@ export class MigrationStepperComponent implements OnInit {
      * @param directory
      */
     historyToggle(directory: string) {
-        if (event) {
-            this.historySelection.toggle(directory);
+        this.historySelection.toggle(directory);
 
-            if (this.isSetBranchesTags()) {
-                if (directory === 'branches') {
-                    if (this.historySelection.isSelected(directory)) {
-                        this.historyFormGroup.get('branchesToMigrate').enable();
-                    } else {
-                        this.historyFormGroup.get('branchesToMigrate').setValue('');
-                        this.historyFormGroup.get('branchesToMigrate').disable();
-                    }
+        if (this.isSetBranchesTags()) {
+            if (directory === 'branches') {
+                if (this.historySelection.isSelected(directory)) {
+                    this.historyFormGroup.get('branchesToMigrate').enable();
+                } else {
+                    this.historyFormGroup.get('branchesToMigrate').setValue('');
+                    this.historyFormGroup.get('branchesToMigrate').disable();
                 }
+            }
 
-                if (directory === 'tags') {
-                    if (this.historySelection.isSelected(directory)) {
-                        this.historyFormGroup.get('tagsToMigrate').enable();
-                    } else {
-                        this.historyFormGroup.get('tagsToMigrate').setValue('');
-                        this.historyFormGroup.get('tagsToMigrate').disable();
-                    }
+            if (directory === 'tags') {
+                if (this.historySelection.isSelected(directory)) {
+                    this.historyFormGroup.get('tagsToMigrate').enable();
+                } else {
+                    this.historyFormGroup.get('tagsToMigrate').setValue('');
+                    this.historyFormGroup.get('tagsToMigrate').disable();
                 }
             }
         }
@@ -914,5 +918,13 @@ export class MigrationStepperComponent implements OnInit {
      */
     openSnackBar(errorCode: string) {
         this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
+    }
+
+    isSvnLayoutDisabled(svnLayout: string) {
+        if (this.historyOption === 'nothing' && (svnLayout === 'branches' || svnLayout === 'tags')) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

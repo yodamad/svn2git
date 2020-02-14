@@ -16,7 +16,6 @@ public class ApplicationProperties {
     public Work work = new Work();
     public Svn svn = new Svn();
     public Gitlab gitlab = new Gitlab();
-    public Git git = new Git();
     public Artifactory artifactory = new Artifactory();
     public Password password = new Password();
     public Override override = new Override();
@@ -44,14 +43,6 @@ public class ApplicationProperties {
 
     public void setArtifactory(Artifactory artifactory) {
         this.artifactory = artifactory;
-    }
-
-    public Git getGit() {
-        return git;
-    }
-
-    public void setGit(Git git) {
-        this.git = git;
     }
 
     public Gitlab getGitlab() {
@@ -127,6 +118,11 @@ public class ApplicationProperties {
          */
         public String credentials;
 
+        /**
+         * svnUrlModifiable
+         */
+        public String svnUrlModifiable;
+
         public String getUser() {
             return user;
         }
@@ -158,6 +154,14 @@ public class ApplicationProperties {
         public void setCredentials(String credentials) {
             this.credentials = credentials;
         }
+
+        public String getSvnUrlModifiable() {
+            return svnUrlModifiable;
+        }
+
+        public void setSvnUrlModifiable(String svnUrlModifiable) {
+            this.svnUrlModifiable = svnUrlModifiable;
+        }
     }
 
     public static class Gitlab {
@@ -180,11 +184,33 @@ public class ApplicationProperties {
         /**
          * Max waiting time.
          */
-        public Integer wait;
+        public Integer waitSeconds;
         /**
          * Dynamic Local Config
          */
         public List<String> dynamicLocalConfig;
+
+        /**
+         * Pause between push to gitlab
+         */
+        public long gitPushPauseMilliSeconds;
+
+        public long getGitMvPauseMilliSeconds() {
+            return gitMvPauseMilliSeconds;
+        }
+
+        public void setGitMvPauseMilliSeconds(long gitMvPauseMilliSeconds) {
+            this.gitMvPauseMilliSeconds = gitMvPauseMilliSeconds;
+        }
+
+        /**
+         * Pause between git mv operations
+         */
+        public long gitMvPauseMilliSeconds;
+
+        public long getGitPushPauseMilliSeconds() {return gitPushPauseMilliSeconds;}
+
+        public void setGitPushPauseMilliSeconds(long gitPushPauseMilliSeconds) {this.gitPushPauseMilliSeconds = gitPushPauseMilliSeconds;}
 
         public String getUrl() {
             return url;
@@ -218,12 +244,12 @@ public class ApplicationProperties {
             this.credentials = credentials;
         }
 
-        public Integer getWait() {
-            return wait;
+        public Integer getWaitSeconds() {
+            return waitSeconds;
         }
 
-        public void setWait(Integer wait) {
-            this.wait = wait;
+        public void setWaitSeconds(Integer waitSeconds) {
+            this.waitSeconds = waitSeconds;
         }
 
         public List<String> getDynamicLocalConfig() {
@@ -252,6 +278,11 @@ public class ApplicationProperties {
          * Artifactory password.
          */
         public String password;
+
+        /**
+         * Artifactory accessToken.
+         */
+        public String accessToken;
         /**
          * Artifactory default repository.
          */
@@ -271,6 +302,15 @@ public class ApplicationProperties {
          * Binaries directory.
          */
         public String binariesDirectory;
+
+        /*
+         * To avoid overload of Artifactory a configurable pause between uploads.
+         */
+        public long uploadPauseMilliSeconds;
+
+        public long getUploadPauseMilliSeconds() {return uploadPauseMilliSeconds;}
+
+        public void setUploadPauseMilliSeconds(long uploadPauseSeconds) {this.uploadPauseMilliSeconds = uploadPauseSeconds;}
 
         public Boolean isEnabled() {
             return enabled;
@@ -331,6 +371,10 @@ public class ApplicationProperties {
         public String getDeleteFolderWithBFG() {return deleteFolderWithBFG;}
 
         public void setDeleteFolderWithBFG(String deleteFolderWithBFG) {this.deleteFolderWithBFG = deleteFolderWithBFG;}
+
+        public String getAccessToken() {return accessToken;}
+
+        public void setAccessToken(String accessToken) {this.accessToken = accessToken;}
     }
 
     public static class Password {
@@ -366,43 +410,6 @@ public class ApplicationProperties {
         }
     }
 
-    public static class Git {
-        /**
-         * add -f (force) option when executing git mv
-         **/
-        public boolean forceMvOnError = false;
-
-        /**
-         * add -k (skip) option when executing git mv
-         **/
-        public boolean skipMvOnError = false;
-        public boolean preserveEmptyDirs = false;
-
-        public boolean isPreserveEmptyDirs() {
-            return preserveEmptyDirs;
-        }
-
-        public void setPreserveEmptyDirs(boolean preserveEmptyDirs) {
-            this.preserveEmptyDirs = preserveEmptyDirs;
-        }
-
-        public boolean isForceMvOnError() {
-            return forceMvOnError;
-        }
-
-        public void setForceMvOnError(boolean forceMvOnError) {
-            this.forceMvOnError = forceMvOnError;
-        }
-
-        public boolean isSkipMvOnError() {
-            return skipMvOnError;
-        }
-
-        public void setSkipMvOnError(boolean skipMvOnError) {
-            this.skipMvOnError = skipMvOnError;
-        }
-    }
-
     public static class Flags {
 
         public boolean projectCleaningOption = false;
@@ -410,9 +417,25 @@ public class ApplicationProperties {
         public boolean gitlabGroupCreationOption = false;
 
         /**
+         * add -f (force) option when executing git mv
+         **/
+        public boolean gitMvFOption = false;
+
+        /**
+         * add -k (skip) option when executing git mv
+         **/
+        public boolean gitMvKOption = false;
+
+        /**
          * Cleanup Working Diretory when finished
          */
         public Boolean cleanupWorkDirectory;
+        public boolean gitSvnClonePreserveEmptyDirsOption = false;
+
+        /**
+         * Added for printf %q issue on alpine
+         */
+        public boolean alpine = false;
 
         public Boolean getCleanupWorkDirectory() {
             return cleanupWorkDirectory;
@@ -420,6 +443,14 @@ public class ApplicationProperties {
 
         public void setCleanupWorkDirectory(Boolean cleanupWorkDirectory) {
             this.cleanupWorkDirectory = cleanupWorkDirectory;
+        }
+
+        public boolean isGitSvnClonePreserveEmptyDirsOption() {
+            return gitSvnClonePreserveEmptyDirsOption;
+        }
+
+        public void setGitSvnClonePreserveEmptyDirsOption(boolean gitSvnClonePreserveEmptyDirsOption) {
+            this.gitSvnClonePreserveEmptyDirsOption = gitSvnClonePreserveEmptyDirsOption;
         }
 
         public boolean isProjectCleaningOption() {
@@ -436,6 +467,30 @@ public class ApplicationProperties {
 
         public void setGitlabGroupCreationOption(boolean gitlabGroupCreationOption) {
             this.gitlabGroupCreationOption = gitlabGroupCreationOption;
+        }
+
+        public boolean isGitMvFOption() {
+            return gitMvFOption;
+        }
+
+        public void setGitMvFOption(boolean gitMvFOption) {
+            this.gitMvFOption = gitMvFOption;
+        }
+
+        public boolean isGitMvKOption() {
+            return gitMvKOption;
+        }
+
+        public void setGitMvKOption(boolean gitMvKOption) {
+            this.gitMvKOption = gitMvKOption;
+        }
+
+        public boolean isAlpine() {
+            return alpine;
+        }
+
+        public void setAlpine(boolean alpine) {
+            this.alpine = alpine;
         }
     }
 }

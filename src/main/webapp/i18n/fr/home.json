@@ -6,6 +6,8 @@
             "gitlab": "Gitlab"
         },
         "start" : "Commencer",
-        "check" : "Vérifier la migration"
+        "check" : "Vérifier la migration",
+        "messageTitle" : "Important",
+        "message" : ""
     }
 }

@@ -10,6 +10,6 @@ public class GitlabInfo {
 
     @Override
     public String toString() {
-        return String.format("Gitlab connection to %s using token %s...", url, token.substring(0,5));
+        return String.format("Gitlab connection to %s using token %s", url, token);
     }
 }

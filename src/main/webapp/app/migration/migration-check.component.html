@@ -1,5 +1,8 @@
 <!-- Search panel -->
 <div>
+    <h2 id="page-heading">
+        <span jhiTranslate="home.check">Check Migration</span>
+    </h2>
     <span jhiTranslate="global.search-by" style="margin-right: 20px">SearchBy</span>
     <form [formGroup]="searchFormGroup">
         <mat-form-field><input matInput type="text" placeholder="{{'svn2GitApp.migration.login' | translate}}" formControlName="userCriteria" /></mat-form-field>
@@ -33,7 +36,7 @@
                 <td>{{migration.svnGroup}}</td>
                 <td>{{migration.svnProject}}</td>
                 <td>{{migration.user}}</td>
-                <td>{{migration.date | date:'mediumDate'}}</td>
+                <td>{{migration.createdTimestamp | date:'medium'}}</td>
                 <td>{{migration.gitlabGroup}}</td>
                 <td>{{migration.gitlabProject}}</td>
                 <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>

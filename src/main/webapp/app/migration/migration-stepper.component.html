@@ -50,16 +50,16 @@
             <ng-template matStepLabel><span jhiTranslate="migration-process.svn.check.repository">Check your SVN repository</span></ng-template>
             <div style="margin-bottom: 10px">
                 <span jhiTranslate="migration-process.svn.use.default">Use default URL</span>
-                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()" [disabled]="svnCredsOption === 'required'"></mat-checkbox>
+                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()" [disabled]="!svnUrlModifiable"></mat-checkbox>
             </div>
             <div>
                 <mat-form-field style="width:250px">
-                    <input matInput placeholder="{{'migration-process.svn.url' | translate}}" formControlName="svnURL">
+                    <input matInput placeholder="{{'migration-process.svn.url' | translate}}" formControlName="svnURL" [disabled]="useDefaultSvn" required="true">
                 </mat-form-field>
-                <mat-form-field *ngIf="!useDefaultSvn">
+                <mat-form-field *ngIf="svnCredsOption === 'required'">
                     <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser" [required]="svnCredsOption === 'required'">
                 </mat-form-field>
-                <mat-form-field *ngIf="!useDefaultSvn">
+                <mat-form-field *ngIf="svnCredsOption === 'required'">
                     <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password" [required]="svnCredsOption === 'required'">
                 </mat-form-field>
             </div>
@@ -68,7 +68,7 @@
                     <input matInput placeholder="{{'migration-process.svn.repo.name' | translate}}" formControlName="svnRepository" required>
                 </mat-form-field>
                 <button type="button" mat-raised-button (click)="checkSvnRepository()"
-                        [ngClass]="cssClass(svnRepoKO)" [disabled]="checkingSvnRepo">
+                        [ngClass]="{ko: getSvnRepoKo(), ok: !getSvnRepoKo()}" [disabled]="checkingSvnRepo">
                     <span jhiTranslate="migration-process.check" *ngIf="!checkingSvnRepo">Check</span>
                     <span jhiTranslate="migration-process.checking" *ngIf="checkingSvnRepo">Checking</span>
                 </button>
@@ -115,7 +115,7 @@
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext (click)="historyStepSetDisabledBranchesTags()" [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext (click)="historyStepSetDisabledBranchesTags()" [disabled]="getSvnRepoKo() && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
@@ -179,7 +179,7 @@
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext [disabled]="svnRepoKO && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext [disabled]="getSvnRepoKo() && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
     </mat-step>
 

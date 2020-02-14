@@ -18,6 +18,9 @@ logging:
         ROOT: WARN
         io.github.jhipster: WARN
         fr.yodamad.svn2git: DEBUG
+        org:
+            gitlab4j:
+                api: DEBUG
 
 spring:
     profiles:
@@ -54,7 +57,7 @@ spring:
             hibernate.cache.use_query_cache: false
             hibernate.generate_statistics: true
     liquibase:
-        contexts: dev
+        contexts: dev,staticdata
     mail:
         host: localhost
         port: 25

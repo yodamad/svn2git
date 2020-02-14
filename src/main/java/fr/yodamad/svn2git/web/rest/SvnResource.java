@@ -8,7 +8,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
@@ -138,7 +142,7 @@ public class SvnResource {
             }
 
             if (module != null && name != null && !name.isEmpty() && KEYWORDS.contains(name)) {
-                log.info(format("Module %s with layout %s", module.name, name));
+                log.info(format("=============>module:%s layout:%s", module.name, name));
                 module.layoutElements.add(name);
             }
         });

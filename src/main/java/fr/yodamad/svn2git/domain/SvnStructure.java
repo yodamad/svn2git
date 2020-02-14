@@ -38,7 +38,7 @@ public class SvnStructure {
     public static class SvnModule extends SvnStructure {
 
         /** Used to trace if trunk, branches, tags associated with the module **/
-        public Set<String> layoutElements = new LinkedHashSet<>();
+        public Set<String> layoutElements = new LinkedHashSet<String>();
         /** Path in repository. */
         public String path;
         /** Potential submodules. */

@@ -21,5 +21,6 @@
     <include file="config/liquibase/changelog/2019061712000000_updatenulls_Mapping_StaticMapping.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2019061812000000_loaddata_StaticExtension.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2019061812000000_loaddata_StaticMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2019111912000000_AddColsMigrationCreatedWorkingDirectory.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

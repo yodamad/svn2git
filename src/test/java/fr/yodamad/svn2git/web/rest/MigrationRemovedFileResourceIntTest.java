@@ -1,12 +1,20 @@
 package fr.yodamad.svn2git.web.rest;
 
+import com.jayway.jsonpath.JsonPath;
 import fr.yodamad.svn2git.Svn2GitApp;
 
+import fr.yodamad.svn2git.config.ApplicationProperties;
+import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationRemovedFile;
 import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository;
+import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.MappingService;
+import fr.yodamad.svn2git.service.MigrationHistoryService;
+import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.service.MigrationRemovedFileService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,11 +26,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
@@ -55,7 +65,7 @@ public class MigrationRemovedFileResourceIntTest {
 
     @Autowired
     private MigrationRemovedFileRepository migrationRemovedFileRepository;
-    
+
     @Autowired
     private MigrationRemovedFileService migrationRemovedFileService;
 
@@ -71,15 +81,65 @@ public class MigrationRemovedFileResourceIntTest {
     @Autowired
     private EntityManager em;
 
+    @Autowired
+    private MigrationRepository migrationRepository;
+
     private MockMvc restMigrationRemovedFileMockMvc;
 
     private MigrationRemovedFile migrationRemovedFile;
+
+    /**
+     * for creation of supporting Migration record
+     */
+    private MockMvc restMigrationMockMvc;
+
+    /**
+     * for creation of supporting Migration record
+     */
+    private Migration migration;
+
+    /**
+     * for creation of supporting Migration record
+     */
+    @Autowired
+    private MigrationManager migrationManager;
+
+    /**
+     * for creation of supporting Migration record
+     */
+    @Autowired
+    private MigrationHistoryService migrationHistoryService;
+
+    /**
+     * for creation of supporting Migration record
+     */
+    @Autowired
+    private MappingService mappingService;
+
+    /**
+     * for creation of supporting Migration record
+     */
+    @Autowired
+    private GitlabResource gitlabResource;
+
+    /**
+     * for creation of supporting Migration record
+     */
+    @Autowired
+    private ApplicationProperties applicationProperties;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationRemovedFileResource migrationRemovedFileResource = new MigrationRemovedFileResource(migrationRemovedFileService);
         this.restMigrationRemovedFileMockMvc = MockMvcBuilders.standaloneSetup(migrationRemovedFileResource)
+            .setCustomArgumentResolvers(pageableArgumentResolver)
+            .setControllerAdvice(exceptionTranslator)
+            .setConversionService(createFormattingConversionService())
+            .setMessageConverters(jacksonMessageConverter).build();
+
+        final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService, gitlabResource, applicationProperties);
+        this.restMigrationMockMvc = MockMvcBuilders.standaloneSetup(migrationResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
@@ -104,12 +164,17 @@ public class MigrationRemovedFileResourceIntTest {
     @Before
     public void initTest() {
         migrationRemovedFile = createEntity(em);
+        // create an instance of Migration
+        migration = MigrationResourceIntTest.createEntity(em);
     }
 
     @Test
     @Transactional
     public void createMigrationRemovedFile() throws Exception {
         int databaseSizeBeforeCreate = migrationRemovedFileRepository.findAll().size();
+
+        Migration migration = createMigration();
+        migrationRemovedFile.setMigration(migration);
 
         // Create the MigrationRemovedFile
         restMigrationRemovedFileMockMvc.perform(post("/api/migration-removed-files")
@@ -149,6 +214,10 @@ public class MigrationRemovedFileResourceIntTest {
     @Test
     @Transactional
     public void getAllMigrationRemovedFiles() throws Exception {
+
+        Migration migration = createMigration();
+        migrationRemovedFile.setMigration(migration);
+
         // Initialize the database
         migrationRemovedFileRepository.saveAndFlush(migrationRemovedFile);
 
@@ -162,10 +231,15 @@ public class MigrationRemovedFileResourceIntTest {
             .andExpect(jsonPath("$.[*].reason").value(hasItem(DEFAULT_REASON.toString())))
             .andExpect(jsonPath("$.[*].fileSize").value(hasItem(DEFAULT_FILE_SIZE.intValue())));
     }
-    
+
+
     @Test
     @Transactional
     public void getMigrationRemovedFile() throws Exception {
+
+        Migration migration = createMigration();
+        migrationRemovedFile.setMigration(migration);
+
         // Initialize the database
         migrationRemovedFileRepository.saveAndFlush(migrationRemovedFile);
 
@@ -180,6 +254,47 @@ public class MigrationRemovedFileResourceIntTest {
             .andExpect(jsonPath("$.fileSize").value(DEFAULT_FILE_SIZE.intValue()));
     }
 
+    /**
+     * Supporting method for creation of a Migration record that can be attached to a MigrationRemovedFile
+     * @throws Exception
+     */
+    @Transactional
+    public Migration createMigration() throws Exception {
+
+        int databaseSizeBeforeCreate = migrationRepository.findAll().size();
+
+        // Create the Migration
+        MvcResult mvcResult = restMigrationMockMvc.perform(post("/api/migrations")
+            .contentType(TestUtil.APPLICATION_JSON_UTF8)
+            .content(TestUtil.convertObjectToJsonBytes(migration)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+        System.out.println(mvcResult.getResponse().getContentAsString());
+        Integer id = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.id");
+
+        // Validate the Migration in the database
+        List<Migration> migrationList = migrationRepository.findAll();
+        assertThat(migrationList).hasSize(databaseSizeBeforeCreate + 1);
+        Migration testMigration = migrationList.get(migrationList.size() - 1);
+        assertThat(testMigration.getSvnGroup()).isEqualTo(MigrationResourceIntTest.DEFAULT_SVN_GROUP);
+        assertThat(testMigration.getSvnProject()).isEqualTo(MigrationResourceIntTest.DEFAULT_SVN_PROJECT);
+        assertThat(testMigration.getUser()).isEqualTo(MigrationResourceIntTest.DEFAULT_USER);
+        assertThat(testMigration.getDate()).isEqualTo(MigrationResourceIntTest.UPDATED_DATE);
+        assertThat(testMigration.getGitlabGroup()).isEqualTo(MigrationResourceIntTest.DEFAULT_GITLAB_GROUP);
+        assertThat(testMigration.getGitlabProject()).isEqualTo(MigrationResourceIntTest.DEFAULT_GITLAB_PROJECT);
+        Assertions.assertThat(testMigration.getStatus()).isEqualTo(MigrationResourceIntTest.WAITING_STATUS);
+
+        // Get the migration object and return it.
+        Optional<Migration> migration = migrationRepository.findById(id.longValue());
+        assertThat(migration.isPresent()).isEqualTo(true);
+
+        return migration.get();
+
+    }
+
+
+
     @Test
     @Transactional
     public void getNonExistingMigrationRemovedFile() throws Exception {
@@ -191,6 +306,10 @@ public class MigrationRemovedFileResourceIntTest {
     @Test
     @Transactional
     public void updateMigrationRemovedFile() throws Exception {
+
+        Migration migration = createMigration();
+        migrationRemovedFile.setMigration(migration);
+
         // Initialize the database
         migrationRemovedFileService.save(migrationRemovedFile);
 
@@ -242,6 +361,10 @@ public class MigrationRemovedFileResourceIntTest {
     @Test
     @Transactional
     public void deleteMigrationRemovedFile() throws Exception {
+
+        Migration migration = createMigration();
+        migrationRemovedFile.setMigration(migration);
+
         // Initialize the database
         migrationRemovedFileService.save(migrationRemovedFile);
 

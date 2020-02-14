@@ -12,7 +12,7 @@
         "directory" : "Répertoire",
         "done" : "Fait",
         "extension" : {
-            "add" : "Autre extension (ie *.zip or *.jar)"
+            "add" : "Autre extension (e.g. *.zip or *.jar)"
         },
         "file" : {
             "extensions" : "Extensions de fichiers à nettoyer",

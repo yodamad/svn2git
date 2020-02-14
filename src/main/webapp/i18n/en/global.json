@@ -143,7 +143,7 @@
         "idexists": "A new {{ entityName }} cannot already have an ID",
         "idnull": "Invalid ID"
     },
-    "footer": "Copyright - 2018",
+    "footer": "Copyright - 2019",
     "migration": {
         "title": "Migration",
         "confirm": "Confirm migration retry",

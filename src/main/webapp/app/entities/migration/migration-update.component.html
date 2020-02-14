@@ -150,6 +150,18 @@
                     <input type="text" class="form-control" name="branchesToMigrate" id="field_branchesToMigrate"
                         [(ngModel)]="migration.branchesToMigrate" />
                 </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.createdTimestamp" for="field_createdTimestamp">Created Timestamp</label>
+                    <div class="d-flex">
+                        <input id="field_createdTimestamp" type="datetime-local" class="form-control" name="createdTimestamp" [(ngModel)]="createdTimestamp"
+                        />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.migration.workingDirectory" for="field_workingDirectory">Working Directory</label>
+                    <input type="text" class="form-control" name="workingDirectory" id="field_workingDirectory"
+                        [(ngModel)]="migration.workingDirectory" />
+                </div>
 
             </div>
             <div>

@@ -30,7 +30,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,6 +89,7 @@ public class MigrationResource {
         }
 
         migration.setDate(LocalDate.now());
+        migration.setCreatedTimestamp(Instant.now());
         migration.setStatus(StatusEnum.WAITING);
 
         Migration result = init(migration);
@@ -185,6 +188,20 @@ public class MigrationResource {
     }
 
     /**
+     * GET  /migrations/active : get all the migrations that are in running or waiting state
+     *
+     * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
+     */
+    @GetMapping("/migrations/active")
+    @Timed
+    @JsonView(View.Public.class)
+    public ResponseEntity<List<Migration>> getAllActiveMigrations() {
+        log.debug("REST request to get a page of Migrations");
+        List<Migration> migrations = migrationRepository.findAllByStatusInOrderByDateDesc(Arrays.asList(StatusEnum.RUNNING, StatusEnum.WAITING));
+        return new ResponseEntity<>(migrations, null, HttpStatus.OK);
+    }
+
+    /**
      * GET  /migrations/user/:user : get all the migrations for a given user.
      *
      * @param user username for migrations
@@ -195,7 +212,7 @@ public class MigrationResource {
     @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByUser(@PathVariable String user) {
         log.debug("REST request to get a migrations of Migrations for a given user");
-        List<Migration> migrations = migrationRepository.findAllByUserOrderByIdDesc(user);
+        List<Migration> migrations = migrationRepository.findAllByUserIgnoreCaseOrderByIdDesc(user);
         return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 
@@ -210,7 +227,7 @@ public class MigrationResource {
     @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByGroup(@PathVariable String group) {
         log.debug("REST request to get a migrationRepositoryAllBySvnGroup of Migrations for a given group");
-        List<Migration> migrations = migrationRepository.findAllBySvnGroupOrderByIdDesc(group);
+        List<Migration> migrations = migrationRepository.findAllBySvnGroupIgnoreCaseOrderByIdDesc(group);
         return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 
@@ -225,7 +242,7 @@ public class MigrationResource {
     @JsonView(View.Public.class)
     public ResponseEntity<List<Migration>> getMigrationsByProject(@PathVariable String project) {
         log.debug("REST request to get a migrations of Migrations for a given project");
-        List<Migration> migrations = migrationRepository.findAllBySvnProjectEndingWithOrderByIdDesc(project);
+        List<Migration> migrations = migrationRepository.findAllBySvnProjectEndingWithIgnoreCaseOrderByIdDesc(project);
         return new ResponseEntity<>(migrations, null, HttpStatus.OK);
     }
 

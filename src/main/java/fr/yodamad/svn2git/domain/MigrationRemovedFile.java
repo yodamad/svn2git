@@ -1,12 +1,14 @@
 package fr.yodamad.svn2git.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import fr.yodamad.svn2git.domain.enumeration.Reason;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
+
 import java.io.Serializable;
 import java.util.Objects;
+
+import fr.yodamad.svn2git.domain.enumeration.Reason;
 
 /**
  * A MigrationRemovedFile.

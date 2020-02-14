@@ -1,0 +1,49 @@
+image: maven:3-jdk-8
+
+variables:
+    MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode -Dstyle.color=always -Djansi.force=true"
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+        - .m2/repository/
+
+before_script:
+    ##- whoami
+    - pwd
+    - java -version
+    - cat /etc/os-release
+    - echo CI_COMMIT_REF_SLUG = ${CI_COMMIT_REF_SLUG}
+    - echo CI_COMMIT_REF_NAME = ${CI_COMMIT_REF_NAME}
+    - echo SONAR_TOKEN = $SONAR_TOKEN
+    - echo CI_PROJECT_PATH = $CI_PROJECT_PATH
+    - echo CI_COMMIT_SHA = $CI_COMMIT_SHA
+    - ls -lta
+
+stages:
+  - build
+  - archive
+  - deploy
+
+build:
+    stage: build
+    script:
+        - mvn $MAVEN_CLI_OPTS -Pprod clean verify
+    except:
+        - tags
+
+archive-binary:
+    stage: archive
+    script:
+        - mvn $MAVEN_CLI_OPTS -DskipTests -Ddependency-check.skip=true -Pprod clean deploy
+    only:
+        - master
+
+archive-docker-image:
+    stage: archive
+    script:
+        - mvn $MAVEN_CLI_OPTS -DskipTests -Djib.from.auth.username=${ARTIFACTORY_USERNAME} -Djib.from.auth.password=${ARTIFACTORY_API_KEY} -Djib.to.auth.username=${ARTIFACTORY_USERNAME} -Djib.to.auth.password=${ARTIFACTORY_API_KEY} package -Pprod verify jib:build
+    only:
+        - master
+    when: manual

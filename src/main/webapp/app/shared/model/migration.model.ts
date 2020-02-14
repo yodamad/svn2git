@@ -33,6 +33,8 @@ export interface IMigration {
     svnHistory?: string;
     tagsToMigrate?: string;
     branchesToMigrate?: string;
+    createdTimestamp?: Moment;
+    workingDirectory?: string;
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
 }
@@ -60,6 +62,8 @@ export class Migration implements IMigration {
         public svnHistory?: string,
         public tagsToMigrate?: string,
         public branchesToMigrate?: string,
+        public createdTimestamp?: Moment,
+        public workingDirectory?: string,
         public histories?: IMigrationHistory[],
         public mappings?: IMapping[]
     ) {}

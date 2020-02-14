@@ -12,7 +12,7 @@
         "directory" : "Directory",
         "done" : "Done",
         "extension" : {
-            "add" : "Custom extension (ie *.zip or *.jar)"
+            "add" : "Custom extension (e.g. *.zip or *.jar)"
         },
         "file" : {
             "extensions" : "File extensions to clean",

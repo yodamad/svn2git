@@ -1,0 +1,134 @@
+{
+    "svnGroup": "livernette",
+    "svnProject": "/Jess",
+    "user": "DUMMY_USER",
+    "date": null,
+    "gitlabGroup": "SVN2GIT_TEST2",
+    "gitlabProject": "/Jess",
+    "maxFileSize": "100M",
+    "forbiddenFileExtensions": "*.exe,*.avi,*.war,*.apk,*.rpm,*.ear,*.class,*.ipa,*.cab,*.mp3,*.mp4,*.ogg,*.iso,*.wmv,*.mov,*.deb,*.bar,*.zip,*.gz,*.mkv,*.rar,*.tar,*.torrent,*.7z,*.pem,*.key,*.history",
+    "gitlabUrl": "https://gitlab.dummy.local/",
+    "svnUrl": "https://subversion.dummy.local/",
+    "svnUser": "DUMMY_USER",
+    "svnPassword": "DUMMY_SVN_PASSWORD",
+    "trunk": "*",
+    "branches": "*",
+    "tags": "*",
+    "svnHistory": "nothing",
+    "tagsToMigrate": "jesstag3",
+    "branchesToMigrate": "jesstag3branch",
+    "mappings": [
+        {
+            "id": 1,
+            "svnDirectory": "00_projects",
+            "regex": "*",
+            "gitDirectory": "documentation/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 2,
+            "svnDirectory": "01_plans",
+            "regex": "*",
+            "gitDirectory": "documentation/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 3,
+            "svnDirectory": "02_studies",
+            "regex": "*",
+            "gitDirectory": "documentation/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 4,
+            "svnDirectory": "03_req",
+            "regex": "*",
+            "gitDirectory": "documentation/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 5,
+            "svnDirectory": "04_design",
+            "regex": "*",
+            "gitDirectory": "documentation/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 6,
+            "svnDirectory": "05_impl/0_src",
+            "regex": "*",
+            "gitDirectory": ".",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 7,
+            "svnDirectory": "05_impl/1_bin",
+            "regex": "*",
+            "gitDirectory": "archive/05_impl/1_bin/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 8,
+            "svnDirectory": "05_impl/3_test",
+            "regex": "*",
+            "gitDirectory": "ci/test/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 9,
+            "svnDirectory": "05_impl/4_ci",
+            "regex": "*",
+            "gitDirectory": "ci/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 10,
+            "svnDirectory": "05_impl/5_scripts",
+            "regex": "*",
+            "gitDirectory": "scripts/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 11,
+            "svnDirectory": "05_impl/2_tools",
+            "regex": "*",
+            "gitDirectory": "tools/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 12,
+            "svnDirectory": "06_test",
+            "regex": "*",
+            "gitDirectory": "documentation/test/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 13,
+            "svnDirectory": "07_bookshelf",
+            "regex": "*",
+            "gitDirectory": "documentation/",
+            "svnDirectoryDelete": false,
+            "isStatic": true
+        },
+        {
+            "id": 14,
+            "svnDirectory": "08_history",
+            "regex": "",
+            "gitDirectory": "",
+            "svnDirectoryDelete": true,
+            "isStatic": true
+        }
+    ]
+}

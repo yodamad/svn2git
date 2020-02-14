@@ -10,23 +10,21 @@
     <property name="now" value="now()" dbms="mysql"/>
     <property name="autoIncrement" value="true"/>
 
-    <changeSet id="addColSvnDirectoryDeleteStaticMapping" author="jbu">
-
-        <addColumn tableName="static_mapping">
-            <column name="svn_directory_delete" type="bit">
+    <changeSet id="addColCreatedTimestamp" author="jbu">
+        <addColumn tableName="migration">
+            <column name="created_timestamp" type="datetime">
                 <constraints nullable="true" />
             </column>
         </addColumn>
 
+        <dropDefaultValue tableName="migration" columnName="created_timestamp" columnDataType="datetime"/>
     </changeSet>
 
-    <changeSet id="addColSvnDirectoryDeleteMapping" author="jbu">
-
-        <addColumn tableName="mapping">
-            <column name="svn_directory_delete" type="bit">
+    <changeSet id="addColWorkingDirectory" author="jbu">
+        <addColumn tableName="migration">
+            <column name="working_directory" type="varchar(2048)">
                 <constraints nullable="true" />
             </column>
         </addColumn>
-
     </changeSet>
 </databaseChangeLog>

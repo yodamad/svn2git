@@ -1,10 +1,12 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
+
 import fr.yodamad.svn2git.domain.StaticMapping;
 import fr.yodamad.svn2git.repository.StaticMappingRepository;
 import fr.yodamad.svn2git.service.StaticMappingService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;

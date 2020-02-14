@@ -30,6 +30,8 @@
             <th jhiSortBy="svnHistory"><span jhiTranslate="svn2GitApp.migration.svnHistory">Svn History</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="tagsToMigrate"><span jhiTranslate="svn2GitApp.migration.tagsToMigrate">Tags To Migrate</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="branchesToMigrate"><span jhiTranslate="svn2GitApp.migration.branchesToMigrate">Branches To Migrate</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="createdTimestamp"><span jhiTranslate="svn2GitApp.migration.createdTimestamp">Created Timestamp</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="workingDirectory"><span jhiTranslate="svn2GitApp.migration.workingDirectory">Working Directory</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -51,6 +53,8 @@
                 <td>{{migration.svnHistory}}</td>
                 <td>{{migration.tagsToMigrate}}</td>
                 <td>{{migration.branchesToMigrate}}</td>
+                <td>{{migration.createdTimestamp | date:'medium'}}</td>
+                <td>{{migration.workingDirectory}}</td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

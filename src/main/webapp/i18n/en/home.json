@@ -6,6 +6,8 @@
             "gitlab": "Gitlab UI"
         },
         "start" : "Start migration",
-        "check" : "Check migration"
+        "check" : "Check migration",
+        "messageTitle" : "Important",
+        "message" : ""
     }
 }

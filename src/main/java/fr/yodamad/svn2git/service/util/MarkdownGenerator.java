@@ -159,7 +159,7 @@ public class MarkdownGenerator {
                 md.append(new Heading("Migration Removed Files : Reason EXTENSION", 3)).append(EMPTY_LINE);
                 Table.Builder migrationRemovedFileReasonExtensionTableBuilder = new Table.Builder()
                     .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
-                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "Reason", "fileSize");
+                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "fileSize");
 
                 migrationRemovedFilesReasonExtension.stream().forEach(migrationRemovedFile -> {
                     addRemovedFileRow(migrationRemovedFileReasonExtensionTableBuilder, migrationRemovedFile);
@@ -181,7 +181,7 @@ public class MarkdownGenerator {
                 md.append(new Heading("Migration Removed Files : Reason SIZE", 3)).append(EMPTY_LINE);
                 Table.Builder migrationRemovedFileReasonSizeTableBuilder = new Table.Builder()
                     .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
-                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "Reason", "fileSize");
+                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "fileSize");
 
                 migrationRemovedFilesReasonSize.stream().forEach(migrationRemovedFile -> {
                     addRemovedFileRow(migrationRemovedFileReasonSizeTableBuilder, migrationRemovedFile);
@@ -284,14 +284,19 @@ public class MarkdownGenerator {
             fileSize = BytesConverterUtil.humanReadableByteCount(migrationRemovedFile.getFileSize(), false);
         }
 
-        if (!applicationProperties.artifactory.binariesDirectory.isEmpty()) {
+        if (applicationProperties.artifactory.enabled) {
             // Remove leading slash from artifactory.binariesDirectory
             String binariresDirectory = applicationProperties.artifactory.binariesDirectory.substring(1);
             migrationRemovedFileTableBuilder.addRow(id,
                 ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? path : new BoldText(new ItalicText(path))),
                 svnLocation,
                 ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? "Yes" : ""),
-                reason,
+                fileSize);
+        } else {
+            migrationRemovedFileTableBuilder.addRow(id,
+                path,
+                svnLocation,
+                "Yes",
                 fileSize);
         }
     }

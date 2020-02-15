@@ -8,6 +8,10 @@
         "start" : "Start migration",
         "check" : "Check migration",
         "messageTitle" : "Important",
-        "message" : ""
+        "message" : "",
+        "migrations": {
+            "in_progress": "Migration in progress",
+            "last": "Last 5 migrations"
+        }
     }
 }

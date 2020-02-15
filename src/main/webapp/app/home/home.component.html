@@ -16,22 +16,36 @@
             <button type="submit" class="btn btn-primary" jhiTranslate="home.check" (click)="checkMigration()">Check migration</button>
         </div>
     </div>
-    <div class="col-md-5">
-        <br/>
-        <br/>
-        <br/>
-        <i><p jhiTranslate="home.messageTitle">
-            Important
-        </p></i>
-        <ul>
-            <li jhiTranslate="home.message"></li>
-        </ul>
-    </div>
 </div>
-<div class="table-responsive" *ngIf="migrations">
+<div class="table-responsive" *ngIf="migrations.length > 0">
+    <h4 jhiTranslate="home.migrations.in_progress">Migrations in progress</h4>
     <table class="table table-striped">
         <tbody infinite-scroll [infiniteScrollDistance]="0">
         <tr *ngFor="let migration of migrations">
+            <td>{{migration.id}}</td>
+            <td>{{migration.user}}</td>
+            <td>SVN({{migration.svnGroup}}{{migration.svnProject}}) to GITLAB({{migration.gitlabGroup}}{{migration.gitlabProject}})</td>
+            <td>{{migration.createdTimestamp | date:'medium'}}</td>
+            <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
+        </tr>
+        </tbody>
+        <thead>
+        <tr jhiSort>
+            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="user"><span jhiTranslate="svn2GitApp.migration.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="svnGroup"><span jhiTranslate="migration-process.summary">Migration</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+        </tr>
+        </thead>
+    </table>
+</div>
+
+<div class="table-responsive" *ngIf="lastMigrations.length > 0">
+    <h4 jhiTranslate="home.migrations.last">Last migrations</h4>
+    <table class="table table-striped">
+        <tbody infinite-scroll [infiniteScrollDistance]="0">
+        <tr *ngFor="let migration of lastMigrations">
             <td>{{migration.id}}</td>
             <td>{{migration.user}}</td>
             <td>SVN({{migration.svnGroup}}{{migration.svnProject}}) to GITLAB({{migration.gitlabGroup}}{{migration.gitlabProject}})</td>

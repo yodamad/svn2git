@@ -12,6 +12,7 @@
                 "mapping": "Mapping",
                 "staticMapping": "Static Mapping",
                 "staticExtension": "Static Extension",
+                "migrationRemovedFile": "Migration Removed File",
                 "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
             },
             "account": {
@@ -142,7 +143,7 @@
         "idexists": "A new {{ entityName }} cannot already have an ID",
         "idnull": "Invalid ID"
     },
-    "footer": "Copyright - 2018",
+    "footer": "Copyright - 2019",
     "migration": {
         "title": "Migration",
         "confirm": "Confirm migration retry",

@@ -31,19 +31,19 @@ public abstract class Shell {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static String workingDir(String directory, Migration mig) throws IOException, InterruptedException, RuntimeException {
+    public static String workingDir(CommandManager commandManager, String directory, Migration mig) throws IOException, InterruptedException, RuntimeException {
         String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         if (isWindows) {
             String path = format("%s%s", System.getenv("SystemDrive"), directory.replaceAll("/", "\\\\"));
             if (!new File(path).exists()) {
                 String mkdir = format("mkdir %s", path);
-                execCommand(System.getenv("SystemDrive"), mkdir);
+                execCommand(commandManager, System.getenv("SystemDrive"), mkdir);
             }
             return directory + "\\" + today + "_" + mig.getId();
         }
         if (!new File(directory).exists()) {
             String mkdir = format("mkdir -p %s", directory);
-            execCommand("/", mkdir);
+            execCommand(commandManager,"/", mkdir);
         }
         return directory + "/" + today + "_" + mig.getId();
     }
@@ -68,8 +68,8 @@ public abstract class Shell {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static int execCommand(String directory, String command) throws InterruptedException, IOException {
-        return execCommand(directory, command, command);
+    public static int execCommand(CommandManager commandManager, String directory, String command) throws InterruptedException, IOException {
+        return execCommand(commandManager, directory, command, command);
     }
 
     /**
@@ -80,7 +80,8 @@ public abstract class Shell {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static int execCommand(String directory, String command, String securedCommandToPrint) throws InterruptedException, IOException {
+    public static int execCommand(CommandManager commandManager, String directory, String command, String securedCommandToPrint) throws InterruptedException, IOException {
+
         ProcessBuilder builder = new ProcessBuilder();
         String execDir = formatDirectory(directory);
         if (isWindows) {
@@ -107,7 +108,13 @@ public abstract class Shell {
         LOG.debug(format("Exit : %d", exitCode));
 
         if (exitCode != 0) {
+            // trace successful commands
+            commandManager.addFailedCommand(directory, securedCommandToPrint, stderr);
+
             throw new RuntimeException(stderr);
+        } else {
+            // trace successful commands
+            commandManager.addSuccessfulCommand(directory, securedCommandToPrint);
         }
 
         return exitCode;

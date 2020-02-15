@@ -29,7 +29,8 @@ export class NavbarComponent implements OnInit {
         private profileService: ProfileService,
         private router: Router
     ) {
-        this.version = VERSION ? 'v' + VERSION : '';
+        // TODO : Deploy Prod from a release and not a snapshot
+        this.version = VERSION ? 'v' + VERSION.replace('-SNAPSHOT', '') : '';
         this.isNavbarCollapsed = true;
     }
 

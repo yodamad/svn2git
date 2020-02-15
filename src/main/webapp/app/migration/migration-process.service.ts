@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SERVER_API_URL } from 'app/app.constants';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
@@ -23,6 +23,7 @@ export class MigrationProcessService {
     private userMigrationUrl = this.migrationUrl + '/user/';
     private groupMigrationUrl = this.migrationUrl + '/group/';
     private projectMigrationUrl = this.migrationUrl + '/project/';
+    private activeMigrationsUrl = this.migrationUrl + '/active';
 
     constructor(private http: HttpClient) {}
 
@@ -52,6 +53,22 @@ export class MigrationProcessService {
         return this.http
             .post<SvnStructure>(`${this.repositoryUrl}/${name}`, svnInfo, { observe: 'response' })
             .pipe(map((res: EntityStructureResponseType) => res));
+    }
+
+    findActiveMigrations(): Observable<MigrationArrayResponseType> {
+        return this.http
+            .get<IMigration[]>(`${this.activeMigrationsUrl}`, { observe: 'response' })
+            .pipe(map((res: MigrationArrayResponseType) => res));
+    }
+
+    findLastMigrations(lastNum: number): Observable<MigrationArrayResponseType> {
+        let params = new HttpParams();
+        params = params.append('page', '0');
+        params = params.append('size', (lastNum as any) as string);
+        params = params.append('sort', 'id,desc');
+        return this.http
+            .get<IMigration[]>(`${this.migrationUrl}`, { observe: 'response', params })
+            .pipe(map((res: MigrationArrayResponseType) => res));
     }
 
     findMigrationByUser(user: string): Observable<MigrationArrayResponseType> {
@@ -88,7 +105,7 @@ export class SvnStructure {
 }
 
 export class SvnModule {
-    constructor(public name: string, public path: string, public subModules: SvnModule[]) {}
+    constructor(public layoutElements: string[], public name: string, public path: string, public subModules: SvnModule[]) {}
 }
 
 export class SvnFlatModule {

@@ -16,6 +16,10 @@
             <th mat-header-cell *matHeaderCellDef style="padding-left: 40px"><span jhiTranslate="migration-process.git.directory">Git directory</span></th>
             <td mat-cell *matCellDef="let mapping" style="padding-left: 40px">{{ mapping.gitDirectory }}</td>
         </ng-container>
+        <ng-container matColumnDef="svnDirectoryDelete" style="padding-left: 40px">
+            <th mat-header-cell *matHeaderCellDef style="padding-left: 40px"><span jhiTranslate="migration-process.svn-directory-delete">SVN Directory Delete</span></th>
+            <td mat-cell *matCellDef="let mapping" style="padding-left: 40px">{{ mapping.svnDirectoryDelete }}</td>
+        </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>

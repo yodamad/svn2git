@@ -13,7 +13,8 @@
         "checks": {
             "gitlab": {
                 "user": "Error checking Gitlab user",
-                "group": "Error checking Gitlab group"
+                "groupauto": "Error checking Gitlab group.",
+                "groupmanual": "Error checking Gitlab group. Please create group manually."
             },
             "svn": "Error checking SVN repository"
         },

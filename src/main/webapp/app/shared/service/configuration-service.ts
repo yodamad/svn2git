@@ -13,6 +13,7 @@ export class ConfigurationService {
     private resourceUrl = SERVER_API_URL + 'api/config/';
     private svnUrl = this.resourceUrl + 'svn';
     private svnCredsOptionUrl = this.svnUrl + '/credentials';
+    private svnUrlModifiableOptionUrl = this.svnUrl + '/svnUrlModifiable';
     private gitlabUrl = this.resourceUrl + 'gitlab';
     private gitlabCredsOptionUrl = this.gitlabUrl + '/credentials';
     private overrideUrl = this.resourceUrl + 'override/';
@@ -34,6 +35,13 @@ export class ConfigurationService {
      */
     svnCredsOption(): Observable<string> {
         return this.http.get(`${this.svnCredsOptionUrl}`, { responseType: 'text' }).pipe(map(res => res));
+    }
+
+    /**
+     * @return configured svn svnUrlModifiable option
+     */
+    svnUrlModifiable(): Observable<boolean> {
+        return this.http.get(`${this.svnUrlModifiableOptionUrl}`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
     }
 
     /**
@@ -66,6 +74,10 @@ export class ConfigurationService {
 
     flagProjectCleaning(): Observable<boolean> {
         return this.http.get(`${this.flagsUrl}/projectCleaningOption`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
+    }
+
+    flagGitlabGroupCreation(): Observable<boolean> {
+        return this.http.get(`${this.flagsUrl}/gitlabGroupCreationOption`, { responseType: 'text' }).pipe(map(res => JSON.parse(res)));
     }
 
     /**

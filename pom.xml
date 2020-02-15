@@ -4,11 +4,15 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>1.17.1</version>
-    <packaging>war</packaging>
+    <version>1.18-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <name>Svn 2 GitLab</name>
 
     <repositories>
+        <repository>
+            <id>jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+        </repository>
         <!-- jhipster-needle-maven-repository -->
     </repositories>
 
@@ -19,7 +23,7 @@
         <maven.version>3.0.0</maven.version>
         <java.version>1.8</java.version>
         <scala.version>2.12.6</scala.version>
-        <node.version>v8.12.0</node.version>
+        <node.version>v8.16.2</node.version>
         <yarn.version>v1.10.1</yarn.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -61,8 +65,8 @@
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
         <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
-        <jib-maven-plugin.version>0.9.11</jib-maven-plugin.version>
-        <frontend-maven-plugin.version>1.6</frontend-maven-plugin.version>
+        <jib-maven-plugin.version>1.8.0</jib-maven-plugin.version>
+        <frontend-maven-plugin.version>1.8.0</frontend-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.2</jacoco-maven-plugin.version>
         <scala-maven-plugin.version>3.4.2</scala-maven-plugin.version>
         <sonar-maven-plugin.version>3.5.0.1254</sonar-maven-plugin.version>
@@ -331,11 +335,15 @@
         </dependency>
         <dependency>
             <groupId>com.madgag</groupId>
-	    <artifactId>bfg</artifactId>
-	    <version>custom</version>
-	    <systemPath>${project.basedir}/external/bfg-custom.jar</systemPath>
-	    <scope>system</scope>
+            <artifactId>bfg</artifactId>
+            <version>custom</version>
+            <systemPath>${project.basedir}/external/bfg-custom.jar</systemPath>
+            <scope>system</scope>
             <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-library</artifactId>
@@ -359,6 +367,28 @@
             <artifactId>markdowngenerator</artifactId>
             <version>1.3.1.1</version>
         </dependency>
+        <!-- Artifactory -->
+        <dependency>
+            <groupId>org.jfrog.artifactory.client</groupId>
+            <artifactId>artifactory-java-client-services</artifactId>
+            <version>2.8.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Jolokia for Glowroot -->
+        <dependency>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-core</artifactId>
+        </dependency>
+
         <!-- jhipster-needle-maven-add-dependency -->
     </dependencies>
 
@@ -568,10 +598,10 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <mainClass>${start-class}</mainClass>
                     <executable>true</executable>
                     <fork>true</fork>
-					<includeSystemScope>true</includeSystemScope>
                     <!--
                     Enable the line below to have remote debugging of your application on port 5005
                     <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments>
@@ -602,11 +632,30 @@
                             <SPRING_OUTPUT_ANSI_ENABLED>ALWAYS</SPRING_OUTPUT_ANSI_ENABLED>
                             <JHIPSTER_SLEEP>0</JHIPSTER_SLEEP>
                         </environment>
-                        <useCurrentTimestamp>true</useCurrentTimestamp>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                     </container>
                 </configuration>
             </plugin>
             <!-- jhipster-needle-maven-add-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo>Displaying value of 'basedir' property</echo>
+                                <echo>[basedir]: ${basedir}</echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -719,6 +768,15 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>yarn version</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>-v</arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>yarn install</id>
                                 <goals>
                                     <goal>yarn</goal>
@@ -750,6 +808,9 @@
                                     <includes>
                                         <include>WEB-INF/**</include>
                                     </includes>
+									<excludes>
+										<exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
+									</excludes>
                                 </resource>
                             </webResources>
                         </configuration>
@@ -796,6 +857,10 @@
                                     <includes>
                                         <include>WEB-INF/**</include>
                                     </includes>
+									<excludes>
+										<exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
+                                        <exclude>WEB-INF/lib/httpclient-4.5.6.jar</exclude>
+									</excludes>
                                 </resource>
                             </webResources>
                         </configuration>
@@ -845,6 +910,10 @@
                                     <includes>
                                         <include>WEB-INF/**</include>
                                     </includes>
+									<excludes>
+										<exclude>WEB-INF/lib/logback-classic-1.2.3.jar</exclude>
+                                        <exclude>WEB-INF/lib/httpclient-4.5.6.jar</exclude>
+									</excludes>
                                 </resource>
                             </webResources>
                         </configuration>
@@ -854,6 +923,7 @@
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <version>${spring-boot.version}</version>
                         <configuration>
+                            <!--suppress UnresolvedMavenProperty -->
                             <mainClass>${start-class}</mainClass>
                             <executable>true</executable>
                         </configuration>
@@ -979,6 +1049,7 @@
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <version>${spring-boot.version}</version>
                         <configuration>
+                            <!--suppress UnresolvedMavenProperty -->
                             <mainClass>${start-class}</mainClass>
                             <executable>true</executable>
                             <fork>true</fork>

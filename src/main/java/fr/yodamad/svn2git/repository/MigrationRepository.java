@@ -22,21 +22,29 @@ public interface MigrationRepository extends JpaRepository<Migration, Long> {
      */
     List<Migration> findAllByStatusOrderByDateDesc(StatusEnum status);
 
+
+    /**
+     * Find Migrations that are running or waiting (i.e. can query using a list of StatusEnum as parameter)
+     * @param statusList List of StatusEnum for in clause
+     * @return
+     */
+    List<Migration> findAllByStatusInOrderByDateDesc(List<StatusEnum> statusList);
+
     /**
      * @param user input user
      * @return all migrations invoked by user
      */
-    List<Migration> findAllByUserOrderByIdDesc(String user);
+    List<Migration> findAllByUserIgnoreCaseOrderByIdDesc(String user);
 
     /**
      * @param group input group
      * @return all migrations concerning given group
      */
-    List<Migration> findAllBySvnGroupOrderByIdDesc(String group);
+    List<Migration> findAllBySvnGroupIgnoreCaseOrderByIdDesc(String group);
 
     /**
      * @param project input project
      * @return all migrations concerning given project
      */
-    List<Migration> findAllBySvnProjectEndingWithOrderByIdDesc(String project);
+    List<Migration> findAllBySvnProjectEndingWithIgnoreCaseOrderByIdDesc(String project);
 }

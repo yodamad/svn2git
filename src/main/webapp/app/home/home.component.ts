@@ -23,6 +23,9 @@ export class HomeComponent implements OnInit {
     // migrations in Running or Waiting State initialised in ngOnInit
     migrations: IMigration[] = [];
 
+    // last migrations
+    lastMigrations: IMigration[] = [];
+
     // SnackBar config
     snackBarConfig = new MatSnackBarConfig();
 
@@ -52,6 +55,10 @@ export class HomeComponent implements OnInit {
         this._migrationProcessService
             .findActiveMigrations()
             .subscribe((res: HttpResponse<IMigration[]>) => (this.migrations = res.body), () => this.openSnackBar('error.http.504'));
+
+        this._migrationProcessService
+            .findLastMigrations(5)
+            .subscribe(res => (this.lastMigrations = res.body), () => this.openSnackBar('error.http.504'));
     }
 
     registerAuthenticationSuccess() {

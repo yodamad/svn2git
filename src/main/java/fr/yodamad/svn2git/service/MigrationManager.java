@@ -145,17 +145,12 @@ public class MigrationManager {
             // Log default character encoding
             LOG.info("Charset.defaultCharset().displayName():" + Charset.defaultCharset().displayName());
 
-
             // 2.2. SVN checkout
             gitManager.gitSvnClone(workUnit);
 
             copyRootDirectory(workUnit);
             // Migration is now reexecutable in cases where there is a failure
             commandManager.setReexecutable(true);
-
-//            if (commandManager.isReexecutable() && StringUtils.isBlank(migration.getWorkingDirectory())) {
-//                throw new RuntimeException("Testing Reexecution");
-//            }
 
             // Apply dynamic local configuration
             applicationProperties.

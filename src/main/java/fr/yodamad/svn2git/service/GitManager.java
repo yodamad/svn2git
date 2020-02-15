@@ -1009,10 +1009,10 @@ public class GitManager {
         }
 
         URI uri = URI.create(workUnit.migration.getGitlabUrl());
-        return format("git remote add origin %s://%s:%s@%s/%s%s.git",
+        return format("git remote add origin %s://%s:%s@%s/%s/%s.git",
             uri.getScheme(),
             workUnit.migration.getGitlabToken() == null ?
-                applicationProperties.gitlab.account : workUnit.migration.getSvnUser(),
+                applicationProperties.gitlab.account : workUnit.migration.getUser(),
             safeMode ? STARS :
                 (workUnit.migration.getGitlabToken() == null ?
                     applicationProperties.gitlab.token : workUnit.migration.getGitlabToken()),

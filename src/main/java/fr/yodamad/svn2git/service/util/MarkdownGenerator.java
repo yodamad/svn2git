@@ -284,14 +284,16 @@ public class MarkdownGenerator {
             fileSize = BytesConverterUtil.humanReadableByteCount(migrationRemovedFile.getFileSize(), false);
         }
 
-        // Remove leading slash from artifactory.binariesDirectory
-        String binariresDirectory = applicationProperties.artifactory.binariesDirectory.substring(1);
-        migrationRemovedFileTableBuilder.addRow(id,
-            ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? path : new BoldText(new ItalicText(path))),
-            svnLocation,
-            ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? "Yes" : ""),
-            reason,
-            fileSize);
+        if (!applicationProperties.artifactory.binariesDirectory.isEmpty()) {
+            // Remove leading slash from artifactory.binariesDirectory
+            String binariresDirectory = applicationProperties.artifactory.binariesDirectory.substring(1);
+            migrationRemovedFileTableBuilder.addRow(id,
+                ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? path : new BoldText(new ItalicText(path))),
+                svnLocation,
+                ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? "Yes" : ""),
+                reason,
+                fileSize);
+        }
     }
 }
 

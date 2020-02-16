@@ -38,7 +38,8 @@ public class HistoryManager {
             .step(step)
             .migration(migration)
             .date(Instant.now())
-            .status(StatusEnum.RUNNING);
+            .status(StatusEnum.RUNNING)
+            .startTime(Instant.now());
 
         if (data != null) {
             history.data(data);
@@ -54,6 +55,11 @@ public class HistoryManager {
     public void endStep(MigrationHistory history, StatusEnum status, String data) {
         history.setStatus(status);
         if (data != null) history.setData(data);
+
+        // Compute executionTime
+        Long execution = Instant.now().toEpochMilli() - history.getStartTime().toEpochMilli();
+        history.setExecutionTime(execution);
+
         migrationHistoryRepository.save(history);
     }
 

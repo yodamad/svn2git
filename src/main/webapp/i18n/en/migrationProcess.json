@@ -11,6 +11,7 @@
         "date" : "Date",
         "directory" : "Directory",
         "done" : "Done",
+        "execution-time": "Execution time",
         "extension" : {
             "add" : "Custom extension (e.g. *.zip or *.jar)"
         },

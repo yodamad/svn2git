@@ -27,6 +27,10 @@
         {
             "fieldName": "data",
             "fieldType": "String"
+        },
+        {
+            "fieldName": "execution_time",
+            "fieldType": "Long"
         }
     ],
     "changelogDate": "20181024090448",

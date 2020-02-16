@@ -43,6 +43,13 @@ public class MigrationHistory implements Serializable {
     @JsonView(View.Public.class)
     private String data;
 
+    @Column(name= "execution_time")
+    @JsonView(View.Public.class)
+    private Long executionTime;
+
+    @Transient
+    private Instant startTime;
+
     @ManyToOne
     @JsonIgnoreProperties({"gitlabToken", "svnPassword"})
     private Migration migration;
@@ -106,6 +113,32 @@ public class MigrationHistory implements Serializable {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public Long getExecutionTime() {
+        return executionTime;
+    }
+
+    public void setExecutionTime(Long executionTime) {
+        this.executionTime = executionTime;
+    }
+
+    public MigrationHistory executionTime(Long executionTime) {
+        this.executionTime = executionTime;
+        return this;
+    }
+
+    public Instant getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Instant startTime) {
+        this.startTime = startTime;
+    }
+
+    public MigrationHistory startTime(Instant startTime) {
+        this.startTime = startTime;
+        return this;
     }
 
     public Migration getMigration() {

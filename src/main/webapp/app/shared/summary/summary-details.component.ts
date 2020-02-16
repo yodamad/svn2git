@@ -11,7 +11,7 @@ import { MigrationService } from 'app/entities/migration';
 export class DetailsCardComponent implements OnInit {
     @Input() migration: IMigration;
 
-    displayedColumns: string[] = ['step', 'status', 'date', 'data'];
+    displayedColumns: string[] = ['step', 'status', 'date', 'data', 'executionTime'];
     histories: MigrationHistory[] = [];
 
     constructor(private _migrationService: MigrationService) {}

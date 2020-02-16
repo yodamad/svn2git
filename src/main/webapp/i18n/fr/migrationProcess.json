@@ -11,6 +11,7 @@
         "date" : "Date",
         "directory" : "Répertoire",
         "done" : "Fait",
+        "execution-time": "Temps d'execution",
         "extension" : {
             "add" : "Autre extension (e.g. *.zip or *.jar)"
         },

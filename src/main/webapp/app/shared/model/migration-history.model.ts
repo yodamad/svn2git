@@ -29,6 +29,7 @@ export interface IMigrationHistory {
     date?: Moment;
     data?: string;
     migration?: IMigration;
+    executionTime?: number;
 }
 
 export class MigrationHistory implements IMigrationHistory {
@@ -38,6 +39,7 @@ export class MigrationHistory implements IMigrationHistory {
         public status?: StatusEnum,
         public date?: Moment,
         public data?: string,
-        public migration?: IMigration
+        public migration?: IMigration,
+        public executionTime?: number
     ) {}
 }

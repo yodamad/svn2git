@@ -45,7 +45,7 @@ public class MigrationHistory implements Serializable {
 
     @Column(name= "execution_time")
     @JsonView(View.Public.class)
-    private Long executionTime;
+    private String executionTime;
 
     @Transient
     private Instant startTime;
@@ -115,15 +115,15 @@ public class MigrationHistory implements Serializable {
         this.data = data;
     }
 
-    public Long getExecutionTime() {
+    public String getExecutionTime() {
         return executionTime;
     }
 
-    public void setExecutionTime(Long executionTime) {
+    public void setExecutionTime(String executionTime) {
         this.executionTime = executionTime;
     }
 
-    public MigrationHistory executionTime(Long executionTime) {
+    public MigrationHistory executionTime(String executionTime) {
         this.executionTime = executionTime;
         return this;
     }

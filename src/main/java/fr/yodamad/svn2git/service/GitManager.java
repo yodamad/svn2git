@@ -333,29 +333,20 @@ public class GitManager {
                 if (file.isDirectory()) {
 
                     if (!file.getName().equalsIgnoreCase(".git")) {
-
                         isFileInFolder = isFileInFolder(file.getAbsolutePath());
-
                         if (isFileInFolder) {
                             return true;
                         }
-
                     } else {
                         LOG.info("Skipping check for files in .git folder");
                     }
-
                 } else {
-
                     LOG.info("Found at least one file in this folder: " + file.getAbsolutePath());
-
                     return true;
                 }
             }
-
         }
-
         return false;
-
     }
 
     /**

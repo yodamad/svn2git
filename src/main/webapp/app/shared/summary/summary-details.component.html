@@ -22,7 +22,7 @@
             </ng-container>
             <ng-container matColumnDef="executionTime">
                 <th mat-header-cell *matHeaderCellDef style="width: 150px"><span jhiTranslate="migration-process.execution-time">Execution time</span></th>
-                <td mat-cell *matCellDef="let history" style="width: 150px">{{ history.executionTime | date:'mm:ss,SSS' }}</td>
+                <td mat-cell *matCellDef="let history" style="width: 150px">{{ history.executionTime }}</td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

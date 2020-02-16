@@ -6,6 +6,7 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.util.DateFormatter;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,10 +65,10 @@ public class HistoryManager {
 
         // Compute executionTime
         Long execution = Instant.now().toEpochMilli() - history.getStartTime().toEpochMilli();
-        history.setExecutionTime(execution);
+        history.setExecutionTime(DateFormatter.toNiceFormat(execution));
 
         migrationHistoryRepository.save(history);
-        LOG.info(format("Finish step %s with status %s in %s ms", history.getStep(), status, execution));
+        LOG.info(format("Finish step %s with status %s in %s", history.getStep(), status, history.getExecutionTime()));
     }
 
     /**

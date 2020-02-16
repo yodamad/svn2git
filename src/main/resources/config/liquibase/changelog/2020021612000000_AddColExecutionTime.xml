@@ -13,7 +13,7 @@
     <changeSet id="addColExecutionTime" author="mvt">
 
         <addColumn tableName="migration_history">
-            <column name="execution_time" type="bigint">
+            <column name="execution_time" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
         </addColumn>

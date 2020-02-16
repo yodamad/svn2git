@@ -223,21 +223,16 @@ public class MarkdownGenerator {
 
         Table.Builder historyTableBuilder = new Table.Builder()
             .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_CENTER, Table.ALIGN_CENTER, Table.ALIGN_LEFT)
-            .addRow("Step", "Status", "Time (dd/MM/yy)" ,"Details");
-
-        log.debug("======>Before generate history section");
+            .addRow("Step", "Status", "Time (dd/MM/yy)" ,"Details", "Execution Time");
 
         // Write all to file at this point (because StringBuffer is limited in what it can handle)...
-        Path readMeFilePath = Files.write(Paths.get(workUnit.directory, "README.md"), md.toString().getBytes(), StandardOpenOption.CREATE);
+        Files.write(Paths.get(workUnit.directory, "README.md"), md.toString().getBytes(), StandardOpenOption.CREATE);
 
         migration.getHistories().stream().forEach(h -> historyTableBuilder.addRow(h.getStep(), h.getStatus(),
-            formatter.format(h.getDate()), getHistoryDetails(h)));
+            formatter.format(h.getDate()), getHistoryDetails(h), h.getExecutionTime()));
 
-        readMeFilePath = Files.write(Paths.get(workUnit.directory, "README.md"), historyTableBuilder.
+        Files.write(Paths.get(workUnit.directory, "README.md"), historyTableBuilder.
                 build().toString().getBytes(), StandardOpenOption.APPEND);
-
-        log.debug("======>After generate history section");
-
     }
 
     /**

@@ -357,9 +357,9 @@ public class MigrationManager {
                 LOG.info("Not cleaning up working directory");
                 LOG.info("REASON:applicationProperties.getFlags().getCleanupWorkDirectory()==True");
             }
-            LOG.info(format("Migration from SVN (%s) %s to Gitlab (%s) %s completed with status %s",
+            LOG.info(format("Migration from SVN (%s) %s to Gitlab %s group completed with status %s",
                 migration.getSvnGroup(), migration.getSvnProject(),
-                migration.getGitlabGroup(), migration.getGitlabProject(),
+                migration.getGitlabGroup(),
                 migration.getStatus()));
         }
     }

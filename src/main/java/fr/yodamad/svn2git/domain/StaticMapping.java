@@ -28,6 +28,9 @@ public class StaticMapping implements Serializable {
     @Column(name = "git_directory")
     private String gitDirectory;
 
+    @Column(name = "svn_directory_delete")
+    private Boolean svnDirectoryDelete;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;
@@ -75,6 +78,19 @@ public class StaticMapping implements Serializable {
     public void setGitDirectory(String gitDirectory) {
         this.gitDirectory = gitDirectory;
     }
+
+    public Boolean isSvnDirectoryDelete() {
+        return svnDirectoryDelete;
+    }
+
+    public StaticMapping svnDirectoryDelete(Boolean svnDirectoryDelete) {
+        this.svnDirectoryDelete = svnDirectoryDelete;
+        return this;
+    }
+
+    public void setSvnDirectoryDelete(Boolean svnDirectoryDelete) {
+        this.svnDirectoryDelete = svnDirectoryDelete;
+    }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
     @Override
@@ -104,6 +120,7 @@ public class StaticMapping implements Serializable {
             ", svnDirectory='" + getSvnDirectory() + "'" +
             ", regex='" + getRegex() + "'" +
             ", gitDirectory='" + getGitDirectory() + "'" +
+            ", svnDirectoryDelete='" + isSvnDirectoryDelete() + "'" +
             "}";
     }
 }

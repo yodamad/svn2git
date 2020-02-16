@@ -80,6 +80,6 @@ public class MappingService {
     @Transactional(readOnly = true)
     public List<Mapping> findAllForMigration(Long migrationId) {
         log.debug("Request to get all Mappings for migration {}", migrationId);
-        return mappingRepository.findAllByMigration(migrationId);
+        return mappingRepository.findByMigration(migrationId);
     }
 }

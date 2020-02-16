@@ -35,6 +35,17 @@ describe('Service Tests', () => {
                 'AAAAAAA',
                 StatusEnum.WAITING,
                 'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
+                'AAAAAAA',
                 'AAAAAAA'
             );
         });
@@ -89,7 +100,18 @@ describe('Service Tests', () => {
                         gitlabProject: 'BBBBBB',
                         status: 'BBBBBB',
                         maxFileSize: 'BBBBBB',
-                        forbiddenFileExtensions: 'BBBBBB'
+                        forbiddenFileExtensions: 'BBBBBB',
+                        gitlabUrl: 'BBBBBB',
+                        gitlabToken: 'BBBBBB',
+                        svnUrl: 'BBBBBB',
+                        svnUser: 'BBBBBB',
+                        svnPassword: 'BBBBBB',
+                        trunk: 'BBBBBB',
+                        branches: 'BBBBBB',
+                        tags: 'BBBBBB',
+                        svnHistory: 'BBBBBB',
+                        tagsToMigrate: 'BBBBBB',
+                        branchesToMigrate: 'BBBBBB'
                     },
                     elemDefault
                 );
@@ -119,7 +141,18 @@ describe('Service Tests', () => {
                         gitlabProject: 'BBBBBB',
                         status: 'BBBBBB',
                         maxFileSize: 'BBBBBB',
-                        forbiddenFileExtensions: 'BBBBBB'
+                        forbiddenFileExtensions: 'BBBBBB',
+                        gitlabUrl: 'BBBBBB',
+                        gitlabToken: 'BBBBBB',
+                        svnUrl: 'BBBBBB',
+                        svnUser: 'BBBBBB',
+                        svnPassword: 'BBBBBB',
+                        trunk: 'BBBBBB',
+                        branches: 'BBBBBB',
+                        tags: 'BBBBBB',
+                        svnHistory: 'BBBBBB',
+                        tagsToMigrate: 'BBBBBB',
+                        branchesToMigrate: 'BBBBBB'
                     },
                     elemDefault
                 );
@@ -131,7 +164,10 @@ describe('Service Tests', () => {
                 );
                 service
                     .query(expected)
-                    .pipe(take(1), map(resp => resp.body))
+                    .pipe(
+                        take(1),
+                        map(resp => resp.body)
+                    )
                     .subscribe(body => expect(body).toContainEqual(expected));
                 const req = httpMock.expectOne({ method: 'GET' });
                 req.flush(JSON.stringify([returnedFromService]));

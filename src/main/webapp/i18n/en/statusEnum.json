@@ -6,7 +6,8 @@
             "RUNNING": "RUNNING",
             "DONE": "DONE",
             "DONE_WITH_WARNINGS": "DONE_WITH_WARNINGS",
-            "FAILED": "FAILED"
+            "FAILED": "FAILED",
+            "IGNORED": "IGNORED"
         }
     }
 }

@@ -5,12 +5,14 @@ import fr.yodamad.svn2git.config.audit.AuditEventConverter;
 import fr.yodamad.svn2git.domain.PersistentAuditEvent;
 import fr.yodamad.svn2git.repository.PersistenceAuditEventRepository;
 import fr.yodamad.svn2git.service.AuditEventService;
+import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.MediaType;
@@ -59,6 +61,9 @@ public class AuditResourceIntTest {
     private PersistentAuditEvent auditEvent;
 
     private MockMvc restAuditMockMvc;
+
+    @MockBean
+    ArtifactoryAdmin artifactoryAdmin;
 
     @Before
     public void setup() {

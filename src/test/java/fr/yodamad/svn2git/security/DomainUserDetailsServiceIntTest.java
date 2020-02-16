@@ -4,12 +4,14 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.domain.User;
 import fr.yodamad.svn2git.repository.UserRepository;
 
+import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,6 +44,9 @@ public class DomainUserDetailsServiceIntTest {
 
     @Autowired
     private UserDetailsService domainUserDetailsService;
+
+    @MockBean
+    ArtifactoryAdmin artifactoryAdmin;
 
     private User userOne;
     private User userTwo;

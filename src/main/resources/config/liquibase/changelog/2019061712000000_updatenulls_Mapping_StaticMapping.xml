@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+    <property name="now" value="now()" dbms="mysql"/>
+    <property name="autoIncrement" value="true"/>
+
+    <changeSet id="updatenulls_mapping" author="jbu">
+
+        <update tableName="mapping">
+            <column name="svn_directory_delete" type="bit" value="false"/>
+            <where>svn_directory_delete is null</where>
+        </update>
+
+    </changeSet>
+
+    <changeSet id="updatenulls_staticmapping" author="jbu">
+
+        <update tableName="static_mapping">
+            <column name="svn_directory_delete" type="bit" value="false"/>
+            <where>svn_directory_delete is null</where>
+        </update>
+
+    </changeSet>
+
+
+</databaseChangeLog>

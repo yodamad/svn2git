@@ -6,11 +6,16 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
+import fr.yodamad.svn2git.service.util.DateFormatter;
 import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+
+import static java.lang.String.format;
 
 /**
  * Migration history operations
@@ -18,6 +23,7 @@ import java.time.Instant;
 @Service
 public class HistoryManager {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HistoryManager.class);
     private final MigrationHistoryRepository migrationHistoryRepository;
     private final MigrationRepository migrationRepository;
 
@@ -38,12 +44,14 @@ public class HistoryManager {
             .step(step)
             .migration(migration)
             .date(Instant.now())
-            .status(StatusEnum.RUNNING);
+            .status(StatusEnum.RUNNING)
+            .startTime(Instant.now());
 
         if (data != null) {
             history.data(data);
         }
 
+        LOG.info(format("Start step %s", step));
         return migrationHistoryRepository.save(history);
     }
 
@@ -54,7 +62,13 @@ public class HistoryManager {
     public void endStep(MigrationHistory history, StatusEnum status, String data) {
         history.setStatus(status);
         if (data != null) history.setData(data);
+
+        // Compute executionTime
+        Long execution = Instant.now().toEpochMilli() - history.getStartTime().toEpochMilli();
+        history.setExecutionTime(DateFormatter.toNiceFormat(execution));
+
         migrationHistoryRepository.save(history);
+        LOG.info(format("Finish step %s with status %s in %s", history.getStep(), status, history.getExecutionTime()));
     }
 
     /**

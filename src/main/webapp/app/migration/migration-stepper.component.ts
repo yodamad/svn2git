@@ -40,7 +40,7 @@ export class MigrationStepperComponent implements OnInit {
     historyFormGroup: FormGroup;
 
     // Tables columns
-    displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping'];
+    displayedColumns: string[] = ['svn', 'regex', 'git', 'selectMapping', 'svnDirectoryDelete'];
     svnDisplayedColumns: string[] = ['selectSvn', 'svnDir'];
     extensionDisplayedColumns: string[] = ['extensionPattern', 'selectExtension'];
 
@@ -50,10 +50,11 @@ export class MigrationStepperComponent implements OnInit {
     svnRepoKO = true;
     mappings: IMapping[] = [];
     useDefaultGitlab = true;
-    useDefaultSvn = true;
     overrideStaticExtensions = false;
     overrideStaticMappings = false;
     forceGitlabGroupCreation = false;
+    useDefaultSvn = true;
+    svnUrlModifiable = true;
 
     // Input for migrations
     svnDirectories: SvnStructure = null;
@@ -73,9 +74,11 @@ export class MigrationStepperComponent implements OnInit {
     historyOption = 'nothing';
 
     /// Mapping selections
-    initialSelection = [];
+    initialSelectionMapping = [];
     allowMultiSelect = true;
-    selection: SelectionModel<IMapping> = new SelectionModel<IMapping>();
+    selectionMapping: SelectionModel<IMapping> = new SelectionModel<IMapping>();
+    initialSelectionSvnDirectoryDelete = [];
+    selectionSvnDirectoryDelete: SelectionModel<IMapping> = new SelectionModel<IMapping>();
     useSvnRootFolder = false;
 
     // Extension selection
@@ -86,6 +89,9 @@ export class MigrationStepperComponent implements OnInit {
     checkingGitlabGroup = false;
     checkingSvnRepo = false;
     creatingGitlabGroup = false;
+
+    // Flag : Allow application to automatically make non existing Group
+    isGitlabGroupCreation = false;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -109,10 +115,20 @@ export class MigrationStepperComponent implements OnInit {
     ngOnInit() {
         this._mappingService.query().subscribe(res => {
             this.mappings = res.body;
-            this.mappings.forEach(mp => (mp.isStatic = true));
+            // everything from the database is flagged with isStatic
+            this.mappings.forEach(mp => {
+                // if (!mp.svnDirectoryDelete) {
+                // set isStatic value
+                mp.isStatic = true;
+                // }
+            });
             this.mappings.push(new Mapping());
-            this.initialSelection = this.mappings;
-            this.selection = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelection);
+            // initial values for apply mapping
+            this.initialSelectionMapping = this.mappings.filter(mp => mp.isStatic && !mp.svnDirectoryDelete);
+            this.selectionMapping = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelectionMapping);
+            // initial values for svnDirectoryDelete
+            this.initialSelectionSvnDirectoryDelete = this.mappings.filter(mp => mp.svnDirectoryDelete);
+            this.selectionSvnDirectoryDelete = new SelectionModel<IMapping>(this.allowMultiSelect, this.initialSelectionSvnDirectoryDelete);
         });
         this._extensionsService.query().subscribe(res => {
             this.staticExtensions = res.body as Extension[];
@@ -136,11 +152,14 @@ export class MigrationStepperComponent implements OnInit {
         });
         this.svnSelection = new SelectionModel<string>(this.allowMultiSelect, []);
         this.cleaningFormGroup = this._formBuilder.group({
-            fileMaxSize: ['', Validators.min(1)]
+            fileMaxSize: ['100', Validators.min(1)]
         });
         this.mappingFormGroup = this._formBuilder.group({});
 
-        this.historyFormGroup = this._formBuilder.group({});
+        this.historyFormGroup = this._formBuilder.group({
+            branchesToMigrate: [''],
+            tagsToMigrate: ['']
+        });
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
         this.addExtentionFormControl = new FormControl('', []);
@@ -155,18 +174,27 @@ export class MigrationStepperComponent implements OnInit {
             }
         });
         this._configurationService.svnCredsOption().subscribe(res => {
+            // a value of svnCredsOption 'required' results in necessity to enter credentials
             this.svnCredsOption = res;
-            this.useDefaultSvn = res !== REQUIRED;
-            if (!this.useDefaultSvn) {
-                this.svnFormGroup.get('svnURL').enable();
-            }
         });
+
+        this._configurationService.svnUrlModifiable().subscribe((res: boolean) => {
+            // real boolean value see JSON.parse in svnUrlModifiable
+            this.svnUrlModifiable = res;
+        });
+
+        this._configurationService
+            .flagGitlabGroupCreation()
+            .subscribe(res => (this.isGitlabGroupCreation = res), err => (this.isGitlabGroupCreation = false));
     }
 
     /**
      * Check if user exists
      */
     checkGitlabUser() {
+        // initialise to true for each check
+        this.gitlabUserKO = true;
+
         this.checkingGitlabUser = true;
         this._migrationProcessService
             .checkUser(
@@ -195,6 +223,9 @@ export class MigrationStepperComponent implements OnInit {
      * Check if group exists
      */
     checkGitlabGroup() {
+        // initialise to true for each check
+        this.gitlabGroupKO = true;
+
         this.checkingGitlabGroup = true;
         this._migrationProcessService
             .checkGroup(
@@ -213,8 +244,15 @@ export class MigrationStepperComponent implements OnInit {
                     if (httpER.status === 504) {
                         this.openSnackBar('error.http.504');
                     } else {
-                        this.openSnackBar('error.checks.gitlab.group');
-                        this.forceGitlabGroupCreation = true;
+                        if (this.isGitlabGroupCreation) {
+                            // Users will click a button to create the group
+                            this.openSnackBar('error.checks.gitlab.groupauto');
+                            this.forceGitlabGroupCreation = true;
+                        } else {
+                            // Users will be aske to creat a group manually
+                            this.openSnackBar('error.checks.gitlab.groupmanual');
+                            this.forceGitlabGroupCreation = false;
+                        }
                     }
                 }
             );
@@ -249,6 +287,11 @@ export class MigrationStepperComponent implements OnInit {
      * Check if SVN repository exists
      */
     checkSvnRepository() {
+        // Force recheck
+        this.svnRepoKO = true;
+        this.svnDirectories = null;
+        this.svnSelection.clear();
+
         this.checkingSvnRepo = true;
         this._migrationProcessService
             .checkSvn(
@@ -373,17 +416,60 @@ export class MigrationStepperComponent implements OnInit {
                     this.mig.tags = '*';
                 }
             });
+
+            if (
+                this.historyFormGroup.controls['branchesToMigrate'] !== undefined &&
+                this.historyFormGroup.controls['branchesToMigrate'].value !== ''
+            ) {
+                this.mig.branchesToMigrate = this.historyFormGroup.controls['branchesToMigrate'].value;
+            } else {
+                this.mig.branchesToMigrate = '';
+            }
+
+            if (
+                this.historyFormGroup.controls['tagsToMigrate'] !== undefined &&
+                this.historyFormGroup.controls['tagsToMigrate'].value !== ''
+            ) {
+                this.mig.tagsToMigrate = this.historyFormGroup.controls['tagsToMigrate'].value;
+            } else {
+                this.mig.tagsToMigrate = '';
+            }
         }
         this.mig.svnHistory = this.historyOption;
 
         // Mappings
-        if (this.selection !== undefined && !this.selection.isEmpty()) {
-            this.mig.mappings = this.selection.selected.filter(mapping => mapping.gitDirectory !== undefined);
+        // Note : selectionSvnDirectoryDelete can be empty
+        if (this.selectionMapping !== undefined && !this.selectionMapping.isEmpty() && this.selectionSvnDirectoryDelete !== undefined) {
+            // Assure mappings.svnDirectoryDelete is updated from selectionSvnDirectoryDelete
+            this.mappings.forEach(row => {
+                if (this.selectionSvnDirectoryDelete.isSelected(row)) {
+                    row.svnDirectoryDelete = true;
+                    // svnDirectoryDelete assure that no gitDirectory or regex.
+                    row.gitDirectory = '';
+                    row.regex = '';
+                } else {
+                    row.svnDirectoryDelete = false;
+                }
+            });
+
+            // this.mig.mappings = this.selectionMapping.selected
+            //    .filter(mapping => mapping.gitDirectory !== undefined);
+            this.mig.mappings = this.mappings.filter(row => {
+                if (
+                    (this.isRealMappingRow(row) && this.selectionMapping.isSelected(row)) ||
+                    this.selectionSvnDirectoryDelete.isSelected(row)
+                ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
         }
 
         // Cleaning
         if (this.cleaningFormGroup.controls['fileMaxSize'] !== undefined) {
             this.mig.maxFileSize = this.cleaningFormGroup.controls['fileMaxSize'].value + this.fileUnit;
+            console.log(this.mig.maxFileSize);
         }
         if (this.extensionSelection !== undefined && !this.extensionSelection.isEmpty()) {
             const values: string[] = [];
@@ -395,23 +481,161 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     /** Whether the number of selected elements matches the total number of rows. */
-    isAllSelected() {
-        const numSelected = this.selection.selected.length;
-        const numRows = this.mappings.length;
+    isAllSelectedMapping() {
+        const numSelected = this.mappings.filter(
+            row => this.isRealMappingRow(row) && !row.isStatic && this.selectionMapping.isSelected(row)
+        ).length;
+        const numRows = this.mappings.filter(row => this.isRealMappingRow(row) && !row.isStatic && !this.isOriginSvnDeleteDirectory(row))
+            .length;
+        return numSelected === numRows;
+    }
+
+    /** svnDirectoryDelete : Whether the number of selected elements matches the total number of rows. */
+    isAllSelectedSvnDirectoryDelete() {
+        const numSelected = this.mappings.filter(
+            row => this.isRealMappingRow(row) && !row.isStatic && this.selectionSvnDirectoryDelete.isSelected(row)
+        ).length;
+        const numRows = this.mappings.filter(row => this.isRealMappingRow(row) && !row.isStatic).length;
         return numSelected === numRows;
     }
 
     /** Selects all rows if they are not all selected; otherwise clear selection. */
-    masterToggle() {
-        if (this.isAllSelected()) {
-            this.selection.clear();
-            if (!this.overrideStaticMappings) {
-                const staticMappings = this.mappings.filter(mp => mp.isStatic);
-                staticMappings.forEach(row => this.selection.select(row));
-            }
+    masterToggleMapping() {
+        // if all mappings are already selected we will deselect where appropriate
+        if (this.isAllSelectedMapping()) {
+            // iterate over all rows
+            this.mappings.forEach(row => {
+                // only consider real rows (i.e. not the last dummy row)
+                if (this.isRealMappingRow(row)) {
+                    // If canChangeMappingValue we deselect it
+                    if (this.canChangeMappingValue(row)) {
+                        this.selectionMapping.deselect(row);
+
+                        // don't do anything with svnDirectoryDelete. might just want to stop mapping
+                    }
+                }
+            });
         } else {
-            this.mappings.forEach(row => this.selection.select(row));
+            this.mappings.forEach(row => {
+                // only consider real rows (i.e. not the last dummy row)
+                if (this.isRealMappingRow(row)) {
+                    // Select mapping if possible
+                    if (this.canChangeMappingValue(row)) {
+                        this.selectionMapping.select(row);
+
+                        // if we are selecting a mapping, we implicitly mean that svn delete
+                        // directory will be deselected
+                        this.selectionSvnDirectoryDelete.deselect(row);
+                    }
+                }
+            });
         }
+    }
+
+    /**
+     * For Mapping Section
+     * Return true if row.svnDirectory has a value
+     * @param row
+     */
+    private isRealMappingRow(row: IMapping) {
+        if (typeof row.svnDirectory !== 'undefined' && row.svnDirectory !== '') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * For Mapping Section
+     * Return true
+     * if row isn't static OR is static but can be overridden
+     * AND
+     * wasn't created to delete a subversion directory
+     *
+     * @param row
+     */
+    private canChangeMappingValue(row: IMapping) {
+        if ((!row.isStatic || (row.isStatic && this.overrideStaticMappings)) && !this.isOriginSvnDeleteDirectory(row)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /** svnDirectoryDelete : Selects all rows if they are not all selected; otherwise clear selection. */
+    masterToggleSvnDirectoryDelete() {
+        // if all svnDeleteDirectory selected we deselect
+        if (this.isAllSelectedSvnDirectoryDelete()) {
+            // iterate over all rows
+            this.mappings.forEach(row => {
+                // only consider real rows
+                if (this.isRealMappingRow(row) && !row.isStatic) {
+                    // deselect the svnDirectoryDelete (no conditions)
+                    this.selectionSvnDirectoryDelete.deselect(row);
+
+                    // don't do anything to mapping value
+                }
+            });
+        } else {
+            this.mappings.forEach(row => {
+                // only consider real rows
+                if (this.isRealMappingRow(row) && !row.isStatic) {
+                    // select the svnDirectoryDelete (no conditions)
+                    this.selectionSvnDirectoryDelete.select(row);
+
+                    // selecting svnDirectoryDelete implicitly means mapping is removed where possible
+                    if (this.canChangeMappingValue(row)) {
+                        this.selectionMapping.deselect(row);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * For Mapping Section
+     * @param row
+     */
+    toggleMappingEntryType(row: Mapping) {
+        if (this.canChangeMappingValue(row)) {
+            if (this.selectionMapping.isSelected(row)) {
+                this.selectionMapping.deselect(row);
+            } else {
+                this.selectionMapping.select(row);
+                // Selecting mapping implicitly means deselecting svnDirectoryDelete
+                this.selectionSvnDirectoryDelete.deselect(row);
+            }
+        }
+    }
+
+    /**
+     * For Mapping Section
+     * @param row
+     */
+    toggleSvnDirectoryDeleteType(row: Mapping) {
+        if (this.selectionSvnDirectoryDelete.isSelected(row)) {
+            this.selectionSvnDirectoryDelete.deselect(row);
+        } else {
+            this.selectionSvnDirectoryDelete.select(row);
+            // Selecting svnDirectoryDelete implicitly means deselecting mapping
+            if (this.canChangeMappingValue(row)) {
+                this.selectionMapping.deselect(row);
+            }
+        }
+    }
+
+    /**
+     * For Mapping Section
+     * @param row
+     */
+    isOriginSvnDeleteDirectory(row: Mapping) {
+        if (
+            (typeof row.gitDirectory === 'undefined' || row.gitDirectory === '') &&
+            (typeof row.regex === 'undefined' || row.regex === '')
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /** Reverse flag for gitlab default url. */
@@ -429,7 +653,7 @@ export class MigrationStepperComponent implements OnInit {
         this.gitlabGroupKO = true;
     }
 
-    /** Reverse flag for svn default url. */
+    /** Reverse flag for svn default url. can only be invoked if svnUrlModifiable in config */
     reverseSvn() {
         this.useDefaultSvn = !this.useDefaultSvn;
         if (this.useDefaultSvn) {
@@ -449,7 +673,7 @@ export class MigrationStepperComponent implements OnInit {
     /** Whether the number of selected elements matches the total number of rows. */
     isAllSvnSelected() {
         const numSelected = this.svnSelection.selected.length;
-        const numRows = this.svnDirectories.modules.length;
+        const numRows = this.svnDirectories.modules.filter(row => !this.isSvnOnlyTags(row)).length;
         return numSelected === numRows;
     }
 
@@ -459,7 +683,7 @@ export class MigrationStepperComponent implements OnInit {
             this.svnSelection.clear();
             this.svnRepoKO = true;
         } else {
-            this.svnDirectories.modules.forEach(row => this.svnSelection.select(row.path));
+            this.svnDirectories.modules.filter(row => !this.isSvnOnlyTags(row)).forEach(row => this.svnSelection.select(row.path));
             this.useSvnRootFolder = false;
             this.svnRepoKO = false;
         }
@@ -483,30 +707,73 @@ export class MigrationStepperComponent implements OnInit {
      * @param directory
      */
     svnChecked(directory: string) {
-        this.svnRepoKO = this.svnSelection.selected.length === 0;
         return this.svnSelection.isSelected(directory);
     }
 
-    /** Add a custom mapping. */
+    getSvnRepoKo(): boolean {
+        return this.svnSelection.selected.length === 0;
+    }
+
+    /**
+     * SVN section. If directory only contains tags layoutElement it is considered as a composite project
+     * (used to group together other tags). Projects like these are not migrated.
+     * @param directory
+     */
+    isSvnOnlyTags(directory: SvnModule) {
+        if (directory != null && directory.layoutElements.length === 1 && directory.layoutElements[0] === 'tags') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Used in Chyeck your SVN repository section.
+     * Returns true if at least one of the Directories has a tags only layout
+     */
+    isOneSvnOnlyTags() {
+        return this.svnDirectories.modules.filter(row => this.isSvnOnlyTags(row)).length > 0;
+    }
+
+    /** Mapping Section : Add a custom mapping. */
     addMapping() {
         const dialog = this._matDialog.open(JhiAddMappingModalComponent, {
             data: { staticMapping: new StaticMapping() }
         });
 
-        const currentMappings = this.mappings;
-        // Remove "fake" mapping
-        currentMappings.splice(currentMappings.length - 1, 1);
-
         dialog.afterClosed().subscribe((result: Mapping) => {
-            if (result.svnDirectory.startsWith('/')) {
-                result.svnDirectory = result.svnDirectory.slice(1, result.svnDirectory.length);
+            // better way of checking for undefined
+            if (typeof result === 'undefined') {
+                console.log('result undefined: doing nothing');
             }
-            this.mappings = [];
-            currentMappings.forEach(mp => this.mappings.push(mp));
-            this.mappings.push(result);
-            this.mappings.push(new Mapping());
-            this.selection.select(result);
-            this._changeDetectorRefs.detectChanges();
+            {
+                const currentMappings = this.mappings;
+                // Remove "fake" mapping
+                currentMappings.splice(currentMappings.length - 1, 1);
+
+                // remove any initial forward slash
+                if (result.svnDirectory && result.svnDirectory.startsWith('/')) {
+                    result.svnDirectory = result.svnDirectory.slice(1, result.svnDirectory.length);
+                }
+
+                // delete mappings
+                this.mappings = [];
+                // recreate mappings cleanly
+                currentMappings.forEach(mp => this.mappings.push(mp));
+                // add the new mapping
+                this.mappings.push(result);
+                // add a dummy mapping (last row)
+                this.mappings.push(new Mapping());
+
+                // Select either mapping OR svnDirectoryDelete
+                if (result.svnDirectoryDelete) {
+                    this.selectionSvnDirectoryDelete.select(result);
+                } else {
+                    this.selectionMapping.select(result);
+                }
+
+                this._changeDetectorRefs.detectChanges();
+            }
         });
     }
 
@@ -581,14 +848,30 @@ export class MigrationStepperComponent implements OnInit {
 
     /**
      * Toggle svn directory selection change
-     * @param event
      * @param directory
      */
-    historyToggle(event: any, directory: string) {
-        if (event) {
-            return this.historySelection.toggle(directory);
+    historyToggle(directory: string) {
+        this.historySelection.toggle(directory);
+
+        if (this.isSetBranchesTags()) {
+            if (directory === 'branches') {
+                if (this.historySelection.isSelected(directory)) {
+                    this.historyFormGroup.get('branchesToMigrate').enable();
+                } else {
+                    this.historyFormGroup.get('branchesToMigrate').setValue('');
+                    this.historyFormGroup.get('branchesToMigrate').disable();
+                }
+            }
+
+            if (directory === 'tags') {
+                if (this.historySelection.isSelected(directory)) {
+                    this.historyFormGroup.get('tagsToMigrate').enable();
+                } else {
+                    this.historyFormGroup.get('tagsToMigrate').setValue('');
+                    this.historyFormGroup.get('tagsToMigrate').disable();
+                }
+            }
         }
-        return null;
     }
 
     /**
@@ -600,10 +883,48 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     /**
+     * triggered when moving on to historyStep from svn step
+     */
+    historyStepSetDisabledBranchesTags() {
+        if (this.isSetBranchesTags()) {
+            if (this.historySelection.isSelected('branches')) {
+                this.historyFormGroup.get('branchesToMigrate').enable();
+            } else {
+                this.historyFormGroup.get('branchesToMigrate').disable();
+            }
+
+            if (this.historySelection.isSelected('tags')) {
+                this.historyFormGroup.get('tagsToMigrate').enable();
+            } else {
+                this.historyFormGroup.get('tagsToMigrate').disable();
+            }
+        }
+    }
+
+    /**
+     * history step
+     */
+    isSetBranchesTags() {
+        if ((this.svnSelection != null && this.svnSelection.selected.length > 1) || this.useSvnRootFolder) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * Open snack bar to display error message
      * @param errorCode
      */
     openSnackBar(errorCode: string) {
         this._errorSnackBar.open(this._translationService.instant(errorCode), null, this.snackBarConfig);
+    }
+
+    isSvnLayoutDisabled(svnLayout: string) {
+        if (this.historyOption === 'nothing' && (svnLayout === 'branches' || svnLayout === 'tags')) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

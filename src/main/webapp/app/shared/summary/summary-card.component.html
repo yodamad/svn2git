@@ -2,7 +2,7 @@
     <mat-grid-list cols="3" rowHeight="20px">
         <mat-grid-tile [colspan]="2" class="tile-align-left" style="margin-top: 10px;">
             <mat-icon mat-list-icon>flight_takeoff</mat-icon>
-            <span mat-line style="margin-left: 10px;">{{migration.svnUrl}}{{migration.svnGroup}}</span>
+            <span mat-line style="margin-left: 10px;">{{migration.svnUrl}}{{migration.svnUrl.endsWith('/') ? '' : '/'}}{{migration.svnGroup}}</span>
         </mat-grid-tile>
         <mat-grid-tile [colspan]="1">
         </mat-grid-tile>
@@ -13,11 +13,11 @@
         </mat-grid-tile>
         <mat-grid-tile [colspan]="2" class="tile-align-right">
             <mat-icon mat-list-icon>flight_land</mat-icon>
-            <span mat-line style="margin-left: 10px">{{migration.gitlabUrl}}{{migration.gitlabGroup}}</span>
+            <span mat-line style="margin-left: 10px">{{migration.gitlabUrl}}{{migration.gitlabUrl.endsWith('/') ? '' : '/'}}{{migration.gitlabGroup}}</span>
         </mat-grid-tile>
     </mat-grid-list>
     <hr>
-    <mat-grid-list cols="2" rowHeight="200px">
+    <mat-grid-list cols="2" rowHeight="350px">
         <mat-grid-tile>
             <mat-list>
                 <mat-list-item>
@@ -26,7 +26,7 @@
                 </mat-list-item>
                 <mat-list-item *ngIf="migration.forbiddenFileExtensions != undefined && migration.forbiddenFileExtensions.length > 0">
                     <mat-icon mat-list-icon>layers_clear</mat-icon>
-                    <p mat-line>{{migration.forbiddenFileExtensions}}</p>
+                    <p mat-line style="width: 150px; word-break: break-word">{{migration.forbiddenFileExtensions}}</p>
                 </mat-list-item>
                 <mat-list-item *ngIf="displayMaxSize()">
                     <mat-icon mat-list-icon>unfold_less</mat-icon>
@@ -35,6 +35,14 @@
                 <mat-list-item>
                     <mat-icon mat-list-icon>history</mat-icon>
                     <p mat-line>{{migration.svnHistory}}</p>
+                </mat-list-item>
+                <mat-list-item *ngIf="migration.branchesToMigrate != undefined && migration.branchesToMigrate.trim().length > 0">
+                    <mat-icon mat-list-icon>filter_1</mat-icon>
+                    <p mat-line>{{migration.branchesToMigrate}}</p>
+                </mat-list-item>
+                <mat-list-item *ngIf="migration.tagsToMigrate != undefined && migration.tagsToMigrate.trim().length > 0">
+                    <mat-icon mat-list-icon>filter_2</mat-icon>
+                    <p mat-line>{{migration.tagsToMigrate}}</p>
                 </mat-list-item>
             </mat-list>
         </mat-grid-tile>

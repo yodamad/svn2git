@@ -13,7 +13,8 @@
         "checks": {
             "gitlab": {
                 "user": "Erreur de vérification de l'utilisateur Gitlab",
-                "group": "Erreur de vérification du groupe Gitlab"
+                "groupauto": "Erreur de vérification du groupe Gitlab.",
+                "groupmanual": "Erreur de vérification du groupe Gitlab. Veuillez créer le groupe manuellement."
             },
             "svn": "Erreur de vérification du SVN"
         },

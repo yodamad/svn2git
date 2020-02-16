@@ -1,3 +1,4 @@
+
 {
     "svn2GitApp": {
         "staticMapping" : {
@@ -17,7 +18,8 @@
             },
             "svnDirectory": "Svn Directory",
             "regex": "Regex",
-            "gitDirectory": "Git Directory"
+            "gitDirectory": "Git Directory",
+            "svnDirectoryDelete": "Not Migrated from SVN"
         }
     }
 }

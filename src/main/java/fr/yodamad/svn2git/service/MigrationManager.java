@@ -345,12 +345,10 @@ public class MigrationManager {
             migration.setStatus(StatusEnum.FAILED);
             migrationRepository.save(migration);
         } finally {
-
-            LOG.info("==================================================");
-            LOG.info("=====           Commands Executed          =======");
-            LOG.info("==================================================");
-            commandManager.getCommandLog().forEach((k, v) -> LOG.info("Directory : " + k + " Command : " + v));
-            LOG.info("==================================================");
+            LOG.debug("=====           Commands Executed          =======");
+            LOG.debug("==================================================");
+            commandManager.getCommandLog().forEach((k, v) -> LOG.debug("Directory : " + k + " Command : " + v));
+            LOG.debug("==================================================");
 
             if (applicationProperties.getFlags().getCleanupWorkDirectory()) {
                 // TODO : handle case where already deleted due to migration failure. See above.
@@ -359,6 +357,10 @@ public class MigrationManager {
                 LOG.info("Not cleaning up working directory");
                 LOG.info("REASON:applicationProperties.getFlags().getCleanupWorkDirectory()==True");
             }
+            LOG.info(format("Migration from SVN (%s) %s to Gitlab (%s) %s completed with status %s",
+                migration.getSvnGroup(), migration.getSvnProject(),
+                migration.getGitlabGroup(), migration.getGitlabProject(),
+                migration.getStatus()));
         }
     }
 

@@ -7,10 +7,14 @@ import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+
+import static java.lang.String.format;
 
 /**
  * Migration history operations
@@ -18,6 +22,7 @@ import java.time.Instant;
 @Service
 public class HistoryManager {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HistoryManager.class);
     private final MigrationHistoryRepository migrationHistoryRepository;
     private final MigrationRepository migrationRepository;
 
@@ -45,6 +50,7 @@ public class HistoryManager {
             history.data(data);
         }
 
+        LOG.info(format("Start step %s", step));
         return migrationHistoryRepository.save(history);
     }
 
@@ -61,6 +67,7 @@ public class HistoryManager {
         history.setExecutionTime(execution);
 
         migrationHistoryRepository.save(history);
+        LOG.info(format("Finish step %s with status %s in %s ms", history.getStep(), status, execution));
     }
 
     /**

@@ -4,7 +4,7 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>1.18-SNAPSHOT</version>
+    <version>1.18</version>
     <packaging>jar</packaging>
     <name>Svn 2 GitLab</name>
 
@@ -209,12 +209,12 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
             <version>${hibernate.version}</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency> -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-envers</artifactId>
@@ -336,9 +336,7 @@
         <dependency>
             <groupId>com.madgag</groupId>
             <artifactId>bfg</artifactId>
-            <version>custom</version>
-            <systemPath>${project.basedir}/external/bfg-custom.jar</systemPath>
-            <scope>system</scope>
+            <version>1.13.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -383,6 +381,23 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- API, java.xml.bind module -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.23.1-GA</version>
+        </dependency>
+
         <!-- Jolokia for Glowroot -->
         <dependency>
             <groupId>org.jolokia</groupId>
@@ -410,9 +425,8 @@
                         <path>
                             <groupId>org.hibernate</groupId>
                             <artifactId>hibernate-jpamodelgen</artifactId>
-                            <version>${hibernate.version}</version>
+                            <version>5.4.12.Final</version>
                         </path>
-
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
@@ -443,11 +457,6 @@
                             <message>You are running an older version of Maven. JHipster requires at least Maven ${maven.version}</message>
                             <version>[${maven.version},)</version>
                         </requireMavenVersion>
-                        <requireJavaVersion>
-                            <!-- Until JHipster supports JDK 9 -->
-                            <message>You are running an incompatible version of Java. JHipster requires JDK ${java.version}</message>
-                            <version>[1.8,1.9)</version>
-                        </requireJavaVersion>
                     </rules>
                 </configuration>
             </plugin>

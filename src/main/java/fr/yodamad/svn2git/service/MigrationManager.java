@@ -297,7 +297,7 @@ public class MigrationManager {
 
                     gitCommand = "git add README.md";
                     execCommand(commandManager, workUnit.directory, gitCommand);
-                    gitCommand = "git commit -m \"Add generated README.md\"";
+                    gitCommand = "git commit -m \"📃 Add generated README.md\"";
                     execCommand(commandManager, workUnit.directory, gitCommand);
                     gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
                     execCommand(commandManager, workUnit.directory, gitCommand);

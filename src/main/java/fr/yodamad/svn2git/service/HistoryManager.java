@@ -63,9 +63,12 @@ public class HistoryManager {
         history.setStatus(status);
         if (data != null) history.setData(data);
 
-        // Compute executionTime
-        Long execution = Instant.now().toEpochMilli() - history.getStartTime().toEpochMilli();
-        history.setExecutionTime(DateFormatter.toNiceFormat(execution));
+        if (history.getStartTime() == null) { history.setExecutionTime("N/A"); }
+        else {
+            // Compute executionTime
+            Long execution = Instant.now().toEpochMilli() - history.getStartTime().toEpochMilli();
+            history.setExecutionTime(DateFormatter.toNiceFormat(execution));
+        }
 
         migrationHistoryRepository.save(history);
         LOG.info(format("Finish step %s with status %s in %s", history.getStep(), status, history.getExecutionTime()));

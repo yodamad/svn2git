@@ -141,8 +141,8 @@ application:
         uploadPauseMilliSeconds: 5000
     gitlab:
         url: http://localhost/
-        account: TO_REPLACE
-        token: TO_REPLACE
+        account: root
+        token: 1uCYVVdwB32yCy4sB-2w
         credentials: optional
         waitSeconds: 15
         dynamic-local-config[0]: pack.deltaCacheSize 256m,Limiting deltaCacheSize to 256m (default)

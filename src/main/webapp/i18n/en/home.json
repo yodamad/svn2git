@@ -6,6 +6,12 @@
             "gitlab": "Gitlab UI"
         },
         "start" : "Start migration",
-        "check" : "Check migration"
+        "check" : "Check migration",
+        "messageTitle" : "Important",
+        "message" : "",
+        "migrations": {
+            "in_progress": "Migration in progress",
+            "last": "Last 5 migrations"
+        }
     }
 }

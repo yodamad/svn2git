@@ -20,6 +20,10 @@
                 <th mat-header-cell *matHeaderCellDef style="width: 550px"><span jhiTranslate="migration-process.info">Info</span></th>
                 <td mat-cell *matCellDef="let history" style="width: 550px">{{ history.data }}</td>
             </ng-container>
+            <ng-container matColumnDef="executionTime">
+                <th mat-header-cell *matHeaderCellDef style="width: 150px"><span jhiTranslate="migration-process.execution-time">Execution time</span></th>
+                <td mat-cell *matCellDef="let history" style="width: 150px">{{ history.executionTime }}</td>
+            </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>

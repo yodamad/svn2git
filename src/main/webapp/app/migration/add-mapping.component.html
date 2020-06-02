@@ -14,16 +14,21 @@
             </mat-form-field>
         </div>
         <div class="form-group">
+            <mat-radio-group aria-label="Select an option" [(ngModel)]="radioChosen">
+                <mat-radio-button *ngFor="let radioChoice of radioChoices; let i = index;" (change)="radioChange($event)" [value]="i">{{radioChoice}}</mat-radio-button>
+            </mat-radio-group>
+        </div>
+        <div class="form-group">
             <label class="form-control-label" jhiTranslate="svn2GitApp.staticMapping.regex" for="field_regex" style="width: 120px;">Regex</label>
             <mat-form-field>
-                <input type="text" class="form-control" name="regex" id="field_regex" matInput required
+                <input [disabled]="isSvnDirectoryDeleteSelected()" type="text" class="form-control" name="regex" id="field_regex" matInput [required]="!isSvnDirectoryDeleteSelected()"
                    [(ngModel)]="data.staticMapping.regex" />
             </mat-form-field>
         </div>
         <div class="form-group">
             <label class="form-control-label" jhiTranslate="svn2GitApp.staticMapping.gitDirectory" for="field_gitDirectory" style="width: 120px">Git Directory</label>
-            <mat-form-field>
-                <input type="text" class="form-control" name="gitDirectory" id="field_gitDirectory" matInput required
+            <mat-form-field >
+                <input [disabled]="isSvnDirectoryDeleteSelected()" type="text" class="form-control" name="gitDirectory" id="field_gitDirectory" matInput [required]="!isSvnDirectoryDeleteSelected()"
                    [(ngModel)]="data.staticMapping.gitDirectory" />
             </mat-form-field>
         </div>

@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git.web.rest;
 
+import com.jayway.jsonpath.JsonPath;
 import fr.yodamad.svn2git.Svn2GitApp;
 
 import fr.yodamad.svn2git.config.ApplicationProperties;
@@ -23,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,26 +49,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Svn2GitApp.class)
 public class MigrationResourceIntTest {
 
-    private static final String DEFAULT_SVN_GROUP = "AAAAAAAAAA";
+    public static final String DEFAULT_SVN_GROUP = "AAAAAAAAAA";
     private static final String UPDATED_SVN_GROUP = "BBBBBBBBBB";
 
-    private static final String DEFAULT_SVN_PROJECT = "AAAAAAAAAA";
+    public static final String DEFAULT_SVN_PROJECT = "AAAAAAAAAA";
     private static final String UPDATED_SVN_PROJECT = "BBBBBBBBBB";
 
-    private static final String DEFAULT_USER = "AAAAAAAAAA";
+    public static final String DEFAULT_USER = "AAAAAAAAAA";
     private static final String UPDATED_USER = "BBBBBBBBBB";
 
     private static final LocalDate DEFAULT_DATE = LocalDate.ofEpochDay(0L);
-    private static final LocalDate UPDATED_DATE = LocalDate.now(ZoneId.systemDefault());
+    public static final LocalDate UPDATED_DATE = LocalDate.now(ZoneId.systemDefault());
 
-    private static final String DEFAULT_GITLAB_GROUP = "AAAAAAAAAA";
+    public static final String DEFAULT_GITLAB_GROUP = "AAAAAAAAAA";
     private static final String UPDATED_GITLAB_GROUP = "BBBBBBBBBB";
 
-    private static final String DEFAULT_GITLAB_PROJECT = "AAAAAAAAAA";
+    public static final String DEFAULT_GITLAB_PROJECT = "AAAAAAAAAA";
     private static final String UPDATED_GITLAB_PROJECT = "BBBBBBBBBB";
 
-    private static final StatusEnum DEFAULT_STATUS = StatusEnum.RUNNING;
-    private static final StatusEnum UPDATED_STATUS = StatusEnum.DONE;
+    public static final StatusEnum DEFAULT_STATUS = StatusEnum.RUNNING;
+    public static final StatusEnum WAITING_STATUS = StatusEnum.WAITING;
+    public static final StatusEnum UPDATED_STATUS = StatusEnum.DONE;
 
     @Autowired
     private MigrationRepository migrationRepository;
@@ -142,10 +145,13 @@ public class MigrationResourceIntTest {
         int databaseSizeBeforeCreate = migrationRepository.findAll().size();
 
         // Create the Migration
-        restMigrationMockMvc.perform(post("/api/migrations")
+        MvcResult mvcResult = restMigrationMockMvc.perform(post("/api/migrations")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(migration)))
-            .andExpect(status().isCreated());
+            .andExpect(status().isCreated()).andReturn();
+
+        // System.out.println(mvcResult.getResponse().getContentAsString());
+        Integer id = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.id");
 
         // Validate the Migration in the database
         List<Migration> migrationList = migrationRepository.findAll();
@@ -154,10 +160,10 @@ public class MigrationResourceIntTest {
         assertThat(testMigration.getSvnGroup()).isEqualTo(DEFAULT_SVN_GROUP);
         assertThat(testMigration.getSvnProject()).isEqualTo(DEFAULT_SVN_PROJECT);
         assertThat(testMigration.getUser()).isEqualTo(DEFAULT_USER);
-        assertThat(testMigration.getDate()).isEqualTo(DEFAULT_DATE);
+        assertThat(testMigration.getDate()).isEqualTo(UPDATED_DATE);
         assertThat(testMigration.getGitlabGroup()).isEqualTo(DEFAULT_GITLAB_GROUP);
         assertThat(testMigration.getGitlabProject()).isEqualTo(DEFAULT_GITLAB_PROJECT);
-        Assertions.assertThat(testMigration.getStatus()).isEqualTo(DEFAULT_STATUS);
+        Assertions.assertThat(testMigration.getStatus()).isEqualTo(WAITING_STATUS);
     }
 
     @Test
@@ -280,15 +286,15 @@ public class MigrationResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(migration.getId().intValue())))
-            .andExpect(jsonPath("$.[*].svn_group").value(hasItem(DEFAULT_SVN_GROUP.toString())))
-            .andExpect(jsonPath("$.[*].svn_project").value(hasItem(DEFAULT_SVN_PROJECT.toString())))
+            .andExpect(jsonPath("$.[*].svnGroup").value(hasItem(DEFAULT_SVN_GROUP.toString())))
+            .andExpect(jsonPath("$.[*].svnProject").value(hasItem(DEFAULT_SVN_PROJECT.toString())))
             .andExpect(jsonPath("$.[*].user").value(hasItem(DEFAULT_USER.toString())))
             .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
-            .andExpect(jsonPath("$.[*].gitlab_group").value(hasItem(DEFAULT_GITLAB_GROUP.toString())))
-            .andExpect(jsonPath("$.[*].gitlab_project").value(hasItem(DEFAULT_GITLAB_PROJECT.toString())))
+            .andExpect(jsonPath("$.[*].gitlabGroup").value(hasItem(DEFAULT_GITLAB_GROUP.toString())))
+            .andExpect(jsonPath("$.[*].gitlabProject").value(hasItem(DEFAULT_GITLAB_PROJECT.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())));
     }
-    
+
     @Test
     @Transactional
     public void getMigration() throws Exception {
@@ -296,17 +302,23 @@ public class MigrationResourceIntTest {
         migrationRepository.saveAndFlush(migration);
 
         // Get the migration
-        restMigrationMockMvc.perform(get("/api/migrations/{id}", migration.getId()))
+        MvcResult restMigrationMockMvcResult = restMigrationMockMvc.perform(get("/api/migrations/{id}", migration.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(migration.getId().intValue()))
-            .andExpect(jsonPath("$.svn_group").value(DEFAULT_SVN_GROUP.toString()))
-            .andExpect(jsonPath("$.svn_project").value(DEFAULT_SVN_PROJECT.toString()))
+            .andExpect(jsonPath("$.svnGroup").value(DEFAULT_SVN_GROUP.toString()))
+            .andExpect(jsonPath("$.svnProject").value(DEFAULT_SVN_PROJECT.toString()))
             .andExpect(jsonPath("$.user").value(DEFAULT_USER.toString()))
             .andExpect(jsonPath("$.date").value(DEFAULT_DATE.toString()))
-            .andExpect(jsonPath("$.gitlab_group").value(DEFAULT_GITLAB_GROUP.toString()))
-            .andExpect(jsonPath("$.gitlab_project").value(DEFAULT_GITLAB_PROJECT.toString()))
-            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()));
+            .andExpect(jsonPath("$.gitlabGroup").value(DEFAULT_GITLAB_GROUP.toString()))
+            .andExpect(jsonPath("$.gitlabProject").value(DEFAULT_GITLAB_PROJECT.toString()))
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
+            .andReturn();
+
+        // For debugging
+        // System.out.println(restMigrationMockMvcResult.getResponse().getContentAsString());
+        // Integer id = JsonPath.read(restMigrationMockMvcResult.getResponse().getContentAsString(), "$.id");
+
     }
 
     @Test

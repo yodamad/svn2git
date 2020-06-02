@@ -5,6 +5,7 @@ export interface IMapping {
     gitDirectory?: string;
     migration?: number;
     isStatic?: boolean;
+    svnDirectoryDelete?: boolean;
 }
 
 export class Mapping implements IMapping {
@@ -14,6 +15,9 @@ export class Mapping implements IMapping {
         public regex?: string,
         public gitDirectory?: string,
         public migration?: number,
-        public isStatic?: boolean
-    ) {}
+        public isStatic?: boolean,
+        public svnDirectoryDelete?: boolean
+    ) {
+        this.svnDirectoryDelete = this.svnDirectoryDelete || false;
+    }
 }

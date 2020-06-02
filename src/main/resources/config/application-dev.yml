@@ -17,7 +17,7 @@ logging:
     level:
         ROOT: WARN
         io.github.jhipster: WARN
-        fr.yodamad.svn2git: DEBUG
+        fr.yodamad.svn2git: INFO
 
 spring:
     profiles:

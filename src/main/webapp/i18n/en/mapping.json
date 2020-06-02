@@ -20,7 +20,8 @@
             "svnDirectory": "Svn Directory",
             "regex": "Regex",
             "gitDirectory": "Git Directory",
-            "migrationId": "Migration"
+            "migrationId": "Migration",
+            "svnDirectoryDelete": "Not Migrated from SVN"
         }
     }
 }

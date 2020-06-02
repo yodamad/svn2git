@@ -5,6 +5,7 @@ import fr.yodamad.svn2git.config.Constants;
 import fr.yodamad.svn2git.domain.User;
 import fr.yodamad.svn2git.repository.UserRepository;
 import fr.yodamad.svn2git.service.dto.UserDTO;
+import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
 import fr.yodamad.svn2git.service.util.RandomUtil;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -14,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.Page;
@@ -52,6 +54,9 @@ public class UserServiceIntTest {
 
     @Mock
     DateTimeProvider dateTimeProvider;
+
+    @MockBean
+    ArtifactoryAdmin artifactoryAdmin;
 
     private User user;
 

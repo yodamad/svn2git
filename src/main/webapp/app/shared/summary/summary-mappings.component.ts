@@ -13,7 +13,7 @@ import { MigrationService } from 'app/entities/migration';
 export class SummaryMappingsComponent implements OnInit {
     @Input() migration: IMigration;
 
-    displayedColumns: string[] = ['svn', 'icon', 'git'];
+    displayedColumns: string[] = ['svn', 'icon', 'git', 'svnDirectoryDelete'];
 
     constructor(private _migrationService: MigrationService) {}
 
@@ -24,7 +24,9 @@ export class SummaryMappingsComponent implements OnInit {
             (this.migration.mappings === undefined || this.migration.mappings === null || this.migration.mappings.length === 0)
         ) {
             console.log('Loading mappings for migration ' + this.migration.id);
-            this._migrationService.findMappings(this.migration.id).subscribe(res => (this.migration.mappings = res.body));
+            this._migrationService.findMappings(this.migration.id).subscribe(res => {
+                this.migration.mappings = res.body;
+            });
         }
     }
 }

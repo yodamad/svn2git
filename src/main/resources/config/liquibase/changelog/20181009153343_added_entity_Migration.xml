@@ -94,6 +94,14 @@
                 <constraints nullable="true" />
             </column>
 
+            <column name="tags_to_migrate" type="varchar(1024)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="branches_to_migrate" type="varchar(1024)">
+                <constraints nullable="true" />
+            </column>
+
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
         </createTable>
         

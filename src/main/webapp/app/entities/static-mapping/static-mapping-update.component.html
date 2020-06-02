@@ -12,17 +12,22 @@
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="svn2GitApp.staticMapping.svnDirectory" for="field_svnDirectory">Svn Directory</label>
                     <input type="text" class="form-control" name="svnDirectory" id="field_svnDirectory"
-                        [(ngModel)]="staticMapping.svnDirectory" required />
+                        [(ngModel)]="staticMapping.svnDirectory" />
                 </div>
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="svn2GitApp.staticMapping.regex" for="field_regex">Regex</label>
                     <input type="text" class="form-control" name="regex" id="field_regex"
-                        [(ngModel)]="staticMapping.regex" required />
+                        [(ngModel)]="staticMapping.regex" />
                 </div>
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="svn2GitApp.staticMapping.gitDirectory" for="field_gitDirectory">Git Directory</label>
                     <input type="text" class="form-control" name="gitDirectory" id="field_gitDirectory"
-                        [(ngModel)]="staticMapping.gitDirectory" required />
+                        [(ngModel)]="staticMapping.gitDirectory" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.staticMapping.svnDirectoryDelete" for="field_svnDirectoryDelete">Svn Directory Delete</label>
+                    <input type="checkbox" class="form-control" name="svnDirectoryDelete" id="field_svnDirectoryDelete"
+                        [(ngModel)]="staticMapping.svnDirectoryDelete" />
                 </div>
 
             </div>

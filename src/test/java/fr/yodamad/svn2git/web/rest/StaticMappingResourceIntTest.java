@@ -49,6 +49,9 @@ public class StaticMappingResourceIntTest {
     private static final String DEFAULT_GIT_DIRECTORY = "AAAAAAAAAA";
     private static final String UPDATED_GIT_DIRECTORY = "BBBBBBBBBB";
 
+    private static final Boolean DEFAULT_SVN_DIRECTORY_DELETE = false;
+    private static final Boolean UPDATED_SVN_DIRECTORY_DELETE = true;
+
     @Autowired
     private StaticMappingRepository staticMappingRepository;
     
@@ -92,7 +95,8 @@ public class StaticMappingResourceIntTest {
         StaticMapping staticMapping = new StaticMapping()
             .svnDirectory(DEFAULT_SVN_DIRECTORY)
             .regex(DEFAULT_REGEX)
-            .gitDirectory(DEFAULT_GIT_DIRECTORY);
+            .gitDirectory(DEFAULT_GIT_DIRECTORY)
+            .svnDirectoryDelete(DEFAULT_SVN_DIRECTORY_DELETE);
         return staticMapping;
     }
 
@@ -119,6 +123,7 @@ public class StaticMappingResourceIntTest {
         assertThat(testStaticMapping.getSvnDirectory()).isEqualTo(DEFAULT_SVN_DIRECTORY);
         assertThat(testStaticMapping.getRegex()).isEqualTo(DEFAULT_REGEX);
         assertThat(testStaticMapping.getGitDirectory()).isEqualTo(DEFAULT_GIT_DIRECTORY);
+        assertThat(testStaticMapping.isSvnDirectoryDelete()).isEqualTo(DEFAULT_SVN_DIRECTORY_DELETE);
     }
 
     @Test
@@ -153,7 +158,8 @@ public class StaticMappingResourceIntTest {
             .andExpect(jsonPath("$.[*].id").value(hasItem(staticMapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnDirectory").value(hasItem(DEFAULT_SVN_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].regex").value(hasItem(DEFAULT_REGEX.toString())))
-            .andExpect(jsonPath("$.[*].gitDirectory").value(hasItem(DEFAULT_GIT_DIRECTORY.toString())));
+            .andExpect(jsonPath("$.[*].gitDirectory").value(hasItem(DEFAULT_GIT_DIRECTORY.toString())))
+            .andExpect(jsonPath("$.[*].svnDirectoryDelete").value(hasItem(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue())));
     }
     
     @Test
@@ -169,7 +175,8 @@ public class StaticMappingResourceIntTest {
             .andExpect(jsonPath("$.id").value(staticMapping.getId().intValue()))
             .andExpect(jsonPath("$.svnDirectory").value(DEFAULT_SVN_DIRECTORY.toString()))
             .andExpect(jsonPath("$.regex").value(DEFAULT_REGEX.toString()))
-            .andExpect(jsonPath("$.gitDirectory").value(DEFAULT_GIT_DIRECTORY.toString()));
+            .andExpect(jsonPath("$.gitDirectory").value(DEFAULT_GIT_DIRECTORY.toString()))
+            .andExpect(jsonPath("$.svnDirectoryDelete").value(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue()));
     }
 
     @Test
@@ -195,7 +202,8 @@ public class StaticMappingResourceIntTest {
         updatedStaticMapping
             .svnDirectory(UPDATED_SVN_DIRECTORY)
             .regex(UPDATED_REGEX)
-            .gitDirectory(UPDATED_GIT_DIRECTORY);
+            .gitDirectory(UPDATED_GIT_DIRECTORY)
+            .svnDirectoryDelete(UPDATED_SVN_DIRECTORY_DELETE);
 
         restStaticMappingMockMvc.perform(put("/api/static-mappings")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
@@ -209,6 +217,7 @@ public class StaticMappingResourceIntTest {
         assertThat(testStaticMapping.getSvnDirectory()).isEqualTo(UPDATED_SVN_DIRECTORY);
         assertThat(testStaticMapping.getRegex()).isEqualTo(UPDATED_REGEX);
         assertThat(testStaticMapping.getGitDirectory()).isEqualTo(UPDATED_GIT_DIRECTORY);
+        assertThat(testStaticMapping.isSvnDirectoryDelete()).isEqualTo(UPDATED_SVN_DIRECTORY_DELETE);
     }
 
     @Test

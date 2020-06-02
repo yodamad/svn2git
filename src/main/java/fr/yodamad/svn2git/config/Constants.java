@@ -11,7 +11,11 @@ public final class Constants {
     public static final String SYSTEM_ACCOUNT = "system";
     public static final String ANONYMOUS_USER = "anonymoususer";
     public static final String DEFAULT_LANGUAGE = "en";
-    
+
+    // Constant String prepended to history steps data to indicated that step not really executed in
+    // the context of a reexecution
+    public static final String REEXECUTION_SKIPPING = "REEXECUTION_SKIPPING:" ;
+
     private Constants() {
     }
 }

@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM openjdk:11-jre-alpine
 
 ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
     JHIPSTER_SLEEP=0 \
@@ -16,5 +16,5 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 EXPOSE 8080
 
-ADD *.war app.war
+ADD *.jar app.jar
 

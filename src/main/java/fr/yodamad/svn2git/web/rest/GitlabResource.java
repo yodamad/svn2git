@@ -8,14 +8,21 @@ import fr.yodamad.svn2git.service.util.GitlabAdmin;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
+import org.gitlab4j.api.UserApi;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.User;
 import org.gitlab4j.api.models.Visibility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -34,7 +41,6 @@ public class GitlabResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(GitlabResource.class);
 
-    /** Gitlab API wrapper. */
     private final GitlabAdmin gitlabAdmin;
     private final ApplicationProperties applicationProperties;
 
@@ -46,23 +52,24 @@ public class GitlabResource {
 
     /**
      * Check if a user exists on Gitlab
+     *
      * @param userName User ID search
      * @return if user found
      */
     @PostMapping("user/{username}")
     @Timed
     public ResponseEntity<Boolean> checkUser(@PathVariable("username") String userName, @RequestBody GitlabInfo gitlabInfo) {
-        Optional<User> user = overrideGitlab(gitlabInfo).userApi().getOptionalUser(userName);
+        UserApi api = overrideGitlab(gitlabInfo).getUserApi();
+        Optional<User> user = api.getOptionalUser(userName);
         GitLabApiException exception = GitLabApi.getOptionalException(user);
 
         if (exception != null) {
-            LOG.error("Fail to access gitlab", exception.getMessage());
+            LOG.error("Fail to access gitlab", exception);
             return ResponseEntity.badRequest().build();
         }
 
         if (user.isPresent()) {
-            return ResponseEntity.ok()
-                .body(user.isPresent());
+            return ResponseEntity.ok().body(user.isPresent());
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -70,14 +77,15 @@ public class GitlabResource {
 
     /**
      * Check if a group exists on Gitlab
+     *
      * @param groupName Group name search
      * @return if group found
      */
     @PostMapping("group/{groupName}")
     @Timed
     public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
-        GitlabAdmin gitlab = overrideGitlab(gitlabInfo);
-        Optional<Group> group = gitlab.groupApi().getOptionalGroup(groupName);
+        GitLabApi gitlab = overrideGitlab(gitlabInfo);
+        Optional<Group> group = gitlab.getGroupApi().getOptionalGroup(groupName);
 
         if (group.isPresent()) {
             return ResponseEntity.ok()
@@ -89,19 +97,20 @@ public class GitlabResource {
 
     /**
      * Creates a group on Gitlab
+     *
      * @param groupName Group name to create
      * @return
      */
     @PutMapping("group/{groupName}")
     @Timed
     public ResponseEntity<Boolean> createGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
-        GitlabAdmin gitlab = overrideGitlab(gitlabInfo);
+        GitLabApi gitlab = overrideGitlab(gitlabInfo);
         Group group = new Group();
         group.setName(groupName);
         group.setPath(groupName);
         group.setVisibility(Visibility.INTERNAL);
         try {
-            gitlab.groupApi().addGroup(group);
+            gitlab.getGroupApi().addGroup(group);
             return ResponseEntity.ok().body(true);
         } catch (GitLabApiException apiEx) {
             return ResponseEntity.badRequest().build();
@@ -110,35 +119,52 @@ public class GitlabResource {
 
     /**
      * Override Gitlab default configuration if necessary
+     *
      * @param gitlabInfo Received gitlab info
      * @return
      */
-    private GitlabAdmin overrideGitlab(GitlabInfo gitlabInfo) {
+    private GitLabApi overrideGitlab(GitlabInfo gitlabInfo) {
+
         GitlabAdmin gitlab = gitlabAdmin;
-        if (!applicationProperties.gitlab.url.equalsIgnoreCase(gitlabInfo.url)
-            || !StringUtils.isEmpty(gitlabInfo.token)) {
-            gitlabAdmin.setGitLabApi(new GitLabApi(gitlabInfo.url, gitlabInfo.token));
+
+        // If gitlabInfo.token is empty assure using values found in application.yml.
+        // i.e. those in default GitlabAdmin object
+        if (StringUtils.isEmpty(gitlabInfo.token)) {
+            LOG.info("Already using default url and token");
+        } else {
+            // If gitlabInfo.token has a value we overide as appropriate
+            if (!gitlab.api().getGitLabServerUrl().equalsIgnoreCase(gitlabInfo.url) ||
+                !gitlab.api().getAuthToken().equalsIgnoreCase(gitlabInfo.token)) {
+
+                LOG.info("Overiding gitlab url and token");
+                return new GitLabApi(gitlabInfo.url, gitlabInfo.token);
+            }
         }
-        return gitlab;
+        return gitlab.api();
     }
 
     /**
      * Remove an existing group
+     *
      * @param migration Migration containing group information
      * @throws GitLabApiException Problem when removing
      */
     public void removeGroup(Migration migration) throws GitLabApiException {
+
+        //Get default GitlabAdmin object
+
         try {
             String[] elements = migration.getSvnProject().split("/");
             StringBuffer namespace = new StringBuffer(migration.getGitlabGroup());
             IntStream.range(1, elements.length)
                 .forEach(i -> namespace.append(String.format("/%s", elements[i])));
-            List<Project> projects = gitlabAdmin.projectApi().getProjects(elements[elements.length-1]);
+            List<Project> projects = gitlabAdmin.projectApi().getProjects(elements[elements.length - 1]);
             Project project = projects.stream().filter(p -> p.getPathWithNamespace().equalsIgnoreCase(namespace.toString())).findFirst().get();
             gitlabAdmin.projectApi().deleteProject(project);
             // Waiting for gitlab to delete it completely
-            LocalDateTime maxAge =  LocalDateTime.now().plus(applicationProperties.gitlab.wait, ChronoUnit.SECONDS);
-            while(gitlabAdmin.projectApi().getProject(project.getId()) != null || maxAge.isAfter( LocalDateTime.now())) {}
+            LocalDateTime maxAge = LocalDateTime.now().plus(applicationProperties.gitlab.waitSeconds, ChronoUnit.SECONDS);
+            while (gitlabAdmin.projectApi().getProject(project.getId()) != null || maxAge.isAfter(LocalDateTime.now())) {
+            }
         } catch (GitLabApiException apiEx) {
             if (apiEx.getReason().equalsIgnoreCase("Not Found")) {
                 // Project already deleted

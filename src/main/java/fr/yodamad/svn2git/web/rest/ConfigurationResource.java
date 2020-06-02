@@ -42,6 +42,17 @@ public class ConfigurationResource {
     }
 
     /**
+     * @return Configured svnUrlModifiable option
+     */
+    @Timed
+    @GetMapping("svn/svnUrlModifiable")
+    public ResponseEntity<String> getSvnUrlModifiableOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_PLAIN)
+            .body(applicationProperties.svn.svnUrlModifiable);
+    }
+
+    /**
      * @return Configured Gitlab URL
      */
     @Timed
@@ -90,5 +101,13 @@ public class ConfigurationResource {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.flags.projectCleaningOption);
+    }
+
+    @Timed
+    @GetMapping("flags/gitlabGroupCreationOption")
+    public ResponseEntity<Boolean> getGitlabGroupCreationOption() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(applicationProperties.flags.gitlabGroupCreationOption);
     }
 }

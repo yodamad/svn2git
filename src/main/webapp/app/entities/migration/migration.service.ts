@@ -73,19 +73,23 @@ export class MigrationService {
 
     private convertDateFromClient(migration: IMigration): IMigration {
         const copy: IMigration = Object.assign({}, migration, {
-            date: migration.date != null && migration.date.isValid() ? migration.date.format(DATE_FORMAT) : null
+            date: migration.date != null && migration.date.isValid() ? migration.date.format(DATE_FORMAT) : null,
+            createdTimestamp:
+                migration.createdTimestamp != null && migration.createdTimestamp.isValid() ? migration.createdTimestamp.toJSON() : null
         });
         return copy;
     }
 
     private convertDateFromServer(res: EntityResponseType): EntityResponseType {
         res.body.date = res.body.date != null ? moment(res.body.date) : null;
+        res.body.createdTimestamp = res.body.createdTimestamp != null ? moment(res.body.createdTimestamp) : null;
         return res;
     }
 
     private convertDateArrayFromServer(res: EntityArrayResponseType): EntityArrayResponseType {
         res.body.forEach((migration: IMigration) => {
             migration.date = migration.date != null ? moment(migration.date) : null;
+            migration.createdTimestamp = migration.createdTimestamp != null ? moment(migration.createdTimestamp) : null;
         });
         return res;
     }

@@ -43,7 +43,7 @@ spring:
             hibernate.generate_statistics: true
             hibernate.hbm2ddl.auto: validate
     liquibase:
-        contexts: test
+        contexts: test,staticdata
     mail:
         host: localhost
     messages:
@@ -88,7 +88,7 @@ jhipster:
         authentication:
             jwt:
                 # This token must be encoded using Base64 (you can type `echo 'secret-key'|base64` on your command line)
-                base64-secret: MWU2ZWM1ZDEyM2MxZWRjNzJmMDQ1YTJkNzYzYzM3MWRkYTliMWYyNWRjMDMzOTVmNzYxNmQ2NDAyMTA1Y2IwODAyZWFkNmIzMjM1ODA5YzFhM2NjYmU0MzNkZDk5YmJkMTM2M2Y5MmEyYTAzZTY1YTgzMzY3NTdmOWY0MTYxM2U=
+                base-64-secret: MWU2ZWM1ZDEyM2MxZWRjNzJmMDQ1YTJkNzYzYzM3MWRkYTliMWYyNWRjMDMzOTVmNzYxNmQ2NDAyMTA1Y2IwODAyZWFkNmIzMjM1ODA5YzFhM2NjYmU0MzNkZDk5YmJkMTM2M2Y5MmEyYTAzZTY1YTgzMzY3NTdmOWY0MTYxM2U=
                 # Token is valid 24 hours
                 token-validity-in-seconds: 86400
     metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
@@ -106,4 +106,52 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+    password.cipher: svn2git
+    work:
+        directory: /tmp/svn2git
+        maxSvnLevel: 3
+    flags:
+        projectCleaningOption: false
+        gitlabGroupCreationOption: false
+        git-mv-f-option: false
+        git-mv-k-option: true
+        git-svn-clone-preserve-empty-dirs-option: false
+        cleanup-work-directory: true
+    artifactory:
+        enabled: true
+        url: http://artifactory.dummy.local
+        user: admin
+        password: TO_REPLACE
+        accessToken:
+        repository: libs-release-svn2git-local
+        groupIdPrefix: group.test
+        # should start with a slash
+        binariesDirectory:
+        # Attention any folder called this will be deleted wherever it is. Leave blank if not used. Done before Mappings (unfortunately)
+        # Can be comma separated list
+        deleteFolderWithBFG:
+        uploadPauseMilliSeconds: 5000
+    gitlab:
+        url: https://gitlab.dummy.local/
+        account: dummyGitlabUser
+        token: dummyGitlabToken
+        credentials: optional
+        waitSeconds: 15
+        dynamic-local-config[0]: pack.deltaCacheSize 256m,Limiting deltaCacheSize to 256m (default)
+        dynamic-local-config[1]: pack.windowMemory 512m,Limiting window memory size to 512m
+        dynamic-local-config[2]: pack.threads 5,Limiting number of threads to 5
+        #        dynamic-local-config[3]: pack.packSizeLimit 128m,Limiting packSizeLimit to 128m
+        #        dynamic-local-config[4]: core.packedGitLimit 128m,Limiting packedGitLimit to 128m
+        #        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
+        gitPushPauseMilliSeconds: 5000
+        gitMvPauseMilliSeconds: 500
+    svn:
+        url: https://subversion.dummy.local/
+        user:
+        password:
+        credentials: required
+    override:
+        extensions: false
+        mappings: false
+

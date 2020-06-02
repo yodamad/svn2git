@@ -2,6 +2,7 @@ package fr.yodamad.svn2git.domain;
 
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -26,6 +27,9 @@ public class Mapping implements Serializable {
 
     @Column(name = "git_directory")
     private String gitDirectory;
+
+    @Column(name = "svn_directory_delete")
+    private Boolean svnDirectoryDelete;
 
     @Column(name = "migration_id")
     private Long migration;
@@ -78,6 +82,19 @@ public class Mapping implements Serializable {
         this.gitDirectory = gitDirectory;
     }
 
+    public Boolean isSvnDirectoryDelete() {
+        return svnDirectoryDelete;
+    }
+
+    public Mapping svnDirectoryDelete(Boolean svnDirectoryDelete) {
+        this.svnDirectoryDelete = svnDirectoryDelete;
+        return this;
+    }
+
+    public void setSvnDirectoryDelete(Boolean svnDirectoryDelete) {
+        this.svnDirectoryDelete = svnDirectoryDelete;
+    }
+
     public Long getMigration() { return migration; }
 
     public Mapping migration(Long migration) {
@@ -88,8 +105,6 @@ public class Mapping implements Serializable {
     public void setMigration(Long migration) {
         this.migration = migration;
     }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
-
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
     @Override
@@ -119,6 +134,7 @@ public class Mapping implements Serializable {
             ", svnDirectory='" + getSvnDirectory() + "'" +
             ", regex='" + getRegex() + "'" +
             ", gitDirectory='" + getGitDirectory() + "'" +
+            ", svnDirectoryDelete='" + isSvnDirectoryDelete() + "'" +
             "}";
     }
 }

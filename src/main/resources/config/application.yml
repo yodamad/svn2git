@@ -40,7 +40,7 @@ spring:
         # The commented value for `active` can be replaced with valid Spring profiles to load.
         # Otherwise, it will be filled in by maven when building the WAR file
         # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
-        active: #spring.profiles.active#
+        active: dev
     jpa:
         open-in-view: false
         hibernate:
@@ -92,7 +92,7 @@ jhipster:
         default-include-pattern: /api/.*
         title: svn2git API
         description: svn2git API documentation
-        version: 0.0.1
+        version: 1.18
         terms-of-service-url:
         contact-name:
         contact-url:
@@ -119,17 +119,46 @@ application:
         maxSvnLevel: 3
     flags:
         projectCleaningOption: true
+        gitlabGroupCreationOption: true
+        git-mv-f-option: false
+        git-mv-k-option: true
+        git-svn-clone-preserve-empty-dirs-option: false
+        cleanup-work-directory: true
+        alpine: false
+    artifactory:
+        enabled: false
+        url: http://localhost:8081/artifactory
+        user: admin
+        password: TO_REPLACE
+        accessToken:
+        repository: libs-release-svn2git-local
+        groupIdPrefix: my.group.id
+        # should start with a slash
+        binariesDirectory:
+        # Attention any folder called this will be deleted wherever it is. Leave blank if not used. Done before Mappings (unfortunately)
+        # Can be comma separated list
+        deleteFolderWithBFG:
+        uploadPauseMilliSeconds: 5000
     gitlab:
         url: http://localhost/
-        account: mvt
-        token: kYXpL6Mau5SQhFhTPD4J
+        account: root
+        token: 1uCYVVdwB32yCy4sB-2w
         credentials: optional
-        wait: 15
+        waitSeconds: 15
+        dynamic-local-config[0]: pack.deltaCacheSize 256m,Limiting deltaCacheSize to 256m (default)
+        dynamic-local-config[1]: pack.windowMemory 512m,Limiting window memory size to 512m
+        dynamic-local-config[2]: pack.threads 5,Limiting number of threads to 5
+        #        dynamic-local-config[3]: pack.packSizeLimit 128m,Limiting packSizeLimit to 128m
+        #        dynamic-local-config[4]: core.packedGitLimit 128m,Limiting packedGitLimit to 128m
+        #        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
+        gitPushPauseMilliSeconds: 5000
+        gitMvPauseMilliSeconds: 500
     svn:
         url: svn://localhost/
         user:
         password:
-        credentials: optional
+        credentials: required
+        svnUrlModifiable: true
     override:
         extensions: false
         mappings: false

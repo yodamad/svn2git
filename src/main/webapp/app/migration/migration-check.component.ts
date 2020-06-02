@@ -80,7 +80,9 @@ export class MigrationCheckComponent implements OnInit {
                 .findMigrationByProject(this.searchFormGroup.controls['projectCriteria'].value)
                 .subscribe((res: HttpResponse<IMigration[]>) => (this.migrations = res.body), () => this.openSnackBar('error.http.504'));
         } else {
-            this.openSnackBar('error.criteria');
+            this._migrationProcessService
+                .findLastMigrations(100)
+                .subscribe((res: HttpResponse<IMigration[]>) => (this.migrations = res.body), () => this.openSnackBar('error.http.504'));
         }
     }
 

@@ -956,7 +956,7 @@ public class GitManager {
                 }
             }
 
-            // move/rename a branch and the corresponing reflog
+            // move/rename a branch and the corresponding reflog
             // (i.e. rename the orphan branch - without history - to the passed in branch name)
             // Note : This fails with exit code 128 (git branch -m tmp_tag) when only folders in the subversion tag.
             // git commit -am above fails because no files

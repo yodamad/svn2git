@@ -108,7 +108,7 @@ public abstract class Shell {
         LOG.debug(format("Exit : %d", exitCode));
 
         if (exitCode != 0) {
-            // trace successful commands
+            // trace failed commands
             commandManager.addFailedCommand(directory, securedCommandToPrint, stderr);
 
             throw new RuntimeException(stderr);

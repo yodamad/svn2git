@@ -147,6 +147,7 @@ public class MigrationManager {
 
             // 2.2. SVN checkout
             gitManager.gitSvnClone(workUnit);
+            checkGitConfig(workUnit);
 
             copyRootDirectory(workUnit);
             // Migration is now reexecutable in cases where there is a failure
@@ -491,14 +492,37 @@ public class MigrationManager {
         historyMgr.endStep(history, StatusEnum.DONE, null);
     }
 
+    private void checkGitConfig(WorkUnit workUnit) throws IOException, InterruptedException {
+
+        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_SET_CONFIG, "Log Git Config and origin of config.");
+        String gitCommand = "git config user.name";
+        //String workDir = format("%s/%s", workUnit.directory, workUnit.migration.getSvnProject());
+        try {
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+        } catch (RuntimeException rEx) {
+            LOG.info("Git user.email and user.name not set, use default values based on gitlab user set in UI");
+            gitCommand = format("git config user.email %s@svn2git.fake", workUnit.migration.getUser());
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+            gitCommand = format("git config user.name %s", workUnit.migration.getUser());
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+        } finally {
+            historyMgr.endStep(history, StatusEnum.DONE, null);
+        }
+    }
+
     private void logUlimit(WorkUnit workUnit) throws IOException, InterruptedException {
 
         // On linux servers trace what ulimit value is
         if (!isWindows) {
             MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.ULIMIT, "Show Ulimit -u value.");
-            String command = "ulimit -u";
-            execCommand(workUnit.commandManager, workUnit.directory, command);
-            historyMgr.endStep(history, StatusEnum.DONE, null);
+            try {
+                String command = "ulimit -u";
+                execCommand(workUnit.commandManager, workUnit.directory, command);
+            } catch (Exception exc) {
+                // Ignore exception as it's just info displayed
+            } finally {
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+            }
         }
 
     }

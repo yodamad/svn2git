@@ -80,6 +80,8 @@ public class Cleaner {
      */
     private static boolean isForbiddenExtension(WorkUnit workUnit, Path path) {
 
+        if (workUnit.migration.getForbiddenFileExtensions() == null) return false;
+
         List<String> extensions = Arrays.stream(workUnit.migration.getForbiddenFileExtensions().
             split(",")).map(String::toLowerCase).collect(Collectors.toList());
 

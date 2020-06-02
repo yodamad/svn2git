@@ -159,7 +159,7 @@ public class MarkdownGenerator {
                 md.append(new Heading("Migration Removed Files : Reason EXTENSION", 3)).append(EMPTY_LINE);
                 Table.Builder migrationRemovedFileReasonExtensionTableBuilder = new Table.Builder()
                     .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
-                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "Reason", "fileSize");
+                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "fileSize");
 
                 migrationRemovedFilesReasonExtension.stream().forEach(migrationRemovedFile -> {
                     addRemovedFileRow(migrationRemovedFileReasonExtensionTableBuilder, migrationRemovedFile);
@@ -181,7 +181,7 @@ public class MarkdownGenerator {
                 md.append(new Heading("Migration Removed Files : Reason SIZE", 3)).append(EMPTY_LINE);
                 Table.Builder migrationRemovedFileReasonSizeTableBuilder = new Table.Builder()
                     .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
-                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "Reason", "fileSize");
+                    .addRow("Id", "Path", "SvnLocation", "Artifactory", "fileSize");
 
                 migrationRemovedFilesReasonSize.stream().forEach(migrationRemovedFile -> {
                     addRemovedFileRow(migrationRemovedFileReasonSizeTableBuilder, migrationRemovedFile);
@@ -223,21 +223,16 @@ public class MarkdownGenerator {
 
         Table.Builder historyTableBuilder = new Table.Builder()
             .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_CENTER, Table.ALIGN_CENTER, Table.ALIGN_LEFT)
-            .addRow("Step", "Status", "Time (dd/MM/yy)" ,"Details");
-
-        log.debug("======>Before generate history section");
+            .addRow("Step", "Status", "Time (dd/MM/yy)" ,"Details", "Execution Time");
 
         // Write all to file at this point (because StringBuffer is limited in what it can handle)...
-        Path readMeFilePath = Files.write(Paths.get(workUnit.directory, "README.md"), md.toString().getBytes(), StandardOpenOption.CREATE);
+        Files.write(Paths.get(workUnit.directory, "README.md"), md.toString().getBytes(), StandardOpenOption.CREATE);
 
         migration.getHistories().stream().forEach(h -> historyTableBuilder.addRow(h.getStep(), h.getStatus(),
-            formatter.format(h.getDate()), getHistoryDetails(h)));
+            formatter.format(h.getDate()), getHistoryDetails(h), h.getExecutionTime()));
 
-        readMeFilePath = Files.write(Paths.get(workUnit.directory, "README.md"), historyTableBuilder.
+        Files.write(Paths.get(workUnit.directory, "README.md"), historyTableBuilder.
                 build().toString().getBytes(), StandardOpenOption.APPEND);
-
-        log.debug("======>After generate history section");
-
     }
 
     /**
@@ -284,14 +279,21 @@ public class MarkdownGenerator {
             fileSize = BytesConverterUtil.humanReadableByteCount(migrationRemovedFile.getFileSize(), false);
         }
 
-        // Remove leading slash from artifactory.binariesDirectory
-        String binariresDirectory = applicationProperties.artifactory.binariesDirectory.substring(1);
-        migrationRemovedFileTableBuilder.addRow(id,
-            ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? path : new BoldText(new ItalicText(path))),
-            svnLocation,
-            ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? "Yes" : ""),
-            reason,
-            fileSize);
+        if (applicationProperties.artifactory.enabled) {
+            // Remove leading slash from artifactory.binariesDirectory
+            String binariresDirectory = applicationProperties.artifactory.binariesDirectory.substring(1);
+            migrationRemovedFileTableBuilder.addRow(id,
+                ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? path : new BoldText(new ItalicText(path))),
+                svnLocation,
+                ((path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")) ? "Yes" : ""),
+                fileSize);
+        } else {
+            migrationRemovedFileTableBuilder.addRow(id,
+                path,
+                svnLocation,
+                "Yes",
+                fileSize);
+        }
     }
 }
 

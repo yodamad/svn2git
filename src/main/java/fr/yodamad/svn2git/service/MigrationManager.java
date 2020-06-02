@@ -145,17 +145,13 @@ public class MigrationManager {
             // Log default character encoding
             LOG.info("Charset.defaultCharset().displayName():" + Charset.defaultCharset().displayName());
 
-
             // 2.2. SVN checkout
             gitManager.gitSvnClone(workUnit);
+            checkGitConfig(workUnit);
 
             copyRootDirectory(workUnit);
             // Migration is now reexecutable in cases where there is a failure
             commandManager.setReexecutable(true);
-
-//            if (commandManager.isReexecutable() && StringUtils.isBlank(migration.getWorkingDirectory())) {
-//                throw new RuntimeException("Testing Reexecution");
-//            }
 
             // Apply dynamic local configuration
             applicationProperties.
@@ -302,7 +298,7 @@ public class MigrationManager {
 
                     gitCommand = "git add README.md";
                     execCommand(commandManager, workUnit.directory, gitCommand);
-                    gitCommand = "git commit -m \"Add generated README.md\"";
+                    gitCommand = "git commit -m \"📃 Add generated README.md\"";
                     execCommand(commandManager, workUnit.directory, gitCommand);
                     gitCommand = format("%s --set-upstream origin master", GIT_PUSH);
                     execCommand(commandManager, workUnit.directory, gitCommand);
@@ -350,12 +346,10 @@ public class MigrationManager {
             migration.setStatus(StatusEnum.FAILED);
             migrationRepository.save(migration);
         } finally {
-
-            LOG.info("==================================================");
-            LOG.info("=====           Commands Executed          =======");
-            LOG.info("==================================================");
-            commandManager.getCommandLog().forEach((k, v) -> LOG.info("Directory : " + k + " Command : " + v));
-            LOG.info("==================================================");
+            LOG.debug("=====           Commands Executed          =======");
+            LOG.debug("==================================================");
+            commandManager.getCommandLog().forEach((k, v) -> LOG.debug("Directory : " + k + " Command : " + v));
+            LOG.debug("==================================================");
 
             if (applicationProperties.getFlags().getCleanupWorkDirectory()) {
                 // TODO : handle case where already deleted due to migration failure. See above.
@@ -364,6 +358,10 @@ public class MigrationManager {
                 LOG.info("Not cleaning up working directory");
                 LOG.info("REASON:applicationProperties.getFlags().getCleanupWorkDirectory()==True");
             }
+            LOG.info(format("Migration from SVN (%s) %s to Gitlab %s group completed with status %s",
+                migration.getSvnGroup(), migration.getSvnProject(),
+                migration.getGitlabGroup(),
+                migration.getStatus()));
         }
     }
 
@@ -494,14 +492,37 @@ public class MigrationManager {
         historyMgr.endStep(history, StatusEnum.DONE, null);
     }
 
+    private void checkGitConfig(WorkUnit workUnit) throws IOException, InterruptedException {
+
+        MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_SET_CONFIG, "Log Git Config and origin of config.");
+        String gitCommand = "git config user.name";
+        //String workDir = format("%s/%s", workUnit.directory, workUnit.migration.getSvnProject());
+        try {
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+        } catch (RuntimeException rEx) {
+            LOG.info("Git user.email and user.name not set, use default values based on gitlab user set in UI");
+            gitCommand = format("git config user.email %s@svn2git.fake", workUnit.migration.getUser());
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+            gitCommand = format("git config user.name %s", workUnit.migration.getUser());
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+        } finally {
+            historyMgr.endStep(history, StatusEnum.DONE, null);
+        }
+    }
+
     private void logUlimit(WorkUnit workUnit) throws IOException, InterruptedException {
 
         // On linux servers trace what ulimit value is
         if (!isWindows) {
             MigrationHistory history = historyMgr.startStep(workUnit.migration, StepEnum.ULIMIT, "Show Ulimit -u value.");
-            String command = "ulimit -u";
-            execCommand(workUnit.commandManager, workUnit.directory, command);
-            historyMgr.endStep(history, StatusEnum.DONE, null);
+            try {
+                String command = "ulimit -u";
+                execCommand(workUnit.commandManager, workUnit.directory, command);
+            } catch (Exception exc) {
+                // Ignore exception as it's just info displayed
+            } finally {
+                historyMgr.endStep(history, StatusEnum.DONE, null);
+            }
         }
 
     }

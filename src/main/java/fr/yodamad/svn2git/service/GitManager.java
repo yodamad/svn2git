@@ -333,29 +333,20 @@ public class GitManager {
                 if (file.isDirectory()) {
 
                     if (!file.getName().equalsIgnoreCase(".git")) {
-
                         isFileInFolder = isFileInFolder(file.getAbsolutePath());
-
                         if (isFileInFolder) {
                             return true;
                         }
-
                     } else {
                         LOG.info("Skipping check for files in .git folder");
                     }
-
                 } else {
-
                     LOG.info("Found at least one file in this folder: " + file.getAbsolutePath());
-
                     return true;
                 }
             }
-
         }
-
         return false;
-
     }
 
     /**
@@ -965,7 +956,7 @@ public class GitManager {
                 }
             }
 
-            // move/rename a branch and the corresponing reflog
+            // move/rename a branch and the corresponding reflog
             // (i.e. rename the orphan branch - without history - to the passed in branch name)
             // Note : This fails with exit code 128 (git branch -m tmp_tag) when only folders in the subversion tag.
             // git commit -am above fails because no files
@@ -1009,10 +1000,10 @@ public class GitManager {
         }
 
         URI uri = URI.create(workUnit.migration.getGitlabUrl());
-        return format("git remote add origin %s://%s:%s@%s/%s%s.git",
+        return format("git remote add origin %s://%s:%s@%s/%s/%s.git",
             uri.getScheme(),
             workUnit.migration.getGitlabToken() == null ?
-                applicationProperties.gitlab.account : workUnit.migration.getSvnUser(),
+                applicationProperties.gitlab.account : workUnit.migration.getUser(),
             safeMode ? STARS :
                 (workUnit.migration.getGitlabToken() == null ?
                     applicationProperties.gitlab.token : workUnit.migration.getGitlabToken()),

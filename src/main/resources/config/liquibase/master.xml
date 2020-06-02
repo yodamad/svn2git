@@ -22,5 +22,6 @@
     <include file="config/liquibase/changelog/2019061812000000_loaddata_StaticExtension.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2019061812000000_loaddata_StaticMapping.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2019111912000000_AddColsMigrationCreatedWorkingDirectory.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2020021612000000_AddColExecutionTime.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

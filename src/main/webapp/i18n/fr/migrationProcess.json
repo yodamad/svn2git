@@ -46,6 +46,7 @@
             "no" : "Rien",
             "option" : "Choix de conservation de l'historique",
             "options" : "Options d'historique",
+            "branch-for-master": "Branche à utiliser comme master si différente de trunk",
             "tags-to-migrate" : "Tags à garder",
             "branches-to-migrate" : "Branches à garder",
             "tags-to-migrate-placeholder" : "Tags à garder (Séparées par des virgules)",

@@ -158,7 +158,8 @@ export class MigrationStepperComponent implements OnInit {
 
         this.historyFormGroup = this._formBuilder.group({
             branchesToMigrate: [''],
-            tagsToMigrate: ['']
+            tagsToMigrate: [''],
+            branchForMaster: ['']
         });
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
@@ -409,7 +410,7 @@ export class MigrationStepperComponent implements OnInit {
         if (this.historySelection !== undefined && !this.historySelection.isEmpty()) {
             this.historySelection.selected.forEach(hst => {
                 if (hst === 'trunk') {
-                    this.mig.trunk = '*';
+                    this.mig.trunk = 'trunk';
                 } else if (hst === 'branches') {
                     this.mig.branches = '*';
                 } else if (hst === 'tags') {
@@ -436,6 +437,14 @@ export class MigrationStepperComponent implements OnInit {
             }
         }
         this.mig.svnHistory = this.historyOption;
+
+        // Branch for master
+        if (
+            this.historyFormGroup.controls['branchForMaster'] !== undefined &&
+            this.historyFormGroup.controls['branchForMaster'].value !== ''
+        ) {
+            this.mig.trunk = this.historyFormGroup.controls['branchForMaster'].value;
+        }
 
         // Mappings
         // Note : selectionSvnDirectoryDelete can be empty

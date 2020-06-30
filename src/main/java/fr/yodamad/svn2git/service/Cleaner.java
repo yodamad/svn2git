@@ -166,12 +166,12 @@ public class Cleaner {
         AtomicBoolean warnings = new AtomicBoolean(false);
 
         if (!isEmpty(workUnit.migration.getTrunk())) {
-            CleanedFiles cleanedFilesTrunk = listCleanedFilesInSvnLocation(workUnit, "trunk", SvnLayout.TRUNK);
-            cleanedFilesMap.put("trunk", cleanedFilesTrunk);
+            CleanedFiles cleanedFilesTrunk = listCleanedFilesInSvnLocation(workUnit, workUnit.migration.getTrunk(), SvnLayout.TRUNK);
+            cleanedFilesMap.put(workUnit.migration.getTrunk(), cleanedFilesTrunk);
         }
 
         List<String> remotes = listRemotes(workUnit.directory);
-        listBranchesOnly(remotes).forEach(
+        listBranchesOnly(remotes, workUnit.migration.getTrunk()).forEach(
             b -> {
                 try {
                     // get branchName
@@ -530,14 +530,14 @@ public class Cleaner {
                 .map(l -> l.trim().replace("origin/", ""))
                 .filter(t -> t.startsWith("tags"))
                 .map(l -> l.replace(TAGS, ""))
-                .filter(l -> !l.equalsIgnoreCase("trunk"))
+                .filter(l -> !l.equalsIgnoreCase(workUnit.migration.getTrunk()))
                 .collect(Collectors.toList());
         } else {
             gitElementsToDelete = Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
                 .stream()
                 .map(l -> l.trim().replace("origin/", ""))
                 .filter(l -> !l.startsWith(TAGS))
-                .filter(l -> !l.equalsIgnoreCase("trunk"))
+                .filter(l -> !l.equalsIgnoreCase(workUnit.migration.getTrunk()))
                 .collect(Collectors.toList());
         }
 

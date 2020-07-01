@@ -30,6 +30,6 @@ stages:
     only:
         - internal_master
         - master
-        - branches
+        - dev
     except:
         - schedules

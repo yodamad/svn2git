@@ -1,0 +1,35 @@
+stages:
+    - 🚧 build
+    - 🗣 publish
+
+# Custom steps
+🛠 build-application:
+    stage: 🚧 build
+    image: jhipster/jhipster
+    before_script:
+        - export MAVEN_USER_HOME=`pwd`/.maven
+        - ./mvnw com.github.eirslett:frontend-maven-plugin:install-node-and-npm -DnodeVersion=v14.3.0 -DnpmVersion=6.13.7
+        - ./mvnw com.github.eirslett:frontend-maven-plugin:install-node-and-yarn -DnodeVersion=v14.3.0 -DyarnVersion=v1.10.1
+    script:
+        - ./mvnw clean package -DskipTests -Pprod
+    artifacts:
+        paths:
+            - target
+        expire_in: 1 week
+
+🐳 build-image:
+    stage: 🗣 publish
+    image:
+        name: gcr.io/kaniko-project/executor:debug-v0.18.0
+        entrypoint: [""]
+    dependencies:
+        - 🛠 build-application
+    script:
+        - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+        - /kaniko/executor --context="$CI_PROJECT_DIR" --dockerfile="$CI_PROJECT_DIR/Dockerfile" --destination="$CI_REGISTRY_IMAGE:$BUILD_VERSION"
+    only:
+        - internal_master
+        - master
+        - dev
+    except:
+        - schedules

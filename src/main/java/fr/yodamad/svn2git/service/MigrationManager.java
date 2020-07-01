@@ -220,13 +220,22 @@ public class MigrationManager {
                 }
 
                 // 4. Git push master based on SVN trunk
-                if (migration.getTrunk() != null && migration.getTrunk().equals("*")) {
-                    history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN trunk -> GitLab master");
+                if (migration.getTrunk() != null) {
+                    history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, format("SVN %s -> GitLab master", migration.getTrunk()));
 
                     // Set origin
                     execCommand(commandManager, workUnit.directory,
                         gitManager.buildRemoteCommand(workUnit, svn, false),
                         gitManager.buildRemoteCommand(workUnit, svn, true));
+
+                    if (!migration.getTrunk().equals("trunk")) {
+                        gitCommand = format("git checkout -b %s %s", migration.getTrunk(), "refs/remotes/origin/" + migration.getTrunk());
+                        execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+                        gitCommand = format("git branch -D master");
+                        execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+                        gitCommand = format("git branch -m master");
+                        execCommand(workUnit.commandManager, workUnit.directory, gitCommand);
+                    }
 
                     // if no history option set
                     if (migration.getSvnHistory().equals("nothing")) {
@@ -246,8 +255,8 @@ public class MigrationManager {
                     boolean warning = gitManager.applyMapping(workUnit, MASTER);
                     workUnit.warnings.set(workUnit.warnings.get() || warning);
                 } else {
-                    history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "Trunk");
-                    historyMgr.endStep(history, StatusEnum.IGNORED, "Skip trunk");
+                    history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, migration.getTrunk());
+                    historyMgr.endStep(history, StatusEnum.IGNORED, format("Skip %s", migration.getTrunk()));
                 }
 
                 // 6. List branches & tags
@@ -308,7 +317,7 @@ public class MigrationManager {
                 }
 
             } else {
-                history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "Trunk, Tags, Branches");
+                history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, format("%s, Tags, Branches", migration.getTrunk()));
                 historyMgr.endStep(history, StatusEnum.IGNORED, "Skipping Migration : No Files Available. No Push to Gitlab");
             }
 

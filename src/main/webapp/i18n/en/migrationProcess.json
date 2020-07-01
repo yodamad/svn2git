@@ -46,6 +46,7 @@
             "no" : "Nothing",
             "option" : "History option",
             "options" : "History options",
+            "branch-for-master": "Branch to use for master if not trunk",
             "tags-to-migrate" : "Tags To Keep",
             "branches-to-migrate" : "Branches To Keep",
             "tags-to-migrate-placeholder" : "Tags To Keep (Comma Separated)",

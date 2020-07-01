@@ -205,7 +205,7 @@ public class GitManager {
 
         if (trunk != null) {
             sb.append(svnProject.replaceFirst("/", "/?"))
-                .append("/trunk/");
+                .append(format("/%s/", trunk));
 
             if (tags != null || branches != null) {
                 sb.append("|");
@@ -289,14 +289,14 @@ public class GitManager {
      * @param remotes Remote list
      * @return list containing only branches
      */
-    static List<String> listBranchesOnly(List<String> remotes) {
+    static List<String> listBranchesOnly(List<String> remotes, String trunk) {
         return remotes.stream()
             .map(String::trim)
             // Remove tags
             .filter(b -> !b.startsWith(ORIGIN_TAGS))
             // Remove master/trunk
             .filter(b -> !b.contains(MASTER))
-            .filter(b -> !b.contains("trunk"))
+            .filter(b -> !b.contains(trunk))
             .filter(b -> !b.contains("@"))
             .collect(Collectors.toList());
     }
@@ -496,7 +496,7 @@ public class GitManager {
         String sCommand = format("%s git svn clone %s %s %s %s %s %s %s %s%s",
             StringUtils.isEmpty(secret) ? "" : isWindows ? format("echo(%s|", secret) : format("echo %s |", secret),
             StringUtils.isEmpty(username) ? "" : format("--username %s", username),
-            workUnit.migration.getTrunk() == null ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
+            (workUnit.migration.getTrunk() == null || !workUnit.migration.getTrunk().equals("trunk")) ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
             workUnit.migration.getTags() == null ? "" : format("--tags=%s/tags", workUnit.migration.getSvnProject()),
             StringUtils.isEmpty(ignorePaths) ? "" : ignorePaths,
@@ -761,7 +761,7 @@ public class GitManager {
      * @param remotes
      */
     void manageBranches(WorkUnit workUnit, List<String> remotes) {
-        listBranchesOnly(remotes).forEach(b -> {
+        listBranchesOnly(remotes, workUnit.migration.getTrunk()).forEach(b -> {
                 final boolean warn = pushBranch(workUnit, b);
                 workUnit.warnings.set(workUnit.warnings.get() || warn);
 

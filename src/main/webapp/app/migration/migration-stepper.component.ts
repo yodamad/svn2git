@@ -464,14 +464,10 @@ export class MigrationStepperComponent implements OnInit {
             // this.mig.mappings = this.selectionMapping.selected
             //    .filter(mapping => mapping.gitDirectory !== undefined);
             this.mig.mappings = this.mappings.filter(row => {
-                if (
+                return (
                     (this.isRealMappingRow(row) && this.selectionMapping.isSelected(row)) ||
                     this.selectionSvnDirectoryDelete.isSelected(row)
-                ) {
-                    return true;
-                } else {
-                    return false;
-                }
+                );
             });
         }
 
@@ -888,6 +884,9 @@ export class MigrationStepperComponent implements OnInit {
      * @param directory
      */
     historyChecked(directory: string) {
+        if (directory === 'trunk') {
+            return this.historySelection.isSelected(directory) && !this.noTrunk();
+        }
         return this.historySelection.isSelected(directory);
     }
 
@@ -935,5 +934,12 @@ export class MigrationStepperComponent implements OnInit {
         } else {
             return false;
         }
+    }
+
+    noTrunk() {
+        return (
+            this.historyFormGroup.controls['branchForMaster'] !== undefined &&
+            this.historyFormGroup.controls['branchForMaster'].value !== ''
+        );
     }
 }

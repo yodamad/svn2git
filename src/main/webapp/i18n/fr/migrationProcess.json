@@ -25,14 +25,14 @@
         "gitlab" : {
             "check" : {
                 "account" : "Vérifier votre compte Gitlab",
-                "group" : "Vérifier votre groupe Gitlab (chemin complet groupe/sous-groupe/..."
+                "group" : "Vérifier votre groupe Gitlab (chemin complet groupe/sous-groupe/...)"
             },
             "clean" : "Avez-vous nettoyé Gitlab avant de réessayer ?",
             "force" : {
                 "clean" : "Nettoyer pour moi",
                 "error" : "Nettoyage impossible automatiquement"
             },
-            "group" : "Groupe Gitlab",
+            "group" : "Groupe Gitlab (chemin complet groupe/sous-groupe/...",
             "token" : "Token",
             "url" : "URL Gitlab",
             "use" : {

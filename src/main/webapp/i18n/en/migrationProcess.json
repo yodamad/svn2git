@@ -32,7 +32,7 @@
                 "clean" : "Clean it for me",
                 "error" : "Impossible to automatically clean project"
             },
-            "group" : "Gitlab group",
+            "group" : "Gitlab group (full path : group/subgroup/...)",
             "token" : "Gitlab token",
             "url" : "Gitlab URL",
             "use" : {

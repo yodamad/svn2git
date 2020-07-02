@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -85,9 +86,28 @@ public class GitlabResource {
     @Timed
     public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
         GitLabApi gitlab = overrideGitlab(gitlabInfo);
-        Optional<Group> group = gitlab.getGroupApi().getOptionalGroup(groupName);
+        String name = groupName;
+        if (groupName.contains("_")) {
+            name = groupName.split("_")[0];
+        }
+        Optional<Group> group = gitlab.getGroupApi().getOptionalGroup(name);
 
         if (group.isPresent()) {
+            if (groupName.contains("_")) {
+                try {
+                    List<Group> subGroups = gitlab.getGroupApi().getSubGroups(group.get().getId());
+                    Optional<Group> subgroup = subGroups.stream()
+                        .filter(sg -> sg.getName().equalsIgnoreCase(groupName.split("_")[1]))
+                        .findAny();
+                    if (subgroup.isPresent()) {
+                        return ResponseEntity.ok().body(subgroup.isPresent());
+                    } else {
+                        return ResponseEntity.notFound().build();
+                    }
+                } catch (GitLabApiException gitLabApiException) {
+                    return ResponseEntity.notFound().build();
+                }
+            }
             return ResponseEntity.ok()
                 .body(group.isPresent());
         } else {

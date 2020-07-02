@@ -25,7 +25,7 @@
         "gitlab" : {
             "check" : {
                 "account" : "Check your Gitlab account",
-                "group" : "Check your Gitlab group"
+                "group" : "Check your Gitlab group full path (group/subgroup/...)"
             },
             "clean" : "Have you cleaned Gitlab before retrying ?",
             "force" : {

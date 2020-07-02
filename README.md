@@ -10,7 +10,7 @@ java -jar svn2git.jar
 But it is also available from 🐳 [Docker Hub](https://hub.docker.com/repository/docker/yodamad/svn2git) :
 
 ```shell script
-docker run --name svn2git -v /tmp/svn2git:/svn2git -p 8080:8080 yodamad/svn2git:latest
+docker run --name svn2git -v /tmp/svn2git:/svn2git -p 8080:8080 yodamad/svn2git:master
 ```
 
 ## ✨ Some quick tricks to help you with the tool

@@ -409,6 +409,7 @@
 
     <build>
         <defaultGoal>spring-boot:run</defaultGoal>
+        <finalName>svn2git</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

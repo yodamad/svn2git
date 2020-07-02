@@ -5,6 +5,7 @@ import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.GitlabInfo;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
+import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
@@ -87,23 +88,38 @@ public class GitlabResource {
     public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
         GitLabApi gitlab = overrideGitlab(gitlabInfo);
         String name = groupName;
+        int depth = 0;
+        String[] subParts = {};
         if (groupName.contains("_")) {
-            name = groupName.split("_")[0];
+            subParts = groupName.split("_");
+            name = subParts[0];
+            depth = subParts.length;
         }
         Optional<Group> group = gitlab.getGroupApi().getOptionalGroup(name);
 
         if (group.isPresent()) {
-            if (groupName.contains("_")) {
+            if (depth > 0) {
                 try {
-                    List<Group> subGroups = gitlab.getGroupApi().getSubGroups(group.get().getId());
-                    Optional<Group> subgroup = subGroups.stream()
-                        .filter(sg -> sg.getName().equalsIgnoreCase(groupName.split("_")[1]))
-                        .findAny();
-                    if (subgroup.isPresent()) {
-                        return ResponseEntity.ok().body(subgroup.isPresent());
-                    } else {
-                        return ResponseEntity.notFound().build();
+                    int cycle = 1;
+                    Integer groupId = group.get().getId();
+                    while (cycle < depth) {
+                        List<Group> subGroups = gitlab.getGroupApi().getSubGroups(groupId);
+                        String[] finalSubParts = subParts;
+                        int finalCycle = cycle;
+                        Optional<Group> subgroup = subGroups.stream()
+                            .filter(sg -> sg.getName().equalsIgnoreCase(finalSubParts[finalCycle]))
+                            .findAny();
+                        if (subgroup.isPresent()) {
+                            if (cycle == (depth-1)) {
+                                return ResponseEntity.ok().body(subgroup.isPresent());
+                            }
+                            cycle++;
+                            groupId = subgroup.get().getId();
+                        } else {
+                            return ResponseEntity.notFound().build();
+                        }
                     }
+                    return ResponseEntity.notFound().build();
                 } catch (GitLabApiException gitLabApiException) {
                     return ResponseEntity.notFound().build();
                 }

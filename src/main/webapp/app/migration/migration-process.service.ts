@@ -36,7 +36,7 @@ export class MigrationProcessService {
 
     checkGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
         const gitlabInfo = new GitlabInfo(url, token);
-        const encodedName = name.replace('/', '_');
+        const encodedName = name.split('/').join('_');
         return this.http
             .post<Boolean>(`${this.groupUrl}/${encodedName}`, gitlabInfo, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => res));

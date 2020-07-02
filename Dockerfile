@@ -7,10 +7,12 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
 RUN apt update && \
     apt install -y git git-svn subversion
 
-COPY target/svn-2-git-1.18.2.jar /usr/svn2git/
+COPY target/svn2git.jar /usr/svn2git/
 
 WORKDIR /usr/svn2git
 
 EXPOSE 8080
 
-CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "svn-2-git-1.18.2.jar"]
+VOLUME /tmp/svn2git
+
+CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "svn2git.jar"]

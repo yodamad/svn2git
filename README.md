@@ -13,7 +13,7 @@ But it is also available from 🐳 [Docker Hub](https://hub.docker.com/repositor
 docker run --name svn2git -v /tmp/svn2git:/svn2git -p 8080:8080 yodamad/svn2git:master
 ```
 
-## ✨ Some quick tricks to help you with the tool
+## ✨ Some quick tips to help you with the tool
 
 💪 If you have large repositories to migrate, you may need to ↗️ JVM size :
 ```shell script

@@ -53,6 +53,7 @@ import static fr.yodamad.svn2git.service.util.Shell.execCommand;
 import static fr.yodamad.svn2git.service.util.Shell.isWindows;
 import static java.lang.String.format;
 import static java.nio.file.Files.walk;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Git operations manager
@@ -374,7 +375,7 @@ public class GitManager {
 
         // If gitlabInfo.token is empty assure using values found in application.yml.
         // i.e. those in default GitlabAdmin object
-        if (StringUtils.isEmpty(migration.getGitlabToken())) {
+        if (isEmpty(migration.getGitlabToken())) {
             LOG.info("Already using default url and token");
         } else {
             // If gitlabInfo.token has a value we overide as appropriate
@@ -391,7 +392,7 @@ public class GitManager {
             Group group = gitlabAdmin.groupApi().getGroup(migration.getGitlabGroup());
 
             // If no svn project specified, use svn group instead
-            if (StringUtils.isEmpty(migration.getSvnProject())) {
+            if (isEmpty(migration.getSvnProject())) {
                 gitlabAdmin.projectApi().createProject(group.getId(), migration.getSvnGroup());
                 historyMgr.endStep(history, StatusEnum.DONE, null);
                 // return migration.getSvnGroup();
@@ -450,11 +451,11 @@ public class GitManager {
         String cloneCommand;
         String safeCommand;
 
-        if (!StringUtils.isEmpty(workUnit.migration.getSvnPassword())) {
+        if (!isEmpty(workUnit.migration.getSvnPassword())) {
             String escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.getSvnPassword());
             cloneCommand = initCommand(workUnit, workUnit.migration.getSvnUser(), escapedPassword);
             safeCommand = initCommand(workUnit, workUnit.migration.getSvnUser(), STARS);
-        } else if (!StringUtils.isEmpty(applicationProperties.svn.password)) {
+        } else if (!isEmpty(applicationProperties.svn.password)) {
             String escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password);
             cloneCommand = initCommand(workUnit, applicationProperties.svn.user, escapedPassword);
             safeCommand = initCommand(workUnit, applicationProperties.svn.user, STARS);
@@ -492,15 +493,15 @@ public class GitManager {
         String ignoreRefs = generateIgnoreRefs(workUnit.migration.getBranchesToMigrate(), workUnit.migration.getTagsToMigrate());
 
 
-        // String sCommand = format("%s git svn clone --no-minimize-url --include-paths=.*bosCapalogImport.* %s %s %s %s %s %s %s %s%s",
-        String sCommand = format("%s git svn clone %s %s %s %s %s %s %s %s%s",
-            StringUtils.isEmpty(secret) ? "" : isWindows ? format("echo(%s|", secret) : format("echo %s |", secret),
-            StringUtils.isEmpty(username) ? "" : format("--username %s", username),
+        String sCommand = format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",
+            isEmpty(secret) ? "" : isWindows ? format("echo(%s|", secret) : format("echo %s |", secret),
+            isEmpty(username) ? "" : format("--username %s", username),
+            isEmpty(workUnit.migration.getSvnRevision()) ? "" : format("-r%s:HEAD", workUnit.migration.getSvnRevision()),
             (workUnit.migration.getTrunk() == null || !workUnit.migration.getTrunk().equals("trunk")) ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
             workUnit.migration.getTags() == null ? "" : format("--tags=%s/tags", workUnit.migration.getSvnProject()),
-            StringUtils.isEmpty(ignorePaths) ? "" : ignorePaths,
-            StringUtils.isEmpty(ignoreRefs) ? "" : ignoreRefs,
+            isEmpty(ignorePaths) ? "" : ignorePaths,
+            isEmpty(ignoreRefs) ? "" : ignoreRefs,
             applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption() ? "--preserve-empty-dirs" : "",
             workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl()),
             workUnit.migration.getSvnGroup());
@@ -546,7 +547,7 @@ public class GitManager {
         if (!CollectionUtils.isEmpty(mappings)) {
             // Extract mappings with regex
             List<Mapping> regexMappings = mappings.stream()
-                .filter(mapping -> !StringUtils.isEmpty(mapping.getRegex()) && !"*".equals(mapping.getRegex()))
+                .filter(mapping -> !isEmpty(mapping.getRegex()) && !"*".equals(mapping.getRegex()))
                 .collect(Collectors.toList());
             results = regexMappings.stream()
                 .map(mapping -> mvRegex(workUnit, mapping, branch))
@@ -993,8 +994,8 @@ public class GitManager {
      */
     public String buildRemoteCommand(WorkUnit workUnit, String project, boolean safeMode) {
 
-        if (StringUtils.isEmpty(project)) {
-            project = StringUtils.isEmpty(workUnit.migration.getSvnProject()) ?
+        if (isEmpty(project)) {
+            project = isEmpty(workUnit.migration.getSvnProject()) ?
                 workUnit.migration.getSvnGroup()
                 : workUnit.migration.getSvnProject();
         }

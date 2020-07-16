@@ -181,6 +181,12 @@
                         <input matInput placeholder="{{'migration-process.history.branch-for-master' | translate}}" formControlName="branchForMaster">
                     </mat-form-field>
                 </li>
+                <li>
+                    <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                        <input matInput placeholder="{{'migration-process.history.start-revision' | translate}}" formControlName="svnRevision">
+                    </mat-form-field>
+                </li>
                 </form>
             </ul>
             <mat-divider style="margin-bottom: 10px"></mat-divider>

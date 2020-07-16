@@ -114,6 +114,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private String svnHistory;
 
+    @Column(name = "svn_revision")
+    @JsonView(View.Public.class)
+    private String svnRevision;
+
     @Column(name = "tags_to_migrate")
     @JsonView(View.Public.class)
     private String tagsToMigrate;
@@ -324,6 +328,14 @@ public class Migration implements Serializable {
 
     public void setSvnPassword(String svnPassword) {
         this.svnPassword = svnPassword;
+    }
+
+    public String getSvnRevision() {
+        return svnRevision;
+    }
+
+    public void setSvnRevision(String svnRevision) {
+        this.svnRevision = svnRevision;
     }
 
     public String getTrunk() {

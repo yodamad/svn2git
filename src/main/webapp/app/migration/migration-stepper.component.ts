@@ -72,6 +72,7 @@ export class MigrationStepperComponent implements OnInit {
     // History selections
     historySelection: SelectionModel<string>;
     historyOption = 'nothing';
+    svnRevision: string;
 
     /// Mapping selections
     initialSelectionMapping = [];
@@ -159,7 +160,8 @@ export class MigrationStepperComponent implements OnInit {
         this.historyFormGroup = this._formBuilder.group({
             branchesToMigrate: [''],
             tagsToMigrate: [''],
-            branchForMaster: ['']
+            branchForMaster: [''],
+            svnRevision: ['']
         });
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
@@ -437,6 +439,11 @@ export class MigrationStepperComponent implements OnInit {
             }
         }
         this.mig.svnHistory = this.historyOption;
+
+        // Revision to start
+        if (this.historyFormGroup.controls['svnRevision'] !== undefined && this.historyFormGroup.controls['svnRevision'].value !== '') {
+            this.mig.svnRevision = this.historyFormGroup.controls['svnRevision'].value;
+        }
 
         // Branch for master
         if (

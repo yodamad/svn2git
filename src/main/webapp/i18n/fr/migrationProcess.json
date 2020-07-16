@@ -50,7 +50,8 @@
             "tags-to-migrate" : "Tags à garder",
             "branches-to-migrate" : "Branches à garder",
             "tags-to-migrate-placeholder" : "Tags à garder (Séparées par des virgules)",
-            "branches-to-migrate-placeholder" : "Branches à garder (Séparées par des virgules)"
+            "branches-to-migrate-placeholder" : "Branches à garder (Séparées par des virgules)",
+            "start-revision": "Revision à laquelle démarrer (sinon 1)"
         },
         "home" : "Accueil",
         "info" : "Infos",

@@ -50,7 +50,8 @@
             "tags-to-migrate" : "Tags To Keep",
             "branches-to-migrate" : "Branches To Keep",
             "tags-to-migrate-placeholder" : "Tags To Keep (Comma Separated)",
-            "branches-to-migrate-placeholder" : "Branches To Keep (Comma Separated)"
+            "branches-to-migrate-placeholder" : "Branches To Keep (Comma Separated)",
+            "start-revision": "Revision to start migration from (otherwise 1)"
         },
         "home" : "Home",
         "info" : "Info",

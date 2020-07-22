@@ -36,6 +36,11 @@
                     <mat-icon mat-list-icon>history</mat-icon>
                     <p mat-line>{{migration.svnHistory}}</p>
                 </mat-list-item>
+                <mat-list-item>
+                    <mat-icon mat-list-icon>play_circle_outline</mat-icon>
+                    <p mat-line *ngIf="migration.svnRevision != undefined">Revision {{migration.svnRevision}}</p>
+                    <p mat-line *ngIf="migration.svnRevision === undefined">Revision 1</p>
+                </mat-list-item>
                 <mat-list-item *ngIf="migration.branchesToMigrate != undefined && migration.branchesToMigrate.trim().length > 0">
                     <mat-icon mat-list-icon>filter_1</mat-icon>
                     <p mat-line>{{migration.branchesToMigrate}}</p>

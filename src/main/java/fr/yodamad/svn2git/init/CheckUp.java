@@ -1,17 +1,13 @@
 package fr.yodamad.svn2git.init;
 
-import com.google.common.io.Files;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
 
 import static com.google.common.io.Files.createTempDir;
 import static java.lang.String.format;
@@ -53,8 +49,17 @@ public class CheckUp {
 
     public static String execCommand(String command) throws CheckUpException, InterruptedException, IOException {
 
-        ProcessBuilder builder = new ProcessBuilder();
         String execDir = createTempDir().getAbsolutePath();
+
+        ProcessBuilder builder = new ProcessBuilder();
+        File input = File.createTempFile("check_in", "up");
+        File output = File.createTempFile("check_out", "up");
+        File errput = File.createTempFile("check_err", "up");
+
+        builder.redirectInput(input);
+        builder.redirectOutput(output);
+        builder.redirectError(errput);
+
         LOG.debug(format("Check up tools for svn2git in %s", execDir));
         if (isWindows) {
             builder.command("cmd.exe", "/c", command);
@@ -65,39 +70,31 @@ public class CheckUp {
         builder.directory(new File(execDir));
 
         Process process = builder.start();
-        AtomicReference<String> result = new AtomicReference<>();
-        StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), result::set);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
-
-        StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), LOG::debug);
-        Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
-
         int exitCode = process.waitFor();
+
+        StringBuilder sbf = new StringBuilder();
+        Scanner scanner = new Scanner(output);
+        while (scanner.hasNextLine()) {
+            String data = scanner.nextLine();
+            sbf.append(data);
+        }
+        scanner.close();
+
+        scanner = new Scanner(errput);
+        while (scanner.hasNextLine()) {
+            String data = scanner.nextLine();
+            LOG.error(data);
+        }
+        scanner.close();
+
+        LOG.debug(sbf.toString());
         LOG.debug(format("Exit : %d", exitCode));
         if (exitCode != 0) {
             throw new CheckUpException();
         }
-        return result.get();
-
+        return sbf.toString();
     }
 
     // Utils
-    private static class StreamGobbler implements Runnable {
-        private final InputStream inputStream;
-        private final Consumer<String> consumer;
-
-        StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
-            this.inputStream = inputStream;
-            this.consumer = consumer;
-        }
-
-        @Override
-        public void run() {
-            new BufferedReader(new InputStreamReader(inputStream)).lines()
-                .forEach(consumer);
-        }
-    }
-
-    private static class CheckUpException extends Throwable {
-    }
+    private static class CheckUpException extends Throwable { }
 }

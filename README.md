@@ -13,7 +13,7 @@ But it is also available from 🐳 [Docker Hub](https://hub.docker.com/repositor
 docker run --name svn2git -v /tmp/svn2git:/svn2git -p 8080:8080 yodamad/svn2git:master
 ```
 
-## ✨ Some quick tricks to help you with the tool
+## ✨ Some quick tips to help you with the tool
 
 💪 If you have large repositories to migrate, you may need to ↗️ JVM size :
 ```shell script
@@ -22,7 +22,7 @@ java -Xms2g -Xmx4g -jar svn2git.jar
 
 👀 You can activate debug mode
 ```shell script
-java -jar svn2git.jar --debug
+java -jar svn2git.jar --logging.level.fr.yodamad.svn2git=DEBUG
 ```
 
 🛠 There are many configurations keys available in [application.yml](src/main/resources/config/application.yml), you can override them at runtime :

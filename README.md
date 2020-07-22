@@ -22,7 +22,7 @@ java -Xms2g -Xmx4g -jar svn2git.jar
 
 👀 You can activate debug mode
 ```shell script
-java -jar svn2git.jar --debug
+java -jar svn2git.jar --logging.level.fr.yodamad.svn2git=DEBUG
 ```
 
 🛠 There are many configurations keys available in [application.yml](src/main/resources/config/application.yml), you can override them at runtime :

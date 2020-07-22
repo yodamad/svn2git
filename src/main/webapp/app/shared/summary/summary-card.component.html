@@ -52,8 +52,8 @@
                     <p mat-line><i style="font-size: small; height: 10px;"><span jhiTranslate="migration-process.migration.structure">Structure</span></i></p>
                 </mat-list-item>
                 <mat-list-item *ngIf="migration !== undefined">
-                    <mat-icon mat-list-icon *ngIf="migration.trunk === '*'">check_circle_outline</mat-icon>
-                    <mat-icon mat-list-icon *ngIf="migration.trunk !== '*'">highlight_off</mat-icon>
+                    <mat-icon mat-list-icon *ngIf="migration.trunk !== ''">check_circle_outline</mat-icon>
+                    <mat-icon mat-list-icon *ngIf="migration.trunk === ''">highlight_off</mat-icon>
                     <p mat-line>Trunk</p>
                 </mat-list-item>
                 <mat-list-item *ngIf="migration !== undefined">

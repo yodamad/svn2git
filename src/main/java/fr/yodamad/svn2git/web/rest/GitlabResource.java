@@ -5,7 +5,6 @@ import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.GitlabInfo;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.service.util.GitlabAdmin;
-import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
@@ -16,16 +15,9 @@ import org.gitlab4j.api.models.User;
 import org.gitlab4j.api.models.Visibility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -80,18 +72,22 @@ public class GitlabResource {
     /**
      * Check if a group exists on Gitlab
      *
-     * @param groupName Group name search
      * @return if group found
      */
-    @PostMapping("group/{groupName}")
+    @PostMapping("group")
     @Timed
-    public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName, @RequestBody GitlabInfo gitlabInfo) {
+    public ResponseEntity<Boolean> checkGroup(@RequestBody GitlabInfo gitlabInfo) {
         GitLabApi gitlab = overrideGitlab(gitlabInfo);
-        String name = groupName;
+        String name = gitlabInfo.additionalData;
+
+        if (name == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         int depth = 0;
         String[] subParts = {};
-        if (groupName.contains("_")) {
-            subParts = groupName.split("_");
+        if (name.contains("/")) {
+            subParts = name.split("/");
             name = subParts[0];
             depth = subParts.length;
         }

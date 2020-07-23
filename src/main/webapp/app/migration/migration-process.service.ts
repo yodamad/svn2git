@@ -35,11 +35,8 @@ export class MigrationProcessService {
     }
 
     checkGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
-        const gitlabInfo = new GitlabInfo(url, token);
-        const encodedName = name.split('/').join('_');
-        return this.http
-            .post<Boolean>(`${this.groupUrl}/${encodedName}`, gitlabInfo, { observe: 'response' })
-            .pipe(map((res: EntityResponseType) => res));
+        const gitlabInfo = new GitlabInfo(url, token, name);
+        return this.http.post<Boolean>(`${this.groupUrl}`, gitlabInfo, { observe: 'response' }).pipe(map((res: EntityResponseType) => res));
     }
 
     createGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
@@ -94,7 +91,7 @@ export class MigrationProcessService {
 }
 
 class GitlabInfo {
-    constructor(public url: string, public token: string) {}
+    constructor(public url: string, public token: string, public additionalData: string = '') {}
 }
 
 class SvnInfo {

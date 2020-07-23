@@ -7,6 +7,7 @@ public class GitlabInfo {
 
     public String url;
     public String token;
+    public String additionalData = null;
 
     @Override
     public String toString() {

@@ -9,6 +9,7 @@ import fr.yodamad.svn2git.service.MigrationManager;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
+import org.gitlab4j.api.models.Commit;
 import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
 import org.junit.Before;
@@ -23,9 +24,9 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static fr.yodamad.svn2git.data.Repository.Files.*;
+import static fr.yodamad.svn2git.data.Repository.Branches.MASTER;
 import static fr.yodamad.svn2git.data.Repository.simple;
-import static fr.yodamad.svn2git.utils.Checks.isPresent;
+import static fr.yodamad.svn2git.utils.Checks.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -41,7 +42,7 @@ public class SimpleRepoTests {
 
     @Before
     public void cleanGitlab() throws GitLabApiException {
-        Optional<Project> project = gitLabApi.getProjectApi().getOptionalProject("simple", "simple");
+        Optional<Project> project = gitLabApi.getProjectApi().getOptionalProject(simple().namespace, simple().name);
         if (project.isPresent()) gitLabApi.getProjectApi().deleteProject(project.get().getId());
     }
 
@@ -71,6 +72,81 @@ public class SimpleRepoTests {
         migration.setBranches("*");
         migration.setTags("*");
 
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project);
+        tags.forEach(t -> hasHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_full_migration_on_simple_repo_without_history() throws GitLabApiException, ExecutionException, InterruptedException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("nothing");
+        migration.setTrunk("trunk");
+        migration.setBranches("*");
+        migration.setTags("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Commit> commits = gitLabApi.getCommitsApi().getCommits(project.get().getId(), MASTER, null);
+        assertThat(commits.size()).isEqualTo(2);
+        List<Branch> branches = checkBranches(project);
+        branches.stream()
+            .filter(b -> !MASTER.equals(b.getName()))
+            .forEach(b -> hasNoHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project);
+        tags.forEach(t -> hasNoHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_full_migration_on_simple_repo_with_history_on_trunk() throws GitLabApiException, ExecutionException, InterruptedException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("trunk");
+        migration.setTrunk("trunk");
+        migration.setBranches("*");
+        migration.setTags("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        hasHistory(project, MASTER);
+        List<Branch> branches = checkBranches(project);
+        branches.stream()
+            .filter(b -> !MASTER.equals(b.getName()))
+            .forEach(b -> hasNoHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project);
+        tags.forEach(t -> hasNoHistory(project, t.getName()));
+    }
+
+    private void startAndCheck(Migration migration) throws ExecutionException, InterruptedException {
         Migration saved = migrationRepository.save(migration);
         Future<String> result = migrationManager.startMigration(saved.getId(), false);
         // Wait for async
@@ -78,25 +154,6 @@ public class SimpleRepoTests {
 
         Migration closed = migrationRepository.findById(saved.getId()).get();
         assertThat(closed.getStatus()).isEqualTo(StatusEnum.DONE_WITH_WARNINGS);
-
-        // Check project
-        Optional<Project> project = gitLabApi.getProjectApi().getOptionalProject(simple().namespace, simple().name);
-        assertThat(project.isPresent()).isTrue();
-
-        // Check files
-        isPresent(project.get(), REVISION, true);
-        isPresent(project.get(), FILE_BIN, false);
-        isPresent(project.get(), ANOTHER_BIN, false);
-        isPresent(project.get(), JAVA, false);
-        isPresent(project.get(), DEEP, false);
-
-        // Check branches
-        List<Branch> branches = gitLabApi.getRepositoryApi().getBranches(project.get().getId());
-        assertThat(branches).hasSize(3);
-
-        // Check tags
-        List<Tag> tags = gitLabApi.getTagsApi().getTags(project.get().getId());
-        assertThat(tags).hasSize(2);
     }
 }
 

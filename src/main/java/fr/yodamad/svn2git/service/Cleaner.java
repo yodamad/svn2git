@@ -555,7 +555,16 @@ public class Cleaner {
         // The result of this svn ls command is a list of all branches or tags that are real (i.e. not deleted)
         // i) So if we remove these from gitElementsToDelete we should just have deleted branches or tags
         String svnUrl = workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl());
-        String svnBranchList = format("svn ls %s%s%s/%s > %s", svnUrl, workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), isTags ? "tags" : "branches", SVN_LIST);
+        String svnBranchList;
+        if (isEmpty(workUnit.migration.getSvnPassword())) {
+            svnBranchList = format("svn ls %s%s%s/%s > %s", svnUrl, workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), isTags ? "tags" : "branches", SVN_LIST);
+        } else {
+            svnBranchList = format("svn ls %s%s%s/%s %s %s > %s", svnUrl,
+                workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(),
+                isTags ? "tags" : "branches",
+                "--username=" + workUnit.migration.getSvnUser(), "--password=" + workUnit.migration.getSvnPassword(),
+                SVN_LIST);
+        }
         execCommand(workUnit.commandManager, workUnit.directory, svnBranchList);
 
         List<String> elementsToKeep = Files.readAllLines(Paths.get(workUnit.directory, SVN_LIST))

@@ -112,20 +112,21 @@ application:
         directory: /tmp/svn2git
         maxSvnLevel: 3
     flags:
-        projectCleaningOption: false
-        gitlabGroupCreationOption: false
+        projectCleaningOption: true
+        gitlabGroupCreationOption: true
         git-mv-f-option: false
         git-mv-k-option: true
         git-svn-clone-preserve-empty-dirs-option: false
         cleanup-work-directory: true
+        alpine: false
     artifactory:
-        enabled: true
-        url: http://artifactory.dummy.local
+        enabled: false
+        url: http://localhost:8081/artifactory
         user: admin
         password: TO_REPLACE
         accessToken:
         repository: libs-release-svn2git-local
-        groupIdPrefix: group.test
+        groupIdPrefix: my.group.id
         # should start with a slash
         binariesDirectory:
         # Attention any folder called this will be deleted wherever it is. Leave blank if not used. Done before Mappings (unfortunately)
@@ -133,9 +134,9 @@ application:
         deleteFolderWithBFG:
         uploadPauseMilliSeconds: 5000
     gitlab:
-        url: https://gitlab.dummy.local/
-        account: dummyGitlabUser
-        token: dummyGitlabToken
+        url: http://localhost/
+        account: root
+        token: 1uCYVVdwB32yCy4sB-2w
         credentials: optional
         waitSeconds: 15
         dynamic-local-config[0]: pack.deltaCacheSize 256m,Limiting deltaCacheSize to 256m (default)
@@ -144,13 +145,14 @@ application:
         #        dynamic-local-config[3]: pack.packSizeLimit 128m,Limiting packSizeLimit to 128m
         #        dynamic-local-config[4]: core.packedGitLimit 128m,Limiting packedGitLimit to 128m
         #        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
-        gitPushPauseMilliSeconds: 5000
+        gitPushPauseMilliSeconds: 500
         gitMvPauseMilliSeconds: 500
     svn:
-        url: https://subversion.dummy.local/
+        url: svn://localhost/
         user:
         password:
         credentials: required
+        svnUrlModifiable: true
     override:
         extensions: false
         mappings: false

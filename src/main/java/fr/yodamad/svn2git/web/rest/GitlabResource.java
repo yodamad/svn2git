@@ -169,7 +169,9 @@ public class GitlabResource {
                 !gitlab.api().getAuthToken().equalsIgnoreCase(gitlabInfo.token)) {
 
                 LOG.info("Overiding gitlab url and token");
-                return new GitLabApi(gitlabInfo.url, gitlabInfo.token);
+                GitLabApi api = new GitLabApi(gitlabInfo.url, gitlabInfo.token);
+                api.setIgnoreCertificateErrors(true);
+                return api;
             }
         }
         return gitlab.api();

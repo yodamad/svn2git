@@ -4,7 +4,7 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>1.20.2</version>
+    <version>1.20.3</version>
     <packaging>jar</packaging>
     <name>Svn 2 GitLab</name>
 
@@ -331,7 +331,7 @@
         <dependency>
             <groupId>org.gitlab4j</groupId>
             <artifactId>gitlab4j-api</artifactId>
-            <version>4.8.50</version>
+            <version>4.12.3</version>
         </dependency>
         <dependency>
             <groupId>com.madgag</groupId>

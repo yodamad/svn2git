@@ -19,26 +19,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static fr.yodamad.svn2git.service.util.MigrationConstants.GIT_PUSH;
 import static fr.yodamad.svn2git.service.util.MigrationConstants.MASTER;
-import static fr.yodamad.svn2git.service.util.Shell.execCommand;
-import static fr.yodamad.svn2git.service.util.Shell.gitWorkingDir;
-import static fr.yodamad.svn2git.service.util.Shell.isWindows;
-import static fr.yodamad.svn2git.service.util.Shell.workingDir;
+import static fr.yodamad.svn2git.service.util.Shell.*;
 import static java.lang.String.format;
 
 /**
@@ -88,7 +85,7 @@ public class MigrationManager {
      * @param retry       Flag to know if it's the first attempt or a retry
      */
     @Async
-    public void startMigration(final long migrationId, final boolean retry) {
+    public Future<String> startMigration(final long migrationId, final boolean retry) {
         String gitCommand;
         Migration migration = migrationRepository.findById(migrationId).
             orElseThrow(NoSuchElementException::new);
@@ -111,7 +108,7 @@ public class MigrationManager {
             historyMgr.endStep(history, StatusEnum.FAILED, format("Failed to create directory : %s", ex.getMessage()));
             migration.setStatus(StatusEnum.FAILED);
             migrationRepository.save(migration);
-            return;
+            return new AsyncResult<>("KO");
         }
 
         WorkUnit workUnit = new WorkUnit(migration, Shell.formatDirectory(rootDir),
@@ -372,6 +369,7 @@ public class MigrationManager {
                 migration.getGitlabGroup(),
                 migration.getStatus()));
         }
+        return new AsyncResult<>("THE_END");
     }
 
     /**

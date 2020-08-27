@@ -22,16 +22,24 @@ public class Checks {
         return project;
     }
 
-    public static List<Branch> checkBranches(Optional<Project> project) throws GitLabApiException {
+    public static List<Branch> checkBranches(Optional<Project> project, int nbOfBranches) throws GitLabApiException {
         List<Branch> branches = gitLabApi.getRepositoryApi().getBranches(project.get().getId());
-        assertThat(branches).hasSize(3);
+        assertThat(branches).hasSize(nbOfBranches);
         return branches;
     }
 
-    public static List<Tag> checkTags(Optional<Project> project) throws GitLabApiException {
+    public static List<Branch> checkBranches(Optional<Project> project) throws GitLabApiException {
+        return checkBranches(project, 3);
+    }
+
+    public static List<Tag> checkTags(Optional<Project> project, int nbOfTags) throws GitLabApiException {
         List<Tag> tags = gitLabApi.getTagsApi().getTags(project.get().getId());
-        assertThat(tags).hasSize(2);
+        assertThat(tags).hasSize(nbOfTags);
         return tags;
+    }
+
+    public static List<Tag> checkTags(Optional<Project> project) throws GitLabApiException {
+        return checkTags(project, 2);
     }
 
     public static void hasHistory(Optional<Project> project, String ref) {
@@ -53,7 +61,6 @@ public class Checks {
     }
 
     public static void isPresent(Project project, String filename, boolean checkSize) {
-        gitLabApi.enableRequestResponseLogging();
         Optional<RepositoryFile> file = gitLabApi.getRepositoryFileApi().getOptionalFileInfo(project.getId(), filename, "master");
         assertThat(file.isPresent()).isTrue();
         if (checkSize) {
@@ -61,10 +68,23 @@ public class Checks {
         }
     }
 
+    public static void isMissing(Project project, String filename) {
+        Optional<RepositoryFile> file = gitLabApi.getRepositoryFileApi().getOptionalFileInfo(project.getId(), filename, "master");
+        assertThat(file.isPresent()).isFalse();
+    }
+
     public static void checkAllFiles(Optional<Project> project) {
         isPresent(project.get(), REVISION, true);
         isPresent(project.get(), FILE_BIN, false);
         isPresent(project.get(), ANOTHER_BIN, false);
+        isPresent(project.get(), JAVA, false);
+        isPresent(project.get(), DEEP, false);
+    }
+
+    public static void checkOnlyNotBinFiles(Optional<Project> project) {
+        isPresent(project.get(), REVISION, true);
+        isMissing(project.get(), FILE_BIN);
+        isMissing(project.get(), ANOTHER_BIN);
         isPresent(project.get(), JAVA, false);
         isPresent(project.get(), DEEP, false);
     }

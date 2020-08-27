@@ -145,7 +145,7 @@ application:
         #        dynamic-local-config[3]: pack.packSizeLimit 128m,Limiting packSizeLimit to 128m
         #        dynamic-local-config[4]: core.packedGitLimit 128m,Limiting packedGitLimit to 128m
         #        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
-        gitPushPauseMilliSeconds: 5000
+        gitPushPauseMilliSeconds: 500
         gitMvPauseMilliSeconds: 500
     svn:
         url: svn://localhost/

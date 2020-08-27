@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static fr.yodamad.svn2git.data.Repository.Branches.DEV;
 import static fr.yodamad.svn2git.data.Repository.Branches.MASTER;
 import static fr.yodamad.svn2git.data.Repository.simple;
 import static fr.yodamad.svn2git.utils.Checks.*;
@@ -144,6 +145,160 @@ public class SimpleRepoTests {
         // Check tags
         List<Tag> tags = checkTags(project);
         tags.forEach(t -> hasNoHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_trunk_only_migration_on_simple_repo() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setBranches(null);
+        migration.setTags(null);
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 1);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        checkTags(project, 0);
+    }
+
+    @Test
+    public void test_migration_on_simple_repo_without_branches() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setBranches(null);
+        migration.setTags("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 1);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project);
+        tags.forEach(t -> hasHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_migration_on_simple_repo_without_tags() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setBranches("*");
+        migration.setTags(null);
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        checkTags(project, 0);
+    }
+
+    @Test
+    public void test_migration_on_simple_repo_with_filtered_branches_and_tags() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setBranches("*");
+        migration.setBranchesToMigrate("feature_1");
+        migration.setTags("*");
+        migration.setTagsToMigrate("v1.1");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 2);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project, 1);
+        tags.forEach(t -> hasHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_full_migration_on_simple_repo_filtering_extensions() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setBranches("*");
+        migration.setTags("*");
+        migration.setForbiddenFileExtensions("*.bin");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkOnlyNotBinFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project);
+        tags.forEach(t -> hasHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_full_migration_with_dev_as_master() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initMigration();
+        migration.setSvnHistory("all");
+        migration.setTrunk("dev");
+        migration.setBranches("*");
+        migration.setTags("*");
+        migration.setForbiddenFileExtensions("*.bin");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkOnlyNotBinFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 2);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+        boolean notFound = branches.stream().noneMatch(b -> DEV.equals(b.getName()));
+        assertThat(notFound).isTrue();
+
+        // Check tags
+        List<Tag> tags = checkTags(project);
+        tags.forEach(t -> hasHistory(project, t.getName()));
     }
 
     private void startAndCheck(Migration migration) throws ExecutionException, InterruptedException {

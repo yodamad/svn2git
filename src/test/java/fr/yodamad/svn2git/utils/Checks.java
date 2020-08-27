@@ -23,6 +23,7 @@ public class Checks {
     }
 
     public static List<Branch> checkBranches(Optional<Project> project, int nbOfBranches) throws GitLabApiException {
+        gitLabApi.setIgnoreCertificateErrors(true);
         List<Branch> branches = gitLabApi.getRepositoryApi().getBranches(project.get().getId());
         assertThat(branches).hasSize(nbOfBranches);
         return branches;

@@ -331,7 +331,7 @@
         <dependency>
             <groupId>org.gitlab4j</groupId>
             <artifactId>gitlab4j-api</artifactId>
-            <version>4.8.50</version>
+            <version>4.12.3</version>
         </dependency>
         <dependency>
             <groupId>com.madgag</groupId>

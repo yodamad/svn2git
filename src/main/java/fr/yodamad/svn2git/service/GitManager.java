@@ -384,7 +384,9 @@ public class GitManager {
 
                 LOG.info("Overiding gitlab url and token");
                 gitlabAdmin = new GitlabAdmin(GitManager.applicationProperties);
-                gitlabAdmin.setGitLabApi(new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken()));
+                GitLabApi api = new GitLabApi(migration.getGitlabUrl(), migration.getGitlabToken());
+                api.setIgnoreCertificateErrors(true);
+                gitlabAdmin.setGitLabApi(api);
             }
         }
 

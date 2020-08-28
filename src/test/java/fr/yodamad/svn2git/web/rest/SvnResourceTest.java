@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+
+import static fr.yodamad.svn2git.data.Repository.Modules.MODULE_1;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -38,5 +41,16 @@ public class SvnResourceTest {
         SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().name);
         assertThat(svnStructure.modules).isNotEmpty();
         assertThat(svnStructure.flat).isFalse();
+        List<SvnStructure.SvnModule> modules = svnStructure.modules;
+        assertThat(modules.size()).isEqualTo(3);
+        modules.forEach(
+            m -> {
+                assertThat(m.name).isIn(Repository.ALL_MODULES);
+                if (MODULE_1.equals(m.name)) {
+                    assertThat(m.subModules).isNotEmpty();
+                    assertThat(m.subModules.size()).isEqualTo(2);
+                }
+            }
+        );
     }
 }

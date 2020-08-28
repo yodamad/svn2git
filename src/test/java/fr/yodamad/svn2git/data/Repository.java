@@ -3,6 +3,7 @@ package fr.yodamad.svn2git.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 
@@ -15,6 +16,8 @@ public class Repository {
     public List<String> remove = new ArrayList<>();
 
     public List<String> allFiles() { return concat(keep.stream(), remove.stream()).collect(toList()); }
+
+    public static List<String> ALL_MODULES = asList(Modules.MODULE_1, Modules.MODULE_2, Modules.MODULE_3, Modules.SUBMODULE_1, Modules.SUBMODULE_2);
 
     public static Repository simple() {
         Repository repository = new Repository();
@@ -54,5 +57,13 @@ public class Repository {
     public class Tags {
         public static final String V1_0 = "v1.0";
         public static final String V1_1 = "v1.1";
+    }
+
+    public class Modules {
+        public static final String MODULE_1 = "module1";
+        public static final String MODULE_2 = "module2";
+        public static final String MODULE_3 = "module3";
+        public static final String SUBMODULE_1 = MODULE_1 + "/submodule1";
+        public static final String SUBMODULE_2 = MODULE_1 + "/submodule2";
     }
 }

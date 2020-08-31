@@ -144,7 +144,7 @@ public class SvnResource {
             }
 
             if (module != null && name != null && !name.isEmpty() && KEYWORDS.contains(name)) {
-                log.info(format("=============>module:%s layout:%s", module.name, name));
+                log.info(format("Module %s with layout %s", module.name, name));
                 module.layoutElements.add(name);
             }
         });
@@ -155,7 +155,9 @@ public class SvnResource {
         }
 
         if (!modules.isEmpty()) {
-            modules.forEach(svnSubMod -> svnSubMod.subModules.addAll(listModulesSVN(svnInfo, repo, svnSubMod, level + 1)));
+            modules.forEach(
+                svnSubMod -> svnSubMod.subModules.addAll(
+                    listModulesSVN(svnInfo, repo, svnSubMod, level + 1)));
         }
 
         log.debug("SVN modules found in {} : {}", module, modules);

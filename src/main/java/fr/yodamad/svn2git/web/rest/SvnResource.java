@@ -8,15 +8,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
+import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
+import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc2.SvnList;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
@@ -78,7 +75,7 @@ public class SvnResource {
      * @param repo Repository to explore
      * @return list of directories found
      */
-    private SvnStructure listSVN(SvnInfo svnInfo, String repo) {
+    protected SvnStructure listSVN(SvnInfo svnInfo, String repo) {
         SvnStructure structure = new SvnStructure(repo);
         structure.modules = listModulesSVN(svnInfo, repo, null, 1);
         structure.flat = structure.modules.isEmpty();
@@ -93,7 +90,7 @@ public class SvnResource {
      * @param module Current module inspected
      * @return Complete module structure
      */
-    private List<SvnStructure.SvnModule> listModulesSVN(SvnInfo svnInfo, String repo, SvnStructure.SvnModule module, final int level) {
+    protected List<SvnStructure.SvnModule> listModulesSVN(SvnInfo svnInfo, String repo, SvnStructure.SvnModule module, final int level) {
 
         if (level == applicationProperties.work.maxSvnLevel) {
             log.info("Reaching max levels authorized for discovery, stop here");
@@ -101,33 +98,38 @@ public class SvnResource {
         }
 
         List<SvnStructure.SvnModule> modules = new ArrayList<>();
-        log.info("Check for modules in {}", module);
+        if (module == null) {
+            log.info("Check for modules in {}", format("%s/%s", svnInfo.url, repo));
+        } else {
+            log.info("Check for modules in {}", module);
+        }
 
         SVNRevision revision = SVNRevision.HEAD;
         SvnOperationFactory operationFactory = new SvnOperationFactory();
 
         // Set authentication if needed
-        if (!StringUtils.isEmpty(svnInfo.user)) {
-            operationFactory.setAuthenticationManager(BasicAuthenticationManager.newInstance(svnInfo.user, svnInfo.password.toCharArray()));
-        } else if (!StringUtils.isEmpty(applicationProperties.svn.user)) {
-            operationFactory.setAuthenticationManager(
-                BasicAuthenticationManager.newInstance(
-                    applicationProperties.svn.user,
-                    applicationProperties.svn.password.toCharArray()));
+        ISVNAuthenticationManager authManager = new DefaultSVNAuthenticationManager(null, true, svnInfo.user, svnInfo.password, null, null);
+        if (!StringUtils.isEmpty(applicationProperties.svn.user)) {
+            authManager = new DefaultSVNAuthenticationManager(null, true,
+                applicationProperties.svn.user, applicationProperties.svn.password, null, null);
+            operationFactory.setAuthenticationManager(authManager);
         }
+        operationFactory.setAuthenticationManager(authManager);
 
         SvnList list = operationFactory.createList();
         list.setDepth(SVNDepth.IMMEDIATES);
-
         list.setRevision(revision);
+
         try {
             String svnUrl = svnInfo.url.endsWith("/") ? svnInfo.url : format("%s/", svnInfo.url);
             if (module == null) {
-                list.addTarget(SvnTarget.fromURL(SVNURL.parseURIEncoded(format("%s%s",svnUrl, repo)), revision));
+                list.addTarget(SvnTarget.fromURL(SVNURL.parseURIEncoded(format("%s%s", svnUrl, repo)), revision));
             } else {
                 list.addTarget(SvnTarget.fromURL(SVNURL.parseURIEncoded(format("%s%s%s", svnUrl, repo, module.path)), revision));
             }
-        } catch (SVNException e) {}
+        } catch (SVNException e) {
+            log.error("Cannot list SVN", e);
+        }
 
         list.setReceiver((target, object) -> {
             String name = object.getRelativePath();
@@ -148,7 +150,9 @@ public class SvnResource {
         });
         try {
             list.run();
-        } catch (SVNException ex) {}
+        } catch (SVNException ex) {
+            log.error("Cannot list SVN", ex);
+        }
 
         if (!modules.isEmpty()) {
             modules.forEach(svnSubMod -> svnSubMod.subModules.addAll(listModulesSVN(svnInfo, repo, svnSubMod, level + 1)));

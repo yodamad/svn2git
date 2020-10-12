@@ -496,15 +496,25 @@ public class GitManager {
 
 
         String sCommand = format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",
+            // Set password
             isEmpty(secret) ? "" : isWindows ? format("echo(%s|", secret) : format("echo %s |", secret),
+            // Set username
             isEmpty(username) ? "" : format("--username %s", username),
+            // Set specific revision
             isEmpty(workUnit.migration.getSvnRevision()) ? "" : format("-r%s:HEAD", workUnit.migration.getSvnRevision()),
+            // Set specific trunk
             (workUnit.migration.getTrunk() == null || !workUnit.migration.getTrunk().equals("trunk")) ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
+            // Enable branches migrations
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
+            // Enable tags migrations
             workUnit.migration.getTags() == null ? "" : format("--tags=%s/tags", workUnit.migration.getSvnProject()),
+            // Ignore some paths
             isEmpty(ignorePaths) ? "" : ignorePaths,
+            // Ignore some ref
             isEmpty(ignoreRefs) ? "" : ignoreRefs,
+            // Set flag for empty dir
             applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption() ? "--preserve-empty-dirs" : "",
+            // Set svn information
             workUnit.migration.getSvnUrl().endsWith("/") ? workUnit.migration.getSvnUrl() : format("%s/", workUnit.migration.getSvnUrl()),
             workUnit.migration.getSvnGroup());
 

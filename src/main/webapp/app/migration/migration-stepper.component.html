@@ -137,13 +137,14 @@
                             <th mat-header-cell *matHeaderCellDef style="width: 70px">
                                 <mat-checkbox (change)="$event ? masterHistoryToggle() : null"
                                               [checked]="historySelection.hasValue() && isAllHistoriesSelected()"
+                                              [disabled]="noStdLayout()"
                                               [indeterminate]="historySelection.hasValue() && !isAllHistoriesSelected()">
                                 </mat-checkbox>
                             </th>
                             <td mat-cell *matCellDef="let directory" style="width: 70px">
                                 <mat-checkbox (click)="$event.stopPropagation()"
                                               (change)="$event ? historyToggle(directory) : null"
-                                              [disabled]="noTrunk() && directory === 'trunk'"
+                                              [disabled]="(noTrunk() && directory === 'trunk') || noStdLayout()"
                                               [checked]="historyChecked(directory)">
                                 </mat-checkbox>
                             </td>
@@ -163,30 +164,35 @@
                     </mat-radio-group>
                 </li>
                 <form [formGroup]="historyFormGroup">
-                <li>
-                    <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                    <li>
+                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                            <input matInput placeholder="{{'migration-process.history.branches-to-migrate-placeholder' | translate}}" formControlName="branchesToMigrate">
+                        </mat-form-field>
+                    </li>
+                    <li>
+                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                            <input matInput placeholder="{{'migration-process.history.tags-to-migrate-placeholder' | translate}}" formControlName="tagsToMigrate">
+                        </mat-form-field>
+                    </li>
+                    <li>
+                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                            <input matInput placeholder="{{'migration-process.history.branch-for-master' | translate}}" formControlName="branchForMaster">
+                        </mat-form-field>
+                    </li>
+                    <li>
+                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
+                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                            <input matInput placeholder="{{'migration-process.history.start-revision' | translate}}" formControlName="svnRevision">
+                        </mat-form-field>
+                    </li>
+                    <li>
                         <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                        <input matInput placeholder="{{'migration-process.history.branches-to-migrate-placeholder' | translate}}" formControlName="branchesToMigrate">
-                    </mat-form-field>
-                </li>
-                <li>
-                    <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
-                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                        <input matInput placeholder="{{'migration-process.history.tags-to-migrate-placeholder' | translate}}" formControlName="tagsToMigrate">
-                    </mat-form-field>
-                </li>
-                <li>
-                    <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
-                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                        <input matInput placeholder="{{'migration-process.history.branch-for-master' | translate}}" formControlName="branchForMaster">
-                    </mat-form-field>
-                </li>
-                <li>
-                    <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
-                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                        <input matInput placeholder="{{'migration-process.history.start-revision' | translate}}" formControlName="svnRevision">
-                    </mat-form-field>
-                </li>
+                        <mat-checkbox (change)="flatManager()" [checked]="flatRepo"></mat-checkbox>
+                        <span>Sources are in root folder (no branches, tags, trunk...)</span>
+                    </li>
                 </form>
             </ul>
             <mat-divider style="margin-bottom: 10px"></mat-divider>

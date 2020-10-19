@@ -503,7 +503,7 @@ public class GitManager {
             // Set specific revision
             isEmpty(workUnit.migration.getSvnRevision()) ? "" : format("-r%s:HEAD", workUnit.migration.getSvnRevision()),
             // Set specific trunk
-            (workUnit.migration.getTrunk() == null || !workUnit.migration.getTrunk().equals("trunk")) ? "" : format("--trunk=%s/trunk", workUnit.migration.getSvnProject()),
+            ((workUnit.migration.getTrunk() == null || !workUnit.migration.getTrunk().equals("trunk")) && !workUnit.migration.getFlat()) ? "" : buildTrunk(workUnit),
             // Enable branches migrations
             workUnit.migration.getBranches() == null ? "" : format("--branches=%s/branches", workUnit.migration.getSvnProject()),
             // Enable tags migrations
@@ -520,6 +520,17 @@ public class GitManager {
 
         // replace any multiple whitespaces and return
         return sCommand.replaceAll("\\s{2,}", " ").trim();
+    }
+
+    private static String buildTrunk(WorkUnit workUnit) {
+        Migration mig = workUnit.migration;
+        if (mig.getFlat()) {
+            if (mig.getSvnGroup().equals(mig.getSvnProject())) {
+                return "--trunk=/";
+            }
+            return format("--trunk=%s/", workUnit.migration.getSvnProject());
+        }
+        return format("--trunk=%s/trunk", workUnit.migration.getSvnProject());
     }
 
     /**

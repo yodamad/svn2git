@@ -26,7 +26,7 @@ export const REQUIRED = 'required';
 export class MigrationStepperComponent implements OnInit {
     // Static data
     staticExtensions: Extension[] = [];
-    staticDirectories: string[] = ['trunk', 'branches', 'tags'];
+    staticDirectories: string[] = ['trunk', 'branches', 'tags', 'flat'];
 
     // SnackBar config
     snackBarConfig = new MatSnackBarConfig();
@@ -55,6 +55,7 @@ export class MigrationStepperComponent implements OnInit {
     forceGitlabGroupCreation = false;
     useDefaultSvn = true;
     svnUrlModifiable = true;
+    flatRepo = false;
 
     // Input for migrations
     svnDirectories: SvnStructure = null;
@@ -408,6 +409,9 @@ export class MigrationStepperComponent implements OnInit {
         if (this.svnFormGroup.controls['svnPwd'] !== undefined && this.svnFormGroup.controls['svnPwd'].value !== '') {
             this.mig.svnPassword = this.svnFormGroup.controls['svnPwd'].value;
         }
+
+        this.mig.flat = this.flatRepo;
+        if (this.flatRepo) this.mig.trunk = 'trunk';
 
         // History
         if (this.historySelection !== undefined && !this.historySelection.isEmpty()) {
@@ -949,5 +953,27 @@ export class MigrationStepperComponent implements OnInit {
             this.historyFormGroup.controls['branchForMaster'] !== undefined &&
             this.historyFormGroup.controls['branchForMaster'].value !== ''
         );
+    }
+
+    noStdLayout() {
+        return this.flatRepo;
+    }
+
+    flatManager() {
+        this.flatRepo = !this.flatRepo;
+
+        if (this.flatRepo) {
+            this.historySelection.clear();
+            this.historyFormGroup.get('branchesToMigrate').disable();
+            this.historyFormGroup.get('branchesToMigrate').setValue('');
+            this.historyFormGroup.get('tagsToMigrate').disable();
+            this.historyFormGroup.get('tagsToMigrate').setValue('');
+            this.historyFormGroup.controls['branchForMaster'].disable();
+            this.historyFormGroup.controls['branchForMaster'].setValue('');
+        } else {
+            this.historyFormGroup.get('branchesToMigrate').enable();
+            this.historyFormGroup.get('tagsToMigrate').enable();
+            this.historyFormGroup.controls['branchForMaster'].enable();
+        }
     }
 }

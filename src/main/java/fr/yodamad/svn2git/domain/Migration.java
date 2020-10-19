@@ -114,6 +114,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private String svnHistory;
 
+    @Column(name = "flat")
+    @JsonView(View.Public.class)
+    private Boolean flat;
+
     @Column(name = "svn_revision")
     @JsonView(View.Public.class)
     private String svnRevision;
@@ -139,6 +143,7 @@ public class Migration implements Serializable {
     private Set<MigrationHistory> histories = new HashSet<>();
     @OneToMany(mappedBy = "migration")
     private Set<Mapping> mappings = new HashSet<>();
+
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;
@@ -491,6 +496,14 @@ public class Migration implements Serializable {
     public void setMappings(Set<Mapping> mappings) {
         this.mappings = mappings;
     }
+
+    public Boolean getFlat() {
+        return flat;
+    }
+
+    public void setFlat(Boolean flat) {
+        this.flat = flat;
+    }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
     @Override
@@ -532,6 +545,7 @@ public class Migration implements Serializable {
             ", trunk='" + getTrunk() + "'" +
             ", branches='" + getBranches() + "'" +
             ", tags='" + getTags() + "'" +
+            ", flat='" + getFlat() + "'" +
             ", svnHistory='" + getSvnHistory() + "'" +
             ", tagsToMigrate='" + getTagsToMigrate() + "'" +
             ", branchesToMigrate='" + getBranchesToMigrate() + "'" +

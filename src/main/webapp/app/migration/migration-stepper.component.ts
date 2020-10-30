@@ -411,7 +411,9 @@ export class MigrationStepperComponent implements OnInit {
         }
 
         this.mig.flat = this.flatRepo;
-        if (this.flatRepo) this.mig.trunk = 'trunk';
+        if (this.flatRepo) {
+            this.mig.trunk = 'trunk';
+        }
 
         // History
         if (this.historySelection !== undefined && !this.historySelection.isEmpty()) {
@@ -974,6 +976,16 @@ export class MigrationStepperComponent implements OnInit {
             this.historyFormGroup.get('branchesToMigrate').enable();
             this.historyFormGroup.get('tagsToMigrate').enable();
             this.historyFormGroup.controls['branchForMaster'].enable();
+        }
+    }
+
+    svnFontStyle(module: SvnModule) {
+        if (module.layoutElements.length > 0) {
+            return 'svn-ok';
+        } else if (module.isFlat) {
+            return 'svn-flat';
+        } else {
+            return 'svn-ko';
         }
     }
 }

@@ -81,7 +81,13 @@
                         <table mat-table [dataSource]="svnDirectories.modules" class="large-table">
                             <ng-container matColumnDef="svnDir">
                                 <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
-                                <td mat-cell *matCellDef="let directory">{{ directory.path }}</td>
+                                <td mat-cell *matCellDef="let directory">
+                                    <span [ngClass]="svnFontStyle(directory)">{{ directory.path }}</span> (
+                                    <span *ngIf="directory.isFlat" jhiTranslate="migration-process.svn.no-trunk">has no trunk/tag/branches</span>
+                                    <span *ngIf="directory.layoutElements.length > 0"><span jhiTranslate="migration-process.svn.with-layout">has </span>{{ directory.layoutElements }}</span>
+                                    <span *ngIf="directory.layoutElements.length == 0 && !directory.isFlat" jhiTranslate="migration-process.svn.max-depth-reached"></span>
+                                    )
+                                </td>
                             </ng-container>
                             <ng-container matColumnDef="selectSvn">
                                 <th mat-header-cell *matHeaderCellDef style="width: 70px">
@@ -163,6 +169,11 @@
                         <mat-radio-button [value]="'all'"><span jhiTranslate="migration-process.history.all">All History</span></mat-radio-button>
                     </mat-radio-group>
                 </li>
+                <li>
+                    <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
+                    <span jhiTranslate="migration-process.svn.sources-in-folder">Sources are in root folder (no branches, tags, trunk...)</span>
+                    <mat-checkbox (change)="flatManager()" [checked]="flatRepo"></mat-checkbox>
+                </li>
                 <form [formGroup]="historyFormGroup">
                     <li>
                         <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
@@ -187,11 +198,6 @@
                             <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
                             <input matInput placeholder="{{'migration-process.history.start-revision' | translate}}" formControlName="svnRevision">
                         </mat-form-field>
-                    </li>
-                    <li>
-                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                        <mat-checkbox (change)="flatManager()" [checked]="flatRepo"></mat-checkbox>
-                        <span>Sources are in root folder (no branches, tags, trunk...)</span>
                     </li>
                 </form>
             </ul>

@@ -103,7 +103,13 @@ export class SvnStructure {
 }
 
 export class SvnModule {
-    constructor(public layoutElements: string[], public name: string, public path: string, public subModules: SvnModule[]) {}
+    constructor(
+        public layoutElements: string[],
+        public name: string,
+        public path: string,
+        public subModules: SvnModule[],
+        public isFlat: boolean
+    ) {}
 }
 
 export class SvnFlatModule {
@@ -112,6 +118,7 @@ export class SvnFlatModule {
         public path: string,
         public subModules: SvnModule[],
         public expandable: boolean,
-        public level: number
+        public level: number,
+        public isFlat: boolean
     ) {}
 }

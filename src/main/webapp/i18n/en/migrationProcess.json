@@ -76,16 +76,20 @@
             },
             "directory" : "SVN directory",
             "directories" : "Choose directories to migrate",
+            "max-depth-reached" : "max depth for search reached without supported structure (flat or classic)",
+            "no-trunk" : "flat structure : files are directly in folder i.e. no trunk, branches or tags",
             "password" : "Password",
             "repo" : {
                 "name" : "SVN repository name"
             },
-            "root-directory": "Or migrate full repository (assuming trunk, branches & tags are directly in root folder)",
+            "root-directory": "Or migrate full repository (assuming trunk, branches & tags or files are directly in root folder)",
+            "sources-in-folder" : "Sources are in root folder",
             "url" : "SVN URL",
             "use" : {
                 "default" : "Use default URL"
             },
-            "user" : "User"
+            "user" : "User",
+            "with-layout": "has "
         },
         "step" : "Step",
         "apply-mapping" : "Apply Mapping",

@@ -76,16 +76,20 @@
             },
             "directory" : "Répertoire SVN",
             "directories" : "Choisir les répertoires à migrer",
-            "Password" : "Mot de passe",
+            "max-depth-reached" : "profondeur max atteinte sans trouvée de structure supportée (à plat ou classique)",
+            "no-trunk" : "fichiers directement à la racine i.e. pas de trunk, branches ou tags",
+            "password" : "Mot de passe",
             "repo" : {
                 "name" : "Nom du repository"
             },
-            "root-directory": "Ou migrer le repo complet (trunk, branches & tags sont à la racine)",
+            "root-directory": "Ou migrer le repo complet (trunk, branches & tags ou les fichiers sont à la racine)",
+            "sources-in-folder" : "Les sources sont directement à la racine",
             "url" : "URL SVN",
             "use" : {
                 "default" : "URL par défaut"
             },
-            "user" : "Utilisateur"
+            "user" : "Utilisateur",
+            "with-layout" : "avec "
         },
         "step" : "Etape",
         "apply-mapping" : "Appliquer Mapping",

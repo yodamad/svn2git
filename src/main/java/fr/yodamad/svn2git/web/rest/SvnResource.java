@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
@@ -133,7 +134,7 @@ public class SvnResource {
 
         list.setReceiver((target, object) -> {
             String name = object.getRelativePath();
-            if (name != null && !name.isEmpty() && !KEYWORDS.contains(name)){
+            if (name != null && !name.isEmpty() && !KEYWORDS.contains(name) && object.getKind() == SVNNodeKind.DIR){
                 if (module == null){
                     log.debug("Adding SVN module {}", name);
                     modules.add(new SvnStructure.SvnModule(name, ""));

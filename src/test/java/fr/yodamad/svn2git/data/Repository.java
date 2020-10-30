@@ -35,6 +35,14 @@ public class Repository {
         return repository;
     }
 
+    public static Repository flat() {
+        Repository repository = new Repository();
+        repository.name = "flat_complex";
+        repository.namespace = "flat_complex";
+        repository.keep.add(Files.REVISION);
+        return repository;
+    }
+
     public class Files {
         public static final String REVISION = "revision.txt";
         public static final String FILE_BIN = "file.bin";

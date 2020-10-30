@@ -1,12 +1,10 @@
 package fr.yodamad.svn2git.e2e;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-import fr.yodamad.svn2git.data.Repository;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.MigrationManager;
-import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Commit;
@@ -28,6 +26,8 @@ import static fr.yodamad.svn2git.data.Repository.Branches.DEV;
 import static fr.yodamad.svn2git.data.Repository.Branches.MASTER;
 import static fr.yodamad.svn2git.data.Repository.simple;
 import static fr.yodamad.svn2git.utils.Checks.*;
+import static fr.yodamad.svn2git.utils.MigrationUtils.GITLAB_API;
+import static fr.yodamad.svn2git.utils.MigrationUtils.initSimpleMigration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -39,35 +39,15 @@ public class SimpleRepoTests {
     @Autowired
     private MigrationRepository migrationRepository;
 
-    private static final GitLabApi gitLabApi = new GitLabApi("https://tanuki.yodamad.fr", "6UQZDV_j-gm4vz-NGxbJ");
-
     @Before
     public void cleanGitlab() throws GitLabApiException {
-        Optional<Project> project = gitLabApi.getProjectApi().getOptionalProject(simple().namespace, simple().name);
-        if (project.isPresent()) gitLabApi.getProjectApi().deleteProject(project.get().getId());
-    }
-
-    private static Migration initMigration() {
-        Repository repository = simple();
-        Migration migration = new Migration();
-        migration.setGitlabToken("6UQZDV_j-gm4vz-NGxbJ");
-        migration.setGitlabUrl("https://tanuki.yodamad.fr");
-        migration.setGitlabGroup(repository.namespace);
-        migration.setGitlabProject("");
-        migration.setUser("gitlab");
-
-        migration.setSvnUrl("https://chaos.yodamad.fr/svn");
-        migration.setSvnProject("");
-        migration.setSvnUser("demo");
-        migration.setSvnPassword("demo");
-        migration.setSvnGroup(repository.name);
-
-        return migration;
+        Optional<Project> project = GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
+        if (project.isPresent()) GITLAB_API.getProjectApi().deleteProject(project.get().getId());
     }
 
     @Test
     public void test_full_migration_on_simple_repo() throws ExecutionException, InterruptedException, GitLabApiException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("trunk");
         migration.setBranches("*");
@@ -92,7 +72,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_full_migration_on_simple_repo_without_history() throws GitLabApiException, ExecutionException, InterruptedException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("nothing");
         migration.setTrunk("trunk");
         migration.setBranches("*");
@@ -107,7 +87,7 @@ public class SimpleRepoTests {
         checkAllFiles(project);
 
         // Check branches
-        List<Commit> commits = gitLabApi.getCommitsApi().getCommits(project.get().getId(), MASTER, null);
+        List<Commit> commits = GITLAB_API.getCommitsApi().getCommits(project.get().getId(), MASTER, null);
         assertThat(commits.size()).isEqualTo(2);
         List<Branch> branches = checkBranches(project);
         branches.stream()
@@ -121,7 +101,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_full_migration_on_simple_repo_with_history_on_trunk() throws GitLabApiException, ExecutionException, InterruptedException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("trunk");
         migration.setTrunk("trunk");
         migration.setBranches("*");
@@ -149,7 +129,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_trunk_only_migration_on_simple_repo() throws ExecutionException, InterruptedException, GitLabApiException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("trunk");
         migration.setBranches(null);
@@ -173,7 +153,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_migration_on_simple_repo_without_branches() throws ExecutionException, InterruptedException, GitLabApiException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("trunk");
         migration.setBranches(null);
@@ -198,7 +178,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_migration_on_simple_repo_without_tags() throws ExecutionException, InterruptedException, GitLabApiException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("trunk");
         migration.setBranches("*");
@@ -222,7 +202,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_migration_on_simple_repo_with_filtered_branches_and_tags() throws ExecutionException, InterruptedException, GitLabApiException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("trunk");
         migration.setBranches("*");
@@ -249,7 +229,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_full_migration_on_simple_repo_filtering_extensions() throws ExecutionException, InterruptedException, GitLabApiException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("trunk");
         migration.setBranches("*");
@@ -275,7 +255,7 @@ public class SimpleRepoTests {
 
     @Test
     public void test_full_migration_with_dev_as_master() throws ExecutionException, InterruptedException, GitLabApiException {
-        Migration migration = initMigration();
+        Migration migration = initSimpleMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("dev");
         migration.setBranches("*");

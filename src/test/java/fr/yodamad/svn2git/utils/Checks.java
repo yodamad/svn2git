@@ -9,12 +9,13 @@ import java.util.Optional;
 
 import static fr.yodamad.svn2git.data.Repository.Files.*;
 import static fr.yodamad.svn2git.data.Repository.simple;
+import static fr.yodamad.svn2git.utils.MigrationUtils.GITLAB_API;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 public class Checks {
 
-    private static final GitLabApi gitLabApi = new GitLabApi("https://tanuki.yodamad.fr", "6UQZDV_j-gm4vz-NGxbJ");
+    private static GitLabApi gitLabApi = GITLAB_API;
 
     public static Optional<Project> checkProject() {
         Optional<Project> project = gitLabApi.getProjectApi().getOptionalProject(simple().namespace, simple().name);

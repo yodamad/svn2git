@@ -78,7 +78,7 @@ public class SvnResource {
      */
     protected SvnStructure listSVN(SvnInfo svnInfo, String repo) {
         SvnStructure structure = new SvnStructure(repo);
-        structure.modules = listModulesSVN(svnInfo, repo, null, 1);
+        structure.modules = listModulesSVN(svnInfo, repo, null, 0);
         structure.flat = structure.modules.isEmpty();
         log.info("SVN structure found : {}", structure);
         return structure;

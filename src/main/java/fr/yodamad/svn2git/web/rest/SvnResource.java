@@ -132,15 +132,26 @@ public class SvnResource {
             log.error("Cannot list SVN", e);
         }
 
+        List<SvnStructure.SvnModule> modulesFounds = new ArrayList<>();
+
         list.setReceiver((target, object) -> {
             String name = object.getRelativePath();
-            if (name != null && !name.isEmpty() && !KEYWORDS.contains(name) && object.getKind() == SVNNodeKind.DIR){
-                if (module == null){
-                    log.debug("Adding SVN module {}", name);
-                    modules.add(new SvnStructure.SvnModule(name, ""));
-                } else {
-                    log.debug("Adding SVN submodule {} in {}", name, module);
-                    modules.add(new SvnStructure.SvnModule(name, module.path));
+            if (name != null && !name.isEmpty() && !KEYWORDS.contains(name)) {
+
+                // found a directory
+                if (object.getKind() == SVNNodeKind.DIR) {
+                    if (module == null){
+                        log.debug("Adding SVN module {}", name);
+                        modulesFounds.add(new SvnStructure.SvnModule(name, ""));
+                    } else if (!module.isFlat) {
+                        log.debug("Adding SVN submodule {} in {}", name, module);
+                        modulesFounds.add(new SvnStructure.SvnModule(name, module.path));
+                    }
+                } else if (object.getKind() == SVNNodeKind.FILE && module != null) {
+                    // file case : module may be flat, stop searching
+                    module.isFlat = true;
+                    // remove potential folders previously found for this module
+                    modulesFounds.clear();
                 }
             }
 
@@ -149,10 +160,15 @@ public class SvnResource {
                 module.layoutElements.add(name);
             }
         });
+
         try {
             list.run();
         } catch (SVNException ex) {
             log.error("Cannot list SVN", ex);
+        }
+
+        if (!modulesFounds.isEmpty()) {
+            modules.addAll(modulesFounds);
         }
 
         if (!modules.isEmpty()) {

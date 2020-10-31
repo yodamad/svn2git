@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git.utils;
 
+import fr.yodamad.svn2git.data.Repository;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.*;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static fr.yodamad.svn2git.data.Repository.Files.*;
-import static fr.yodamad.svn2git.data.Repository.simple;
 import static fr.yodamad.svn2git.utils.MigrationUtils.GITLAB_API;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -17,8 +17,8 @@ public class Checks {
 
     private static GitLabApi gitLabApi = GITLAB_API;
 
-    public static Optional<Project> checkProject() {
-        Optional<Project> project = gitLabApi.getProjectApi().getOptionalProject(simple().namespace, simple().name);
+    public static Optional<Project> checkProject(Repository repository) {
+        Optional<Project> project = gitLabApi.getProjectApi().getOptionalProject(repository.namespace, repository.name);
         assertThat(project).isPresent();
         return project;
     }

@@ -36,7 +36,7 @@ public abstract class MigrationUtils {
         migration.setSvnProject("");
         migration.setSvnUser("demo");
         migration.setSvnPassword("demo");
-        migration.setSvnGroup(repository.name);
+        migration.setSvnGroup(repository.namespace);
 
         migration.setFlat(false);
 

@@ -19,6 +19,12 @@ public class Repository {
 
     public static List<String> ALL_MODULES = asList(Modules.MODULE_1, Modules.MODULE_2, Modules.MODULE_3, Modules.SUBMODULE_1, Modules.SUBMODULE_2);
 
+    public Repository() {}
+    public Repository(String nmsp, String name) {
+        this.name = name;
+        this.namespace = nmsp;
+    }
+
     public static Repository simple() {
         Repository repository = new Repository();
         repository.name = "simple";
@@ -37,7 +43,7 @@ public class Repository {
 
     public static Repository flat() {
         Repository repository = new Repository();
-        repository.name = "flat_complex";
+        repository.name = "module1";
         repository.namespace = "flat_complex";
         repository.keep.add(Files.REVISION);
         return repository;
@@ -46,14 +52,16 @@ public class Repository {
     public class Files {
         public static final String REVISION = "revision.txt";
         public static final String FILE_BIN = "file.bin";
-        public static final String ANOTHER_BIN = "folder/another.bin";
-        public static final String JAVA = "folder/App.java";
-        public static final String DEEP = "folder/subfolder/deep.file";
+        public static final String DEEP_FILE = "deep.file";
+        public static final String FLAT_FILE = "flat.file";
+        public static final String ANOTHER_BIN = Dirs.FOLDER + "another.bin";
+        public static final String JAVA = Dirs.FOLDER + "App.java";
+        public static final String DEEP = Dirs.FOLDER + Dirs.SUBFOLDER + DEEP_FILE;
     }
 
     public class Dirs {
-        public static final String FOLDER = "folder";
-        public static final String SUBFOLDER = "subfolder";
+        public static final String FOLDER = "folder/";
+        public static final String SUBFOLDER = "subfolder/";
     }
 
     public class Branches {

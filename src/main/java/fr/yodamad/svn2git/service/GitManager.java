@@ -435,6 +435,7 @@ public class GitManager {
             }
         } catch (GitLabApiException exc) {
             String message = exc.getMessage().replace(applicationProperties.gitlab.token, STARS);
+            LOG.error("Gitlab errors are " + exc.getValidationErrors());
             historyMgr.endStep(history, StatusEnum.FAILED, message);
             throw exc;
         }

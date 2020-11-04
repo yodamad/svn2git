@@ -147,3 +147,4 @@ Desktop.ini
 
 src/main/resources/.h2.server.properties
 !external/bfg-custom.jar
+src/main/resources/config/application-mvt.yml

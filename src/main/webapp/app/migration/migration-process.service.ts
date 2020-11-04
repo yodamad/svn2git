@@ -108,7 +108,7 @@ export class SvnModule {
         public name: string,
         public path: string,
         public subModules: SvnModule[],
-        public isFlat: boolean
+        public flat: boolean
     ) {}
 }
 
@@ -119,6 +119,6 @@ export class SvnFlatModule {
         public subModules: SvnModule[],
         public expandable: boolean,
         public level: number,
-        public isFlat: boolean
+        public flat: boolean
     ) {}
 }

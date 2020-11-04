@@ -982,7 +982,7 @@ export class MigrationStepperComponent implements OnInit {
     svnFontStyle(module: SvnModule) {
         if (module.layoutElements.length > 0) {
             return 'svn-ok';
-        } else if (module.isFlat) {
+        } else if (module.flat) {
             return 'svn-flat';
         } else {
             return 'svn-ko';

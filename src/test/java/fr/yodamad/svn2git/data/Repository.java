@@ -35,7 +35,7 @@ public class Repository {
 
     public static Repository complex() {
         Repository repository = new Repository();
-        repository.name = "complex";
+        repository.name = "module1/submodule1";
         repository.namespace = "complex";
         repository.keep.add(Files.REVISION);
         return repository;

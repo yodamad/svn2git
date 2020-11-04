@@ -4,8 +4,8 @@ import fr.yodamad.svn2git.data.Repository;
 import fr.yodamad.svn2git.domain.Migration;
 import org.gitlab4j.api.GitLabApi;
 
-import static fr.yodamad.svn2git.data.Repository.flat;
-import static fr.yodamad.svn2git.data.Repository.simple;
+import static fr.yodamad.svn2git.data.Repository.*;
+import static java.lang.String.format;
 
 public abstract class MigrationUtils {
 
@@ -21,6 +21,14 @@ public abstract class MigrationUtils {
     public static Migration initFlatMigration() {
         Migration mig = initMigration(flat());
         mig.setFlat(true);
+        return mig;
+    }
+
+    public static Migration initComplexMigration() {
+        Migration mig = initMigration(complex());
+        String name = format("/%s", complex().name);
+        mig.setSvnProject(name);
+        mig.setGitlabProject(name);
         return mig;
     }
 

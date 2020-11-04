@@ -78,11 +78,11 @@ public class SvnResourceTest {
                         break;
                     case "flat":
                         assertThat(m.layoutElements).isEmpty();
-                        assertThat(m.isFlat).isTrue();
+                        assertThat(m.flat).isTrue();
                         break;
                     case "simple":
                         assertThat(m.layoutElements).isNotEmpty();
-                        assertThat(m.isFlat).isFalse();
+                        assertThat(m.flat).isFalse();
                         break;
                     default:
                         break;

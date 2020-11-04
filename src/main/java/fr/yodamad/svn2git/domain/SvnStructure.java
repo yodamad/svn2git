@@ -44,7 +44,6 @@ public class SvnStructure {
         /** Potential submodules. */
         public List<SvnModule> subModules = new ArrayList<>();
         /** Flag for flat module (no trunk, tags or branches) **/
-        public Boolean isFlat = false;
 
         public SvnModule(String name, String path) {
             super(name);

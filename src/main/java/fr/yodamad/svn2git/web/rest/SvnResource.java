@@ -143,13 +143,13 @@ public class SvnResource {
                     if (module == null){
                         log.debug("Adding SVN module {}", name);
                         modulesFounds.add(new SvnStructure.SvnModule(name, ""));
-                    } else if (!module.isFlat) {
+                    } else if (!module.flat) {
                         log.debug("Adding SVN submodule {} in {}", name, module);
                         modulesFounds.add(new SvnStructure.SvnModule(name, module.path));
                     }
                 } else if (object.getKind() == SVNNodeKind.FILE && module != null) {
                     // file case : module may be flat, stop searching
-                    module.isFlat = true;
+                    module.flat = true;
                     // remove potential folders previously found for this module
                     modulesFounds.clear();
                 }

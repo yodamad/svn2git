@@ -4,8 +4,6 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
-import { sanitizeUrl } from '@angular/core/src/sanitization/sanitization';
-import { el } from '@angular/platform-browser/testing/src/browser_util';
 
 type EntityResponseType = HttpResponse<boolean>;
 type EntityStructureResponseType = HttpResponse<SvnStructure>;
@@ -91,7 +89,7 @@ export class MigrationProcessService {
 }
 
 class GitlabInfo {
-    constructor(public url: string, public token: string, public additionalData: string = '') {}
+    constructor(public url: string, public token: string, public additionalData = '') {}
 }
 
 class SvnInfo {

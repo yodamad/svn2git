@@ -30,15 +30,22 @@ public class SvnResourceTest {
     }
 
     @Test
-    public void test_svn_listing_on_flat_repo() {
+    public void test_svn_listing_on_simple_repo() {
         SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name);
         assertThat(svnStructure.modules).isEmpty();
         assertThat(svnStructure.flat).isTrue();
     }
 
     @Test
+    public void test_svn_listing_on_flat_repo() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.flat().name);
+        assertThat(svnStructure.modules).isEmpty();
+        assertThat(svnStructure.flat).isTrue();
+    }
+
+    @Test
     public void test_svn_listing_on_complex_repo() {
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().name);
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace);
         assertThat(svnStructure.modules).isNotEmpty();
         assertThat(svnStructure.flat).isFalse();
         List<SvnStructure.SvnModule> modules = svnStructure.modules;
@@ -49,6 +56,36 @@ public class SvnResourceTest {
                 if (MODULE_1.equals(m.name)) {
                     assertThat(m.subModules).isNotEmpty();
                     assertThat(m.subModules.size()).isEqualTo(2);
+                }
+            }
+        );
+    }
+
+    @Test
+    public void test_svn_listing_on_mixed_repo() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, "mixed");
+        assertThat(svnStructure.modules).isNotEmpty();
+        assertThat(svnStructure.flat).isFalse();
+        List<SvnStructure.SvnModule> modules = svnStructure.modules;
+        assertThat(modules.size()).isEqualTo(3);
+        modules.forEach(
+            m -> {
+                assertThat(m.name).isIn("complex", "flat", "simple");
+                switch (m.name) {
+                    case "complex":
+                        assertThat(m.subModules).isNotEmpty();
+                        assertThat(m.subModules.size()).isEqualTo(2);
+                        break;
+                    case "flat":
+                        assertThat(m.layoutElements).isEmpty();
+                        assertThat(m.isFlat).isTrue();
+                        break;
+                    case "simple":
+                        assertThat(m.layoutElements).isNotEmpty();
+                        assertThat(m.isFlat).isFalse();
+                        break;
+                    default:
+                        break;
                 }
             }
         );

@@ -26,7 +26,7 @@ export const REQUIRED = 'required';
 export class MigrationStepperComponent implements OnInit {
     // Static data
     staticExtensions: Extension[] = [];
-    staticDirectories: string[] = ['trunk', 'branches', 'tags', 'flat'];
+    staticDirectories: string[] = ['trunk', 'branches', 'tags'];
 
     // SnackBar config
     snackBarConfig = new MatSnackBarConfig();

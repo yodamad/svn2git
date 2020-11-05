@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { SERVER_API_URL } from 'app/app.constants';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
+import { GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
 
 /**
  * Retrieve some configuration elements from backend
@@ -14,6 +14,7 @@ export class ConfigurationService {
     private svnUrl = this.resourceUrl + 'svn';
     private svnCredsOptionUrl = this.svnUrl + '/credentials';
     private svnUrlModifiableOptionUrl = this.svnUrl + '/svnUrlModifiable';
+    private svnDepth = this.svnUrl + '/depth';
     private gitlabUrl = this.resourceUrl + 'gitlab';
     private gitlabCredsOptionUrl = this.gitlabUrl + '/credentials';
     private overrideUrl = this.resourceUrl + 'override/';
@@ -35,6 +36,13 @@ export class ConfigurationService {
      */
     svnCredsOption(): Observable<string> {
         return this.http.get(`${this.svnCredsOptionUrl}`, { responseType: 'text' }).pipe(map(res => res));
+    }
+
+    /**
+     * @return configured svn depth option
+     */
+    svnDepthOption(): Observable<string> {
+        return this.http.get(`${this.svnDepth}`, { responseType: 'text' }).pipe(map(res => res));
     }
 
     /**
@@ -86,5 +94,6 @@ export class ConfigurationService {
     init() {
         this.gitlab().subscribe(res => localStorage.setItem(GITLAB_URL, res));
         this.svn().subscribe(res => localStorage.setItem(SVN_URL, res));
+        this.svnDepthOption().subscribe(res => localStorage.setItem(SVN_DEPTH, res));
     }
 }

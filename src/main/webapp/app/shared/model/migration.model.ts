@@ -31,6 +31,7 @@ export interface IMigration {
     trunk?: string;
     branches?: string;
     tags?: string;
+    flat?: boolean;
     svnHistory?: string;
     tagsToMigrate?: string;
     branchesToMigrate?: string;
@@ -60,6 +61,7 @@ export class Migration implements IMigration {
         public trunk?: string,
         public branches?: string,
         public tags?: string,
+        public flat?: boolean,
         public svnHistory?: string,
         public tagsToMigrate?: string,
         public branchesToMigrate?: string,

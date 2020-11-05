@@ -45,3 +45,18 @@
 .tagsbranches-to-migrate {
     width: 400px;
 }
+
+.svn-ok {
+    color: green;
+    font-weight: bold;
+}
+
+.svn-flat {
+    color: orange;
+    font-weight: bold;
+}
+
+.svn-ko {
+    color: red;
+    font-weight: bold;
+}

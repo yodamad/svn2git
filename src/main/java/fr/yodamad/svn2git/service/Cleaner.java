@@ -560,7 +560,8 @@ public class Cleaner {
             svnBranchList = format("svn ls %s%s%s/%s > %s", svnUrl, workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(), isTags ? "tags" : "branches", SVN_LIST);
         } else {
             svnBranchList = format("svn ls %s%s%s/%s %s %s > %s", svnUrl,
-                workUnit.migration.getSvnGroup(), workUnit.migration.getSvnProject(),
+                workUnit.migration.getSvnGroup().endsWith("/") ? workUnit.migration.getSvnGroup() : format("%s/", workUnit.migration.getSvnGroup()),
+                workUnit.migration.getSvnProject(),
                 isTags ? "tags" : "branches",
                 "--username=" + workUnit.migration.getSvnUser(), "--password=" + workUnit.migration.getSvnPassword(),
                 SVN_LIST);

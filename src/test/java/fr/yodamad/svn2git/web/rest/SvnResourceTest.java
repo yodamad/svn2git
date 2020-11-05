@@ -22,6 +22,8 @@ public class SvnResourceTest {
     @Autowired
     private SvnResource svnResource;
 
+    public static final Integer DEPTH = 2;
+
     public static final SvnInfo svnInfo = new SvnInfo();
     static {
         svnInfo.url = "https://chaos.yodamad.fr/svn";
@@ -30,15 +32,22 @@ public class SvnResourceTest {
     }
 
     @Test
+    public void test_svn_listing_on_simple_repo() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
+        assertThat(svnStructure.modules).isEmpty();
+        assertThat(svnStructure.flat).isTrue();
+    }
+
+    @Test
     public void test_svn_listing_on_flat_repo() {
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name);
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.flat().name, DEPTH);
         assertThat(svnStructure.modules).isEmpty();
         assertThat(svnStructure.flat).isTrue();
     }
 
     @Test
     public void test_svn_listing_on_complex_repo() {
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().name);
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace, DEPTH);
         assertThat(svnStructure.modules).isNotEmpty();
         assertThat(svnStructure.flat).isFalse();
         List<SvnStructure.SvnModule> modules = svnStructure.modules;
@@ -52,5 +61,55 @@ public class SvnResourceTest {
                 }
             }
         );
+    }
+
+    @Test
+    public void test_svn_listing_on_mixed_repo() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, "mixed", DEPTH);
+        assertThat(svnStructure.modules).isNotEmpty();
+        assertThat(svnStructure.flat).isFalse();
+        List<SvnStructure.SvnModule> modules = svnStructure.modules;
+        assertThat(modules.size()).isEqualTo(3);
+        modules.forEach(
+            m -> {
+                assertThat(m.name).isIn("complex", "flat", "simple");
+                switch (m.name) {
+                    case "complex":
+                        assertThat(m.subModules).isNotEmpty();
+                        assertThat(m.subModules.size()).isEqualTo(2);
+                        break;
+                    case "flat":
+                        assertThat(m.layoutElements).isEmpty();
+                        assertThat(m.flat).isTrue();
+                        break;
+                    case "simple":
+                        assertThat(m.layoutElements).isNotEmpty();
+                        assertThat(m.flat).isFalse();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        );
+    }
+
+    @Test
+    public void test_svn_listing_with_no_depth() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace, 0);
+        assertThat(svnStructure.modules).isEmpty();
+        assertThat(svnStructure.flat).isTrue();
+    }
+
+    @Test
+    public void test_svn_listing_with_depth_1() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace, 1);
+        assertThat(svnStructure.modules).isNotEmpty();
+        assertThat(svnStructure.flat).isFalse();
+        List<SvnStructure.SvnModule> modules = svnStructure.modules;
+        assertThat(modules.size()).isEqualTo(3);
+        modules.forEach(m -> {
+            assertThat(m.subModules).isEmpty();
+            assertThat(m.flat).isFalse();
+        });
     }
 }

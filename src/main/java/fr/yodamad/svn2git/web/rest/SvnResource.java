@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
@@ -59,8 +60,11 @@ public class SvnResource {
      */
     @PostMapping("repository/{repositoryName}")
     @Timed
-    public ResponseEntity<SvnStructure> checkSVN(@PathVariable("repositoryName") String repositoryName, @RequestBody SvnInfo svnInfo) {
-        SvnStructure structure = listSVN(svnInfo, repositoryName);
+    public ResponseEntity<SvnStructure> checkSVN(
+        @PathVariable("repositoryName") String repositoryName,
+        @RequestParam("depth") Integer depth,
+        @RequestBody SvnInfo svnInfo) {
+        SvnStructure structure = listSVN(svnInfo, repositoryName, depth);
 
         // Repository not found case
         if (!structure.flat && structure.modules.isEmpty()) {
@@ -75,9 +79,9 @@ public class SvnResource {
      * @param repo Repository to explore
      * @return list of directories found
      */
-    protected SvnStructure listSVN(SvnInfo svnInfo, String repo) {
+    protected SvnStructure listSVN(SvnInfo svnInfo, String repo, Integer depth) {
         SvnStructure structure = new SvnStructure(repo);
-        structure.modules = listModulesSVN(svnInfo, repo, null, 1);
+        structure.modules = listModulesSVN(svnInfo, repo, null, 0, depth);
         structure.flat = structure.modules.isEmpty();
         log.info("SVN structure found : {}", structure);
         return structure;
@@ -90,9 +94,10 @@ public class SvnResource {
      * @param module Current module inspected
      * @return Complete module structure
      */
-    protected List<SvnStructure.SvnModule> listModulesSVN(SvnInfo svnInfo, String repo, SvnStructure.SvnModule module, final int level) {
+    protected List<SvnStructure.SvnModule> listModulesSVN(
+        SvnInfo svnInfo, String repo, SvnStructure.SvnModule module, final int level, Integer maxDepth) {
 
-        if (level == applicationProperties.work.maxSvnLevel) {
+        if (level == maxDepth) {
             log.info("Reaching max levels authorized for discovery, stop here");
             return Collections.emptyList();
         }
@@ -131,31 +136,49 @@ public class SvnResource {
             log.error("Cannot list SVN", e);
         }
 
+        List<SvnStructure.SvnModule> modulesFounds = new ArrayList<>();
+
         list.setReceiver((target, object) -> {
             String name = object.getRelativePath();
-            if (name != null && !name.isEmpty() && !KEYWORDS.contains(name)){
-                if (module == null){
-                    log.debug("Adding SVN module {}", name);
-                    modules.add(new SvnStructure.SvnModule(name, ""));
-                } else {
-                    log.debug("Adding SVN submodule {} in {}", name, module);
-                    modules.add(new SvnStructure.SvnModule(name, module.path));
+            if (name != null && !name.isEmpty() && !KEYWORDS.contains(name)) {
+
+                // found a directory
+                if (object.getKind() == SVNNodeKind.DIR) {
+                    if (module == null){
+                        log.debug("Adding SVN module {}", name);
+                        modulesFounds.add(new SvnStructure.SvnModule(name, ""));
+                    } else if (!module.flat) {
+                        log.debug("Adding SVN submodule {} in {}", name, module);
+                        modulesFounds.add(new SvnStructure.SvnModule(name, module.path));
+                    }
+                } else if (object.getKind() == SVNNodeKind.FILE && module != null) {
+                    // file case : module may be flat, stop searching
+                    module.flat = true;
+                    // remove potential folders previously found for this module
+                    modulesFounds.clear();
                 }
             }
 
             if (module != null && name != null && !name.isEmpty() && KEYWORDS.contains(name)) {
-                log.info(format("=============>module:%s layout:%s", module.name, name));
+                log.info(format("Module %s with layout %s", module.name, name));
                 module.layoutElements.add(name);
             }
         });
+
         try {
             list.run();
         } catch (SVNException ex) {
             log.error("Cannot list SVN", ex);
         }
 
+        if (!modulesFounds.isEmpty()) {
+            modules.addAll(modulesFounds);
+        }
+
         if (!modules.isEmpty()) {
-            modules.forEach(svnSubMod -> svnSubMod.subModules.addAll(listModulesSVN(svnInfo, repo, svnSubMod, level + 1)));
+            modules.forEach(
+                svnSubMod -> svnSubMod.subModules.addAll(
+                    listModulesSVN(svnInfo, repo, svnSubMod, level + 1, maxDepth)));
         }
 
         log.debug("SVN modules found in {} : {}", module, modules);

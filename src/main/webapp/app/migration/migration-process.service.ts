@@ -4,8 +4,6 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
-import { sanitizeUrl } from '@angular/core/src/sanitization/sanitization';
-import { el } from '@angular/platform-browser/testing/src/browser_util';
 
 type EntityResponseType = HttpResponse<boolean>;
 type EntityStructureResponseType = HttpResponse<SvnStructure>;
@@ -46,10 +44,10 @@ export class MigrationProcessService {
             .pipe(map((res: EntityResponseType) => res));
     }
 
-    checkSvn(name: string, url: string, user: string, password: string): Observable<EntityStructureResponseType> {
+    checkSvn(name: string, url: string, user: string, password: string, depth: number): Observable<EntityStructureResponseType> {
         const svnInfo = new SvnInfo(url, user, password);
         return this.http
-            .post<SvnStructure>(`${this.repositoryUrl}/${name}`, svnInfo, { observe: 'response' })
+            .post<SvnStructure>(`${this.repositoryUrl}/${name}?depth=${depth}`, svnInfo, { observe: 'response' })
             .pipe(map((res: EntityStructureResponseType) => res));
     }
 
@@ -91,7 +89,7 @@ export class MigrationProcessService {
 }
 
 class GitlabInfo {
-    constructor(public url: string, public token: string, public additionalData: string = '') {}
+    constructor(public url: string, public token: string, public additionalData = '') {}
 }
 
 class SvnInfo {
@@ -103,7 +101,13 @@ export class SvnStructure {
 }
 
 export class SvnModule {
-    constructor(public layoutElements: string[], public name: string, public path: string, public subModules: SvnModule[]) {}
+    constructor(
+        public layoutElements: string[],
+        public name: string,
+        public path: string,
+        public subModules: SvnModule[],
+        public flat: boolean
+    ) {}
 }
 
 export class SvnFlatModule {
@@ -112,6 +116,7 @@ export class SvnFlatModule {
         public path: string,
         public subModules: SvnModule[],
         public expandable: boolean,
-        public level: number
+        public level: number,
+        public flat: boolean
     ) {}
 }

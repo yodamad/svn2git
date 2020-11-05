@@ -1,12 +1,12 @@
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { MigrationProcessService, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping, Mapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
-import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
+import { GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
 import { MatCheckboxChange, MatDialog, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
@@ -55,6 +55,7 @@ export class MigrationStepperComponent implements OnInit {
     forceGitlabGroupCreation = false;
     useDefaultSvn = true;
     svnUrlModifiable = true;
+    flatRepo = false;
 
     // Input for migrations
     svnDirectories: SvnStructure = null;
@@ -63,6 +64,7 @@ export class MigrationStepperComponent implements OnInit {
     mig: IMigration;
     svnUrl: string;
     svnCredsOption: string;
+    svnDepth: number;
     gitlabUrl: string;
     gitlabCredsOption: string;
 
@@ -138,6 +140,7 @@ export class MigrationStepperComponent implements OnInit {
         });
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
+        this.svnDepth = Number(localStorage.getItem(SVN_DEPTH));
 
         this.gitlabFormGroup = this._formBuilder.group({
             gitlabUser: ['', Validators.required],
@@ -149,7 +152,8 @@ export class MigrationStepperComponent implements OnInit {
             svnRepository: ['', Validators.required],
             svnURL: [{ value: this.svnUrl, disabled: true }, Validators.required],
             svnUser: [''],
-            svnPwd: ['']
+            svnPwd: [''],
+            svnDepth: [this.svnDepth, Validators.min(2)]
         });
         this.svnSelection = new SelectionModel<string>(this.allowMultiSelect, []);
         this.cleaningFormGroup = this._formBuilder.group({
@@ -188,7 +192,7 @@ export class MigrationStepperComponent implements OnInit {
 
         this._configurationService
             .flagGitlabGroupCreation()
-            .subscribe(res => (this.isGitlabGroupCreation = res), err => (this.isGitlabGroupCreation = false));
+            .subscribe(res => (this.isGitlabGroupCreation = res), _ => (this.isGitlabGroupCreation = false));
     }
 
     /**
@@ -301,7 +305,8 @@ export class MigrationStepperComponent implements OnInit {
                 this.svnFormGroup.controls['svnRepository'].value,
                 this.svnFormGroup.controls['svnURL'].value,
                 this.svnFormGroup.controls['svnUser'].value,
-                this.svnFormGroup.controls['svnPwd'].value
+                this.svnFormGroup.controls['svnPwd'].value,
+                this.svnFormGroup.controls['svnDepth'].value
             )
             .subscribe(
                 res => {
@@ -407,6 +412,11 @@ export class MigrationStepperComponent implements OnInit {
         }
         if (this.svnFormGroup.controls['svnPwd'] !== undefined && this.svnFormGroup.controls['svnPwd'].value !== '') {
             this.mig.svnPassword = this.svnFormGroup.controls['svnPwd'].value;
+        }
+
+        this.mig.flat = this.flatRepo;
+        if (this.flatRepo) {
+            this.mig.trunk = 'trunk';
         }
 
         // History
@@ -949,5 +959,37 @@ export class MigrationStepperComponent implements OnInit {
             this.historyFormGroup.controls['branchForMaster'] !== undefined &&
             this.historyFormGroup.controls['branchForMaster'].value !== ''
         );
+    }
+
+    noStdLayout() {
+        return this.flatRepo;
+    }
+
+    flatManager() {
+        this.flatRepo = !this.flatRepo;
+
+        if (this.flatRepo) {
+            this.historySelection.clear();
+            this.historyFormGroup.get('branchesToMigrate').disable();
+            this.historyFormGroup.get('branchesToMigrate').setValue('');
+            this.historyFormGroup.get('tagsToMigrate').disable();
+            this.historyFormGroup.get('tagsToMigrate').setValue('');
+            this.historyFormGroup.controls['branchForMaster'].disable();
+            this.historyFormGroup.controls['branchForMaster'].setValue('');
+        } else {
+            this.historyFormGroup.get('branchesToMigrate').enable();
+            this.historyFormGroup.get('tagsToMigrate').enable();
+            this.historyFormGroup.controls['branchForMaster'].enable();
+        }
+    }
+
+    svnFontStyle(module: SvnModule) {
+        if (module.layoutElements.length > 0) {
+            return 'svn-ok';
+        } else if (module.flat) {
+            return 'svn-flat';
+        } else {
+            return 'svn-ko';
+        }
     }
 }

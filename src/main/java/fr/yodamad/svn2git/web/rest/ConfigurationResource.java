@@ -53,6 +53,17 @@ public class ConfigurationResource {
     }
 
     /**
+     * @return Configured svn depth searched authorized
+     */
+    @Timed
+    @GetMapping("svn/depth")
+    public ResponseEntity<String> getSvnDepthSearch() {
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_PLAIN)
+            .body(applicationProperties.work.maxSvnLevel.toString());
+    }
+
+    /**
      * @return Configured Gitlab URL
      */
     @Timed

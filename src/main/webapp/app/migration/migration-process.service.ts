@@ -44,10 +44,10 @@ export class MigrationProcessService {
             .pipe(map((res: EntityResponseType) => res));
     }
 
-    checkSvn(name: string, url: string, user: string, password: string): Observable<EntityStructureResponseType> {
+    checkSvn(name: string, url: string, user: string, password: string, depth: number): Observable<EntityStructureResponseType> {
         const svnInfo = new SvnInfo(url, user, password);
         return this.http
-            .post<SvnStructure>(`${this.repositoryUrl}/${name}`, svnInfo, { observe: 'response' })
+            .post<SvnStructure>(`${this.repositoryUrl}/${name}?depth=${depth}`, svnInfo, { observe: 'response' })
             .pipe(map((res: EntityStructureResponseType) => res));
     }
 

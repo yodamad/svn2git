@@ -73,6 +73,13 @@
                     <span jhiTranslate="migration-process.checking" *ngIf="checkingSvnRepo">Checking</span>
                 </button>
             </div>
+            <div>
+                <span jhiTranslate="migration-process.svn.depth">Depth : </span>
+                <mat-form-field style="width: 35px">
+                    <input matInput type="number" formControlName="svnDepth" min="2">
+                </mat-form-field>
+            </div>
+            <hr/>
             <div *ngIf="svnDirectories !== null && (svnDirectories.modules.length > 0 || svnDirectories.flat)">
                 <ul class="fa-ul">
                     <li>

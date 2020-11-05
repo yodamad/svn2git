@@ -74,6 +74,7 @@
             "check" : {
                 "repository" : "Check your SVN repository"
             },
+            "depth": "Search depth for SVN structures : ",
             "directory" : "SVN directory",
             "directories" : "Choose directories to migrate",
             "max-depth-reached" : "max depth for search reached without supported structure (flat or classic)",

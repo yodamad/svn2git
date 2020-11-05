@@ -22,6 +22,8 @@ public class SvnResourceTest {
     @Autowired
     private SvnResource svnResource;
 
+    public static final Integer DEPTH = 2;
+
     public static final SvnInfo svnInfo = new SvnInfo();
     static {
         svnInfo.url = "https://chaos.yodamad.fr/svn";
@@ -31,21 +33,21 @@ public class SvnResourceTest {
 
     @Test
     public void test_svn_listing_on_simple_repo() {
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name);
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
         assertThat(svnStructure.modules).isEmpty();
         assertThat(svnStructure.flat).isTrue();
     }
 
     @Test
     public void test_svn_listing_on_flat_repo() {
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.flat().name);
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.flat().name, DEPTH);
         assertThat(svnStructure.modules).isEmpty();
         assertThat(svnStructure.flat).isTrue();
     }
 
     @Test
     public void test_svn_listing_on_complex_repo() {
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace);
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace, DEPTH);
         assertThat(svnStructure.modules).isNotEmpty();
         assertThat(svnStructure.flat).isFalse();
         List<SvnStructure.SvnModule> modules = svnStructure.modules;
@@ -63,7 +65,7 @@ public class SvnResourceTest {
 
     @Test
     public void test_svn_listing_on_mixed_repo() {
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, "mixed");
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, "mixed", DEPTH);
         assertThat(svnStructure.modules).isNotEmpty();
         assertThat(svnStructure.flat).isFalse();
         List<SvnStructure.SvnModule> modules = svnStructure.modules;

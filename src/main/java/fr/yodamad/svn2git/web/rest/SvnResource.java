@@ -60,8 +60,11 @@ public class SvnResource {
      */
     @PostMapping("repository/{repositoryName}")
     @Timed
-    public ResponseEntity<SvnStructure> checkSVN(@PathVariable("repositoryName") String repositoryName, @RequestBody SvnInfo svnInfo) {
-        SvnStructure structure = listSVN(svnInfo, repositoryName);
+    public ResponseEntity<SvnStructure> checkSVN(
+        @PathVariable("repositoryName") String repositoryName,
+        @RequestParam("depth") Integer depth,
+        @RequestBody SvnInfo svnInfo) {
+        SvnStructure structure = listSVN(svnInfo, repositoryName, depth);
 
         // Repository not found case
         if (!structure.flat && structure.modules.isEmpty()) {
@@ -76,9 +79,9 @@ public class SvnResource {
      * @param repo Repository to explore
      * @return list of directories found
      */
-    protected SvnStructure listSVN(SvnInfo svnInfo, String repo) {
+    protected SvnStructure listSVN(SvnInfo svnInfo, String repo, Integer depth) {
         SvnStructure structure = new SvnStructure(repo);
-        structure.modules = listModulesSVN(svnInfo, repo, null, 0);
+        structure.modules = listModulesSVN(svnInfo, repo, null, 0, depth);
         structure.flat = structure.modules.isEmpty();
         log.info("SVN structure found : {}", structure);
         return structure;
@@ -91,9 +94,10 @@ public class SvnResource {
      * @param module Current module inspected
      * @return Complete module structure
      */
-    protected List<SvnStructure.SvnModule> listModulesSVN(SvnInfo svnInfo, String repo, SvnStructure.SvnModule module, final int level) {
+    protected List<SvnStructure.SvnModule> listModulesSVN(
+        SvnInfo svnInfo, String repo, SvnStructure.SvnModule module, final int level, Integer maxDepth) {
 
-        if (level == applicationProperties.work.maxSvnLevel) {
+        if (level == maxDepth) {
             log.info("Reaching max levels authorized for discovery, stop here");
             return Collections.emptyList();
         }
@@ -174,7 +178,7 @@ public class SvnResource {
         if (!modules.isEmpty()) {
             modules.forEach(
                 svnSubMod -> svnSubMod.subModules.addAll(
-                    listModulesSVN(svnInfo, repo, svnSubMod, level + 1)));
+                    listModulesSVN(svnInfo, repo, svnSubMod, level + 1, maxDepth)));
         }
 
         log.debug("SVN modules found in {} : {}", module, modules);

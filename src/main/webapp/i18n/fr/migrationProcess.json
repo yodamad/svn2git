@@ -74,6 +74,7 @@
             "check" : {
                 "repository" : "Vérifier votre repo SVN"
             },
+            "depth": "Profondeur pour la recherche de structures SVN : ",
             "directory" : "Répertoire SVN",
             "directories" : "Choisir les répertoires à migrer",
             "max-depth-reached" : "profondeur max atteinte sans trouvée de structure supportée (à plat ou classique)",

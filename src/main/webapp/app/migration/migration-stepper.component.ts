@@ -1,12 +1,12 @@
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { MigrationProcessService, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
 import { IMigration, Migration } from 'app/shared/model/migration.model';
 import { IMapping, Mapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
-import { GITLAB_URL, SVN_URL } from 'app/shared/constants/config.constants';
+import { GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
 import { MatCheckboxChange, MatDialog, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
@@ -64,6 +64,7 @@ export class MigrationStepperComponent implements OnInit {
     mig: IMigration;
     svnUrl: string;
     svnCredsOption: string;
+    svnDepth: number;
     gitlabUrl: string;
     gitlabCredsOption: string;
 
@@ -139,6 +140,7 @@ export class MigrationStepperComponent implements OnInit {
         });
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
+        this.svnDepth = localStorage.getItem(SVN_DEPTH);
 
         this.gitlabFormGroup = this._formBuilder.group({
             gitlabUser: ['', Validators.required],
@@ -150,7 +152,8 @@ export class MigrationStepperComponent implements OnInit {
             svnRepository: ['', Validators.required],
             svnURL: [{ value: this.svnUrl, disabled: true }, Validators.required],
             svnUser: [''],
-            svnPwd: ['']
+            svnPwd: [''],
+            svnDepth: [this.svnDepth, Validators.min(2)]
         });
         this.svnSelection = new SelectionModel<string>(this.allowMultiSelect, []);
         this.cleaningFormGroup = this._formBuilder.group({
@@ -189,7 +192,7 @@ export class MigrationStepperComponent implements OnInit {
 
         this._configurationService
             .flagGitlabGroupCreation()
-            .subscribe(res => (this.isGitlabGroupCreation = res), err => (this.isGitlabGroupCreation = false));
+            .subscribe(res => (this.isGitlabGroupCreation = res), _ => (this.isGitlabGroupCreation = false));
     }
 
     /**
@@ -302,7 +305,8 @@ export class MigrationStepperComponent implements OnInit {
                 this.svnFormGroup.controls['svnRepository'].value,
                 this.svnFormGroup.controls['svnURL'].value,
                 this.svnFormGroup.controls['svnUser'].value,
-                this.svnFormGroup.controls['svnPwd'].value
+                this.svnFormGroup.controls['svnPwd'].value,
+                this.svnFormGroup.controls['svnDepth'].value
             )
             .subscribe(
                 res => {

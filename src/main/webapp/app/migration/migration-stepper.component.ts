@@ -140,7 +140,7 @@ export class MigrationStepperComponent implements OnInit {
         });
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
-        this.svnDepth = localStorage.getItem(SVN_DEPTH);
+        this.svnDepth = Number(localStorage.getItem(SVN_DEPTH));
 
         this.gitlabFormGroup = this._formBuilder.group({
             gitlabUser: ['', Validators.required],

@@ -92,4 +92,24 @@ public class SvnResourceTest {
             }
         );
     }
+
+    @Test
+    public void test_svn_listing_with_no_depth() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace, 0);
+        assertThat(svnStructure.modules).isEmpty();
+        assertThat(svnStructure.flat).isTrue();
+    }
+
+    @Test
+    public void test_svn_listing_with_depth_1() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.complex().namespace, 1);
+        assertThat(svnStructure.modules).isNotEmpty();
+        assertThat(svnStructure.flat).isFalse();
+        List<SvnStructure.SvnModule> modules = svnStructure.modules;
+        assertThat(modules.size()).isEqualTo(3);
+        modules.forEach(m -> {
+            assertThat(m.subModules).isEmpty();
+            assertThat(m.flat).isFalse();
+        });
+    }
 }

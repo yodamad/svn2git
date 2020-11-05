@@ -27,6 +27,14 @@
             <td>SVN({{migration.svnGroup}}{{migration.svnProject}}) to GITLAB({{migration.gitlabGroup}}{{migration.gitlabProject}})</td>
             <td>{{migration.createdTimestamp | date:'medium'}}</td>
             <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
+            <td>
+                <button type="submit"
+                    [routerLink]="['/migration', migration.id, 'view' ]"
+                    class="btn btn-info btn-sm">
+                    <fa-icon [icon]="'eye'"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                </button>
+            </td>
         </tr>
         </tbody>
         <thead>
@@ -36,6 +44,7 @@
             <th jhiSortBy="svnGroup"><span jhiTranslate="migration-process.summary">Migration</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th><fa-icon [icon]="'eye'"></fa-icon></th>
         </tr>
         </thead>
     </table>
@@ -51,6 +60,14 @@
             <td>SVN({{migration.svnGroup}}{{migration.svnProject}}) to GITLAB({{migration.gitlabGroup}}{{migration.gitlabProject}})</td>
             <td>{{migration.createdTimestamp | date:'medium'}}</td>
             <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
+            <td style="text-align: center">
+                <button type="submit"
+                        [routerLink]="['/migration', migration.id, 'view' ]"
+                        class="btn btn-info btn-sm">
+                    <fa-icon [icon]="'eye'"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                </button>
+            </td>
         </tr>
         </tbody>
         <thead>
@@ -60,6 +77,7 @@
             <th jhiSortBy="svnGroup"><span jhiTranslate="migration-process.summary">Migration</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th style="text-align: center"><fa-icon [icon]="'eye'"></fa-icon></th>
         </tr>
         </thead>
     </table>

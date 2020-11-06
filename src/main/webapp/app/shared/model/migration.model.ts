@@ -27,6 +27,7 @@ export interface IMigration {
     svnUrl?: string;
     svnUser?: string;
     svnPassword?: string;
+    svnRevision?: string;
     trunk?: string;
     branches?: string;
     tags?: string;

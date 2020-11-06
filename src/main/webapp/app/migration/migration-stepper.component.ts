@@ -40,6 +40,7 @@ export class MigrationStepperComponent implements OnInit {
     mappingFormGroup: FormGroup;
     addExtentionFormControl: FormControl;
     historyFormGroup: FormGroup;
+    historyOptionFormGroup: FormGroup;
 
     // Tables columns
     displayedColumns: string[] = ['delete', 'svn', 'regex', 'git', 'toggleMapping'];
@@ -77,7 +78,8 @@ export class MigrationStepperComponent implements OnInit {
     // History selections
     historySelection: SelectionModel<string>;
     enableDirectoryFilter = [];
-    historyOption = false;
+    historyOption = 'all';
+    svnRevision: string;
 
     // Mapping selections
     initialSelectionMapping = [];
@@ -167,6 +169,9 @@ export class MigrationStepperComponent implements OnInit {
             branchesToMigrate: [''],
             tagsToMigrate: ['']
         });
+        this.historyOptionFormGroup = this._formBuilder.group({
+            svnRevision: ['']
+        });
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
 
         this.addExtentionFormControl = new FormControl('', []);
@@ -217,13 +222,6 @@ export class MigrationStepperComponent implements OnInit {
                 () => {
                     this.gitlabUserKO = true;
                     this.checkingGitlabUser = false;
-                    /*
-                    if (httpER.status === 504) {
-                        this.openSnackBar('error.http.504');
-                    } else {
-                        this.openSnackBar('error.checks.gitlab.user');
-                    }
-                     */
                 }
             );
     }
@@ -293,10 +291,6 @@ export class MigrationStepperComponent implements OnInit {
                 }
             );
     }
-
-    /**
-     *
-     */
 
     /**
      * Load extensions
@@ -466,16 +460,18 @@ export class MigrationStepperComponent implements OnInit {
                 this.mig.tagsToMigrate = '';
             }
         }
-        this.mig.svnHistory = this.historyOption ? 'all' : 'nothing';
 
-        // TODO : Reactivate
-        //this.mig.svnHistory = this.historyOption;
+        this.mig.svnHistory = this.historyOption;
 
         // Revision to start
-        //if (this.historyFormGroup.controls['svnRevision'] !== undefined && this.historyFormGroup.controls['svnRevision'].value !== '') {
-        //     this.mig.svnRevision = this.historyFormGroup.controls['svnRevision'].value;
-        //}
+        if (
+            this.historyOptionFormGroup.controls['svnRevision'] !== undefined &&
+            this.historyOptionFormGroup.controls['svnRevision'].value !== ''
+        ) {
+            this.mig.svnRevision = this.historyOptionFormGroup.controls['svnRevision'].value;
+        }
 
+        // TODO : Reactivate
         // Branch for master
         //if (
         //    this.historyFormGroup.controls['branchForMaster'] !== undefined &&
@@ -786,17 +782,6 @@ export class MigrationStepperComponent implements OnInit {
      */
     historyChecked(directory: string) {
         return this.historySelection.isSelected(directory);
-    }
-
-    /**
-     * If disable the individual commits choice
-     */
-    disableMigrateIndividualCommits(): boolean {
-        const disabled = this.historyChecked('branches') || this.historyChecked('tags');
-        if (disabled) {
-            this.historyOption = true;
-        }
-        return disabled;
     }
 
     /**

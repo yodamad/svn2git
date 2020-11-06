@@ -64,6 +64,8 @@
             "directories" : "Dossiers à inclure dans la migration",
             "tags-to-migrate" : "Liste de tags (séparés par des virgules)",
             "branches-to-migrate" : "List de branches (séparés par des virgules)",
+            "start-revision": "Revision de départ",
+            "start-revision-help": "Revision à laquelle démarrer (sinon 1)",
             "migrate-individual-commits" : "Migrer tout l'historique des commits",
             "no-migrate-individual-commits" : "L'historique des commits n'est pas migré"
         },

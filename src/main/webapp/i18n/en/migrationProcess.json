@@ -64,6 +64,8 @@
             "directories" : "Directories planned in migration",
             "tags-to-migrate" : "Tag list (comma separated)",
             "branches-to-migrate" : "Branch list (comma separated)",
+            "start-revision": "Starting revision",
+            "start-revision-help": "Revision to start migration from (otherwise 1)",
             "migrate-individual-commits" : "Migrate all commits",
             "no-migrate-individual-commits" : "All commits are not migrated"
         },

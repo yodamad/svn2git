@@ -321,19 +321,30 @@
                 </mat-radio-group>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-2 pl-0 pt-3 pr-2 text-center">
-                <span jhiTranslate="migration-process.history.start-revision">Start revision</span>
-            </div>
-            <div class="col-md-3">
-                <form [formGroup]="historyOptionFormGroup">
+        <form [formGroup]="historyOptionFormGroup">
+            <div class="row">
+                <div class="col-md-2 pl-0 pt-3 pr-2 text-center">
+                    <span jhiTranslate="migration-process.history.start-revision">Start revision</span>
+                </div>
+                <div class="col-md-3">
                     <mat-form-field>
-                        <input matInput placeholder="{{'migration-process.history.start-revision' | translate}}" formControlName="svnRevision">
+                        <input matInput placeholder="{{'migration-process.history.start-revision-placeholder' | translate}}" formControlName="svnRevision">
                     </mat-form-field>
                     <fa-icon icon="info-circle" matTooltip="{{'migration-process.history.start-revision-help' | translate}}"></fa-icon>
-                </form>
+                </div>
             </div>
-        </div>
+            <div class="row">
+                <div class="col-md-2 pl-0 pt-3 pr-2 text-center">
+                    <span jhiTranslate="migration-process.history.branch-for-master">Branch</span>
+                </div>
+                <div class="col-md-3">
+                    <mat-form-field>
+                        <input matInput placeholder="{{'migration-process.history.branch-for-master-placeholder' | translate}}" formControlName="branchForMaster">
+                    </mat-form-field>
+                    <fa-icon icon="info-circle" matTooltip="{{'migration-process.history.branch-for-master-help' | translate}}"></fa-icon>
+                </div>
+            </div>
+        </form>
         <mat-divider class="mb-4"></mat-divider>
         <div>
             <button mat-stroked-button matStepperPrevious>

@@ -170,6 +170,7 @@ export class MigrationStepperComponent implements OnInit {
             tagsToMigrate: ['']
         });
         this.historyOptionFormGroup = this._formBuilder.group({
+            branchForMaster: [''],
             svnRevision: ['']
         });
         this.historySelection = new SelectionModel<string>(this.allowMultiSelect, ['trunk']);
@@ -471,14 +472,13 @@ export class MigrationStepperComponent implements OnInit {
             this.mig.svnRevision = this.historyOptionFormGroup.controls['svnRevision'].value;
         }
 
-        // TODO : Reactivate
         // Branch for master
-        //if (
-        //    this.historyFormGroup.controls['branchForMaster'] !== undefined &&
-        //    this.historyFormGroup.controls['branchForMaster'].value !== ''
-        //) {
-        //    this.mig.trunk = this.historyFormGroup.controls['branchForMaster'].value;
-        //}
+        if (
+            this.historyOptionFormGroup.controls['branchForMaster'] !== undefined &&
+            this.historyOptionFormGroup.controls['branchForMaster'].value !== ''
+        ) {
+            this.mig.trunk = this.historyOptionFormGroup.controls['branchForMaster'].value;
+        }
 
         // Mappings
         // Note : selectionSvnDirectoryDelete can be empty

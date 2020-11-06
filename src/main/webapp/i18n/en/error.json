@@ -14,7 +14,7 @@
             "gitlab": {
                 "user": "Error checking Gitlab user",
                 "groupauto": "Error checking Gitlab group.",
-                "groupmanual": "Error checking Gitlab group. Please create group manually."
+                "groupmanual": "Error checking Gitlab group. Please assure that the group exists AND that the user is a maintainer of that group."
             },
             "svn": "Error checking SVN repository"
         },

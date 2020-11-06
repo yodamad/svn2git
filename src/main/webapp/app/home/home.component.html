@@ -1,84 +1,98 @@
 <div class="row">
-    <div class="col-md-3">
-        <span class="hipster img-fluid rounded"></span>
+    <div class="col-md-12 text-center">
+        <h2 jhiTranslate="home.title">Welcome, SVN2GIT migration tool!</h2>
     </div>
+</div>
+<div class="row">
     <div class="col-md-4">
-        <h3 jhiTranslate="home.title">Welcome, SVN2GIT migration tool!</h3>
-        <br/>
-        <i>Prerequisites:</i>
-        <ul>
-            <li>Have a gitlab account</li>
-            <li>Know SVN repository structure</li>
-            <li>Know GitLab group name</li>
-        </ul>
-        <div class="col-md-8" style="margin: 50px">
-            <button type="submit" class="btn btn-primary" jhiTranslate="home.start" (click)="startStepper()">Start</button>
-            <button type="submit" class="btn btn-primary" jhiTranslate="home.check" (click)="checkMigration()">Check migration</button>
+        <span class="home-logo"></span>
+    </div>
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="m-auto pt-5 pb-4">
+                        <div class="pb-2 text-center">
+                            <i jhiTranslate="home.prerequisites">Prerequisites</i>
+                        </div>
+                        <ul>
+                            <li jhiTranslate="home.prerequisites1">Have a gitlab account</li>
+                            <li jhiTranslate="home.prerequisites2">Know SVN repository structure</li>
+                            <li jhiTranslate="home.prerequisites3">Know GitLab group name</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="offset-md-2 col-md-4">
+                        <button type="button" class="btn btn-success m-2" (click)="startStepper()">
+                            <fa-icon icon="plus"></fa-icon>
+                            <span class="pl-1" jhiTranslate="home.start">Start migration</span>
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-primary m-2" (click)="checkMigration()">
+                            <fa-icon icon="list"></fa-icon>
+                            <span class="pl-1" jhiTranslate="home.check">Check migration</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5 pt-5 text-center">
+                <div class="pt-5">
+                    <h5>
+                        <span jhiTranslate="home.help">Need help</span> ?
+                    </h5>
+                    <a href="mailto:mvincent.it@gmail.com">
+                        <span jhiTranslate="home.contact"></span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-<div class="table-responsive" *ngIf="migrations.length > 0">
-    <h4 jhiTranslate="home.migrations.in_progress">Migrations in progress</h4>
-    <table class="table table-striped">
-        <tbody infinite-scroll [infiniteScrollDistance]="0">
-        <tr *ngFor="let migration of migrations">
-            <td>{{migration.id}}</td>
-            <td>{{migration.user}}</td>
-            <td>SVN({{migration.svnGroup}}{{migration.svnProject}}) to GITLAB({{migration.gitlabGroup}}{{migration.gitlabProject}})</td>
-            <td>{{migration.createdTimestamp | date:'medium'}}</td>
-            <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
-            <td>
-                <button type="submit"
-                    [routerLink]="['/migration', migration.id, 'view' ]"
-                    class="btn btn-info btn-sm">
-                    <fa-icon [icon]="'eye'"></fa-icon>
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
-                </button>
-            </td>
-        </tr>
-        </tbody>
-        <thead>
-        <tr jhiSort>
-            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="user"><span jhiTranslate="svn2GitApp.migration.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="svnGroup"><span jhiTranslate="migration-process.summary">Migration</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th><fa-icon [icon]="'eye'"></fa-icon></th>
-        </tr>
-        </thead>
-    </table>
-</div>
-
-<div class="table-responsive" *ngIf="lastMigrations.length > 0">
-    <h4 jhiTranslate="home.migrations.last">Last migrations</h4>
-    <table class="table table-striped">
-        <tbody infinite-scroll [infiniteScrollDistance]="0">
-        <tr *ngFor="let migration of lastMigrations">
-            <td>{{migration.id}}</td>
-            <td>{{migration.user}}</td>
-            <td>SVN({{migration.svnGroup}}{{migration.svnProject}}) to GITLAB({{migration.gitlabGroup}}{{migration.gitlabProject}})</td>
-            <td>{{migration.createdTimestamp | date:'medium'}}</td>
-            <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
-            <td style="text-align: center">
-                <button type="submit"
-                        [routerLink]="['/migration', migration.id, 'view' ]"
-                        class="btn btn-info btn-sm">
-                    <fa-icon [icon]="'eye'"></fa-icon>
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
-                </button>
-            </td>
-        </tr>
-        </tbody>
-        <thead>
-        <tr jhiSort>
-            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="user"><span jhiTranslate="svn2GitApp.migration.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="svnGroup"><span jhiTranslate="migration-process.summary">Migration</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th style="text-align: center"><fa-icon [icon]="'eye'"></fa-icon></th>
-        </tr>
-        </thead>
-    </table>
+<div class="row p-5">
+    <div class="col-md-12 text-center" *ngIf="isLoading">
+        <hr class="pb-3 "/>
+        <fa-icon spin="true" icon="circle-notch"></fa-icon>
+        <span class="pl-2" jhiTranslate="home.loading"></span>
+    </div>
+    <div class="col-md-12 text-center" *ngIf="!migrations.length && !isLoading">
+        <hr class="pb-3 "/>
+        <fa-icon icon="check"></fa-icon>
+        <span class="pl-2" jhiTranslate="home.noMigration"></span>
+    </div>
+    <div class="table-responsive table-bordered" *ngIf="migrations.length">
+        <table class="table table-striped m-0">
+            <thead>
+            <tr jhiSort>
+                <th jhiSortBy="user"><span jhiTranslate="svn2GitApp.migration.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="svnGroup"><span jhiTranslate="migration-process.summary">Migration</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody infinite-scroll [infiniteScrollDistance]="0">
+            <tr *ngFor="let migration of migrations">
+                <td>{{migration.user}}</td>
+                <td>SVN({{migration.svnGroup}}{{migration.svnProject}}) to GITLAB({{migration.gitlabGroup}}{{migration.gitlabProject}})</td>
+                <td>{{migration.createdTimestamp | date:'medium'}}</td>
+                <td [ngClass]="cssClass(migration.status)" class="text-center">
+                    <fa-icon  class="pr-2"  icon="sync" spin="true" *ngIf="migration.status === 'RUNNING'"></fa-icon>
+                    <span jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}">{{migration.status}}</span>
+                </td>
+                <td class="text-center">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="button"
+                                [routerLink]="['/migration', migration.id, 'view' ]"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="pl-1 d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

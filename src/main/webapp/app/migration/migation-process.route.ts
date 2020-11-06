@@ -16,6 +16,6 @@ export const CHECK_ROUTE: Route = {
     component: MigrationCheckComponent,
     data: {
         authorities: [],
-        pageTitle: 'migration.check'
+        pageTitle: 'migration.title'
     }
 };

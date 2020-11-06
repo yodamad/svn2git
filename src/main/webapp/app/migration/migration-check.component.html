@@ -1,66 +1,115 @@
-<!-- Search panel -->
-<div>
-    <h2 id="page-heading">
-        <span jhiTranslate="home.check">Check Migration</span>
-    </h2>
-    <span jhiTranslate="global.search-by" style="margin-right: 20px">SearchBy</span>
-    <form [formGroup]="searchFormGroup">
-        <mat-form-field><input matInput type="text" placeholder="{{'svn2GitApp.migration.login' | translate}}" formControlName="userCriteria" /></mat-form-field>
-        <span jhiTranslate="global.or" style="margin: 0 20px">Or</span>
-        <mat-form-field><input matInput type="text" placeholder="{{'svn2GitApp.migration.svnGroup' | translate}}" formControlName="groupCriteria"/></mat-form-field>
-        <span jhiTranslate="global.or" style="margin: 0 20px">Or</span>
-        <mat-form-field><input matInput type="text" placeholder="{{'svn2GitApp.migration.svnProject' | translate}}" formControlName="projectCriteria"/></mat-form-field>
-        <button mat-raised-button type="submit" color="primary" style="margin-left: 20px" (click)="search()"><span jhiTranslate="global.search">Search</span></button>
-    </form>
-    <mat-divider></mat-divider>
-    <div class="table-responsive" *ngIf="migrations">
-        <table class="table table-striped">
+<div class="row">
+    <div class="col-auto pl-5 pt-4 pb-4">
+        <h3 id="page-heading ml-2">
+            <fa-icon icon="list"></fa-icon>
+            <span class="pl-2" jhiTranslate="home.check">Check migration</span>
+        </h3>
+    </div>
+    <div class="ml-auto mr-5 col-auto p-4 text-right">
+        <form [formGroup]="searchFormGroup" (submit)="page(false)">
+            <div class="ml-auto form-row">
+                <div class="col-auto" *ngIf="showResetButton()">
+                    <button type="button" class="btn" (click)="load()">
+                        <fa-icon icon="eraser" matTooltip="Reset"></fa-icon>
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <input class="form-control p-1" type="text" placeholder="{{'svn2GitApp.migration.login' | translate}}" formControlName="user"/>
+                </div>
+                <div class="col-auto">
+                    <div class="pt-2" jhiTranslate="global.or">or</div>
+                </div>
+                <div class="col-auto">
+                    <input class="form-control p-1" type="text" placeholder="{{'svn2GitApp.migration.svnGroup' | translate}}" formControlName="group"/>
+                </div>
+                <div class="col-auto">
+                    <div class="pt-2" jhiTranslate="global.or">or</div>
+                </div>
+                <div class="col-auto">
+                    <input class="form-control p-1" type="text" placeholder="{{'svn2GitApp.migration.svnProject' | translate}}" formControlName="project"/>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" (click)="page(false)">
+                        <fa-icon icon="search"></fa-icon>
+                        <span class="pl-1" jhiTranslate="global.search">Search</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row pt-3 pl-5 pr-5">
+    <div class="col-md-12 p-3 text-center" *ngIf="!migrations || !migrations.length">
+        <fa-icon icon="ban"></fa-icon>
+        <span class="pl-2" jhiTranslate="global.no-result"></span>
+    </div>
+    <div class="table-responsive table-bordered" *ngIf="migrations && migrations.length">
+        <table class="table table-striped m-0">
+            <thead>
+            <tr jhiSort>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.date">Date</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.user">User</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.svnGroup">Svn Group</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.svnProject">Svn Project</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.gitlabGroup">Gitlab Group</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.gitlabProject">Gitlab Project</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.history">Subversion History</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span></th>
+                <th class="text-center"><span jhiTranslate="svn2GitApp.migration.status">Status</span></th>
+                <th class="text-center"></th>
+            </tr>
+            </thead>
             <tbody infinite-scroll [infiniteScrollDistance]="0">
             <tr *ngFor="let migration of migrations">
-                <td class="text-right">
+                <td class="text-center">
+                    {{migration.createdTimestamp | date:'dd/MM/yy HH:mm'}}<br />
+                    (#{{migration.id}})
+                </td>
+                <td class="text-center">{{migration.user}}</td>
+                <td class="text-center">{{migration.svnGroup}}</td>
+                <td class="text-center">{{migration.svnProject}}</td>
+                <td class="text-center">{{migration.gitlabGroup}}</td>
+                <td class="text-center">{{migration.gitlabProject}}</td>
+                <td class="text-center">{{migration.svnHistory}}</td>
+                <td class="text-center">{{migration.forbiddenFileExtensions}}</td>
+                <td [ngClass]="cssClass(migration.status)" class="text-center">
+                    <div class="p-2" *ngIf="migration.status === 'RUNNING'">
+                        <fa-icon icon="sync" spin="true"></fa-icon>
+                    </div>
+                    <div class="mb-2" jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}">
+                        {{migration.status}}
+                    </div>
+                    <button type="button" class="btn btn-warning btn-sm m-2"
+                            (click)="retry(migration.id)" *ngIf="migration.status == 'FAILED'">
+                        <fa-icon [icon]="'sync'"></fa-icon>
+                        <span class="pl-1 d-none d-md-inline" jhiTranslate="entity.action.retry">Retry</span>
+                    </button>
+                </td>
+                <td class="text-center">
                     <div class="btn-group flex-btn-group-container">
-                        <button type="submit"
+                        <button type="button"
                                 [routerLink]="['/migration', migration.id, 'view' ]"
-                                class="btn btn-info btn-sm">
+                                class="btn btn-primary btn-sm m-2">
                             <fa-icon [icon]="'eye'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
-                        </button>
-                        <button type="submit" class="btn btn-danger btn-sm"
-                                (click)="retry(migration.id)" *ngIf="migration.status == 'FAILED'">
-                            <fa-icon [icon]="'sync'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.retry">Retry</span>
+                            <span class="pl-1 d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
                         </button>
                     </div>
                 </td>
-                <td>{{migration.id}}</td>
-                <td>{{migration.svnGroup}}</td>
-                <td>{{migration.svnProject}}</td>
-                <td>{{migration.user}}</td>
-                <td>{{migration.createdTimestamp | date:'medium'}}</td>
-                <td>{{migration.gitlabGroup}}</td>
-                <td>{{migration.gitlabProject}}</td>
-                <td jhiTranslate="{{'svn2GitApp.StatusEnum.' + migration.status}}" [ngClass]="cssClass(migration.status)">{{migration.status}}</td>
-                <td>{{migration.maxFileSize}}</td>
-                <td>{{migration.svnHistory}}</td>
-                <td style="width: 200px; word-break: break-word;">{{migration.forbiddenFileExtensions}}</td>
             </tr>
             </tbody>
-            <thead>
-            <tr jhiSort>
-                <th></th>
-                <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="svnGroup"><span jhiTranslate="svn2GitApp.migration.svnGroup">Svn Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="svnProject"><span jhiTranslate="svn2GitApp.migration.svnProject">Svn Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="user"><span jhiTranslate="svn2GitApp.migration.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="date"><span jhiTranslate="svn2GitApp.migration.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="gitlabGroup"><span jhiTranslate="svn2GitApp.migration.gitlabGroup">Gitlab Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="gitlabProject"><span jhiTranslate="svn2GitApp.migration.gitlabProject">Gitlab Project</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="status"><span jhiTranslate="svn2GitApp.migration.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="maxFileSize"><span jhiTranslate="svn2GitApp.migration.maxFileSize">Max File Size</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="svnHistory"><span jhiTranslate="svn2GitApp.migration.history">Subversion History</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="forbiddenFileExtensions"><span jhiTranslate="svn2GitApp.migration.forbiddenFileExtensions">Forbidden File Extensions</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            </tr>
-            </thead>
         </table>
+        <div class="float-left p-2 pl-3">
+            <button type="button" class="btn btn-light" (click)="exportToCsv()">
+                <fa-icon icon="file-csv"></fa-icon>
+                <span class="pl-1 d-none d-md-inline" jhiTranslate="entity.action.download">Download</span>
+            </button>
+        </div>
+        <mat-paginator
+            [pageIndex]="searchFormGroup.controls['pageIndex'].value"
+            [pageSize]="searchFormGroup.controls['pageSize'].value"
+            [pageSizeOptions]="pageSizeOptions"
+            [length]="length"
+            (page)="page($event)">
+        </mat-paginator>
     </div>
 </div>

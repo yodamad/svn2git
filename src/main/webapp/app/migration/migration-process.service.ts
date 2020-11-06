@@ -4,6 +4,7 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
+import { MigrationFilter } from 'app/shared/model/migration-filter.model';
 
 type EntityResponseType = HttpResponse<boolean>;
 type EntityStructureResponseType = HttpResponse<SvnStructure>;
@@ -32,9 +33,11 @@ export class MigrationProcessService {
             .pipe(map((res: EntityResponseType) => res));
     }
 
-    checkGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
-        const gitlabInfo = new GitlabInfo(url, token, name);
-        return this.http.post<Boolean>(`${this.groupUrl}`, gitlabInfo, { observe: 'response' }).pipe(map((res: EntityResponseType) => res));
+    checkGroup(name: string, userName: string, url: string, token?: string): Observable<EntityResponseType> {
+        const gitlabInfo = new GitlabInfo(url, token);
+        return this.http
+            .post<Boolean>(`${this.groupUrl}/${name}/members/${userName}`, gitlabInfo, { observe: 'response' })
+            .pipe(map((res: EntityResponseType) => res));
     }
 
     createGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
@@ -57,39 +60,27 @@ export class MigrationProcessService {
             .pipe(map((res: MigrationArrayResponseType) => res));
     }
 
-    findLastMigrations(lastNum: number): Observable<MigrationArrayResponseType> {
+    findMigrations(filter: MigrationFilter): Observable<MigrationArrayResponseType> {
         let params = new HttpParams();
-        params = params.append('page', '0');
-        params = params.append('size', (lastNum as any) as string);
+        params = params.append('page', filter.pageIndex.toString());
+        params = params.append('size', filter.pageSize.toString());
         params = params.append('sort', 'id,desc');
-        return this.http
-            .get<IMigration[]>(`${this.migrationUrl}`, { observe: 'response', params })
-            .pipe(map((res: MigrationArrayResponseType) => res));
-    }
-
-    findMigrationByUser(user: string): Observable<MigrationArrayResponseType> {
-        return this.http
-            .get<IMigration[]>(`${this.userMigrationUrl}${user}`, { observe: 'response' })
-            .pipe(map((res: MigrationArrayResponseType) => res));
-    }
-
-    findMigrationByGroup(group: string): Observable<MigrationArrayResponseType> {
-        return this.http
-            .get<IMigration[]>(`${this.groupMigrationUrl}${group}`, { observe: 'response' })
-            .pipe(map((res: MigrationArrayResponseType) => res));
-    }
-
-    findMigrationByProject(project: string): Observable<MigrationArrayResponseType> {
-        const elements: string[] = project.split('/');
-
-        return this.http
-            .get<IMigration[]>(`${this.projectMigrationUrl}${elements[elements.length - 1]}`, { observe: 'response' })
-            .pipe(map((res: MigrationArrayResponseType) => res));
+        let url = this.migrationUrl;
+        if (filter.user.length) {
+            url = this.userMigrationUrl + filter.user;
+        }
+        if (filter.group.length) {
+            url = this.groupMigrationUrl + filter.group;
+        }
+        if (filter.project.length) {
+            url = this.projectMigrationUrl + filter.project;
+        }
+        return this.http.get<IMigration[]>(`${url}`, { observe: 'response', params });
     }
 }
 
 class GitlabInfo {
-    constructor(public url: string, public token: string, public additionalData = '') {}
+    constructor(public url: string, public token: string) {}
 }
 
 class SvnInfo {

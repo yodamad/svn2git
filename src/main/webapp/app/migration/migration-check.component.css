@@ -10,3 +10,13 @@
     margin-right: auto;
     width: 70%;
 }
+
+td {
+    max-width: 200px;
+    word-break: break-word;
+    font-size: 0.85em;
+}
+
+mat-paginator {
+    user-select: none;
+}

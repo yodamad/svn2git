@@ -52,7 +52,8 @@ public class SimpleRepoTests {
     @After
     public void cleanGitlab() throws GitLabApiException {
         Optional<Project> project = GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
-        GITLAB_API.getProjectApi().deleteProject(project.get().getId());
+        if (project.isPresent()) GITLAB_API.getProjectApi().deleteProject(project.get().getId());
+        GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
     }
 
     @Test

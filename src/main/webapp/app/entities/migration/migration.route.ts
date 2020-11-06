@@ -7,10 +7,10 @@ import { map } from 'rxjs/operators';
 import { Migration } from 'app/shared/model/migration.model';
 import { MigrationService } from './migration.service';
 import { MigrationComponent } from './migration.component';
-import { MigrationDetailComponent } from './migration-detail.component';
 import { MigrationUpdateComponent } from './migration-update.component';
 import { MigrationDeletePopupComponent } from './migration-delete-dialog.component';
 import { IMigration } from 'app/shared/model/migration.model';
+import { MigrationDetailComponent } from 'app/entities/migration/migration-detail.component';
 
 @Injectable({ providedIn: 'root' })
 export class MigrationResolve implements Resolve<IMigration> {

@@ -28,8 +28,11 @@ export class StaticExtensionService {
     }
 
     query(req?: any): Observable<EntityArrayResponseType> {
-        const options = createRequestOption(req);
-        return this.http.get<IStaticExtension[]>(this.resourceUrl, { params: options, observe: 'response' });
+        let url = this.resourceUrl;
+        if (req && req.name) {
+            url += `/repository/${req.name}`;
+        }
+        return this.http.get<IStaticExtension[]>(url, { observe: 'response' });
     }
 
     delete(id: number): Observable<HttpResponse<any>> {

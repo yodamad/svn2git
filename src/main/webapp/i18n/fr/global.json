@@ -95,7 +95,10 @@
         "item-count": "Affichage {{first}} - {{second}} de {{total}} items.",
         "search": "Recherche",
         "search-by": "Recherche par",
-        "or": "ou"
+        "or": "ou",
+        "no-result": "Aucun résultat",
+        "all": "Tout",
+        "only": "Seulement"
     },
     "entity": {
         "action": {
@@ -109,7 +112,10 @@
             "open": "Ouvrir",
             "retry": "Relancer",
             "save": "Sauvegarder",
-            "view": "Voir"
+            "view": "Voir",
+            "ignore": "Ignorer",
+            "add": "Ajouter",
+            "download": "Télécharger"
         },
         "detail": {
             "field": "Champs",
@@ -142,7 +148,7 @@
         "idexists": "Une nouvelle entité {{entityName}} ne peut pas avoir d'ID !",
         "idnull": "Invalid ID"
     },
-    "footer": "Copyright - 2019",
+    "footer": "Copyright - 2020",
     "migration" : {
         "title": "Migration",
         "confirm": "Confirmer la planification de la migration",

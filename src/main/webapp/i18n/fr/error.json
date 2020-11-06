@@ -14,7 +14,7 @@
             "gitlab": {
                 "user": "Erreur de vérification de l'utilisateur Gitlab",
                 "groupauto": "Erreur de vérification du groupe Gitlab.",
-                "groupmanual": "Erreur de vérification du groupe Gitlab. Veuillez créer le groupe manuellement."
+                "groupmanual": "Erreur de vérification du groupe Gitlab. Veuillez vous assurer que le groupe existe ET que l'utilisateur est maintainer de ce groupe."
             },
             "svn": "Erreur de vérification du SVN"
         },

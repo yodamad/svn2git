@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
 import { MigrationHistory } from 'app/shared/model/migration-history.model';
 import { MigrationService } from 'app/entities/migration';
@@ -8,19 +8,71 @@ import { MigrationService } from 'app/entities/migration';
     templateUrl: 'summary-details.component.html',
     styleUrls: ['summary-card.component.css']
 })
-export class DetailsCardComponent implements OnInit {
-    @Input() migration: IMigration;
+export class DetailsCardComponent implements OnInit, OnDestroy {
+    // Migration history refresh
+    static migrationHistoryRefreshInterval = 2000; // ms
+    migrationHistoryRefreshTimer;
 
-    displayedColumns: string[] = ['step', 'status', 'date', 'data', 'executionTime'];
+    @Input() migration: IMigration;
+    @Output() migrationUpdated = new EventEmitter<void>();
+
+    displayedColumns: string[] = ['date', 'step', 'data'];
     histories: MigrationHistory[] = [];
+
+    isLoading = false;
 
     constructor(private _migrationService: MigrationService) {}
 
-    ngOnInit() {
+    /**
+     * On init
+     */
+    ngOnInit(): void {
         if (this.migration !== undefined && this.migration.id !== undefined) {
-            console.log('Loading histories for migration ' + this.migration.id);
-            this._migrationService.findHistories(this.migration.id).subscribe(res => (this.histories = res.body));
+            this.loadHistory();
+            if ([StatusEnum.WAITING, StatusEnum.RUNNING].includes(this.migration.status)) {
+                this.migrationHistoryRefreshTimer = setInterval(
+                    () => this.loadHistory(),
+                    DetailsCardComponent.migrationHistoryRefreshInterval
+                );
+            }
         }
+    }
+
+    /**
+     * On destroy
+     */
+    ngOnDestroy(): void {
+        this.stopHistoryRefresh();
+    }
+
+    /**
+     * Load history of migration
+     */
+    loadHistory(): void {
+        if (this.isLoading) {
+            // If slow database
+            return;
+        }
+        this.isLoading = true;
+        this._migrationService.findHistories(this.migration.id).subscribe(res => {
+            if (res.body) {
+                let newHistories = res.body;
+                newHistories = newHistories.reverse();
+                if (this.histories !== newHistories) {
+                    this.histories = newHistories;
+                    this.migrationUpdated.emit();
+                }
+                this.isLoading = false;
+            }
+        });
+    }
+
+    /**
+     * Stop history refresh
+     */
+    stopHistoryRefresh(): void {
+        clearInterval(this.migrationHistoryRefreshTimer);
+        this.migrationHistoryRefreshTimer = null;
     }
 
     /**
@@ -32,7 +84,7 @@ export class DetailsCardComponent implements OnInit {
             return 'cell-ok';
         }
         if (status === StatusEnum.FAILED) {
-            return 'cell-ko';
+            return 'badge-danger';
         }
         if (status === StatusEnum.RUNNING) {
             return 'badge-primary';

@@ -41,7 +41,27 @@ import {
     faTasks,
     faHome,
     faCheck,
-    faCheckDouble
+    faCheckDouble,
+    faCircleNotch,
+    faInfoCircle,
+    faCaretRight,
+    faMinus,
+    faLongArrowAltRight,
+    faPlay,
+    faCheckCircle,
+    faWeightHanging,
+    faHistory,
+    faCodeBranch,
+    faTag,
+    faCircle,
+    faDotCircle,
+    faCog,
+    faExclamationCircle,
+    faPause,
+    faForward,
+    faEllipsisH,
+    faEraser,
+    faFileCsv
 } from '@fortawesome/free-solid-svg-icons';
 
 // Adds the SVG icon to the library so you can use it in your page
@@ -81,5 +101,25 @@ library.add(faTrashAlt);
 library.add(faAsterisk);
 library.add(faCheck);
 library.add(faCheckDouble);
+library.add(faCircleNotch);
+library.add(faInfoCircle);
+library.add(faCaretRight);
+library.add(faMinus);
+library.add(faLongArrowAltRight);
+library.add(faPlay);
+library.add(faCheckCircle);
+library.add(faWeightHanging);
+library.add(faHistory);
+library.add(faCodeBranch);
+library.add(faTag);
+library.add(faCircle);
+library.add(faDotCircle);
+library.add(faCog);
+library.add(faExclamationCircle);
+library.add(faPause);
+library.add(faForward);
+library.add(faEllipsisH);
+library.add(faEraser);
+library.add(faFileCsv);
 
 // jhipster-needle-add-element-to-vendor - JHipster will add new menu items here

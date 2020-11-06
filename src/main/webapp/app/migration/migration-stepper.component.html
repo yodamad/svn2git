@@ -2,44 +2,118 @@
     <!-- Check Gitlab account step -->
     <mat-step [stepControl]="gitlabFormGroup">
         <form [formGroup]="gitlabFormGroup">
-            <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Create your Gitlab account</span></ng-template>
-            <div style="margin-bottom: 10px;" >
-                <span style="width:250px" jhiTranslate="migration-process.gitlab.use.default">Use default URL and User</span>
-                <mat-checkbox [checked]="useDefaultGitlab" (change)="reverseGitlab()" [disabled]="gitlabCredsOption === 'required'"></mat-checkbox>
+            <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Check your Gitlab account</span></ng-template>
+            <div class="row">
+                <div class="col-md-12 pt-4 pb-4 pl-5">
+                    <b><span jhiTranslate="migration-process.gitlab.configuration">Gitlab configuration</span></b>
+                </div>
             </div>
-            <div>
-                <mat-form-field style="width:250px">
-                    <input matInput placeholder="{{'migration-process.gitlab.url' | translate}}" [disabled]="useDefaultGitlab" formControlName="gitlabURL" required>
-                </mat-form-field>
-                <mat-form-field *ngIf="!useDefaultGitlab">
-                    <input matInput placeholder="{{'migration-process.gitlab.token' | translate}}" formControlName="gitlabToken" [required]="gitlabCredsOption === 'required'">
-                </mat-form-field>
+            <div class="row">
+                <div class="col-md-12 col-xs-12 p-4">
+                    <div class="row">
+                        <div class="col-md-2 pl-4 pt-3 text-center">
+                            <span jhiTranslate="migration-process.gitlab.url">URL</span>
+                        </div>
+                        <div class="col-md-2 pt-3">
+                            <mat-slide-toggle (click)="reverseGitlab()" [disabled]="gitlabCredsOption === 'required'">
+                                <span class="pl-2" *ngIf="useDefaultGitlab" jhiTranslate="migration-process.gitlab.url-default">
+                                    Default
+                                </span>
+                                <span class="pl-2" *ngIf="!useDefaultGitlab" jhiTranslate="migration-process.gitlab.url-custom">
+                                    Custom
+                                </span>
+                            </mat-slide-toggle>
+                        </div>
+                        <div class="col-md-8 p-0">
+                            <mat-form-field style="width: 300px">
+                                <input matInput formControlName="gitlabURL" [disabled]="useDefaultGitlab">
+                            </mat-form-field>
+                            <fa-icon icon="info-circle" matTooltip="{{'migration-process.gitlab.url-help' | translate}}"></fa-icon>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <div class="row" *ngIf="!useDefaultGitlab">
+                <div class="col-md-12 col-xs-12 pb-4">
+                    <div class="row">
+                        <div class="offset-md-4 col-md-8 p-0">
+                            <mat-form-field style="width: 300px">
+                                <input matInput formControlName="gitlabToken" placeholder="{{'migration-process.gitlab.token' | translate}}" [disabled]="useDefaultGitlab" [required]="gitlabCredsOption === 'required'">
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 col-xs-12 p-4">
+                    <div class="row">
+                        <div class="col-md-2 pl-4 pt-3 pr-2 text-center">
+                            <span jhiTranslate="migration-process.gitlab.credentials">
+                                Credentials
+                            </span>
+                        </div>
+                        <div class="col-md-10">
+                            <mat-form-field *ngIf="svnCredsOption === 'required'" style="width:350px">
+                                <input matInput placeholder="{{'migration-process.gitlab.user' | translate}}" formControlName="gitlabUser" required>
+                            </mat-form-field>
+                            <button type="button" mat-raised-button (click)="checkGitlabUser()" class="btn btn-primary"
+                                    [ngClass]="{'btn-danger': gitlabUserKO, 'btn-success': !gitlabUserKO && gitlabUserKO !== null}"
+                                    [disabled]="checkingGitlabUser">
+                                <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabUser">Check</span>
+                                <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabUser">Checking</span>
+                            </button>
+                            <mat-error *ngIf="!gitlabUserKO && gitlabUserKO !== null">
+                                <fa-icon icon="check"></fa-icon>
+                                <span class="pl-2" jhiTranslate="migration-process.gitlab.account-found">Account found in Gitlab</span>
+                            </mat-error>
+                            <mat-error *ngIf="gitlabUserKO">
+                                <fa-icon icon="ban"></fa-icon>
+                                <span class="pl-2" jhiTranslate="migration-process.gitlab.account-unknown">Account not found in Gitlab you need to log in first</span>
+                            </mat-error>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" *ngIf="!gitlabUserKO && gitlabUserKO !== null">
+                <div class="col-md-12 col-xs-12 p-4">
+                    <div class="row">
+                        <div class="col-md-2 pl-4 pt-3 pr-2 text-center">
+                            <span jhiTranslate="migration-process.gitlab.group">
+                                Group
+                            </span>
+                            <fa-icon icon="info-circle" matTooltip="{{'migration-process.gitlab.group-help' | translate}}"></fa-icon>
+                        </div>
+                        <div class="col-md-10">
+                            <mat-form-field style="width:350px">
+                                <input matInput placeholder="{{'migration-process.gitlab.group' | translate}}" formControlName="gitlabGroup" required>
+                            </mat-form-field>
+                            <button type="button" mat-raised-button (click)="checkGitlabGroup()" class="btn btn-primary"
+                                    [ngClass]="{'btn-danger': gitlabGroupKO, 'btn-success': !gitlabGroupKO && gitlabGroupKO !== null}"
+                                    [disabled]="checkingGitlabGroup">
+                                <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabGroup">Check</span>
+                                <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabGroup">Checking</span>
+                            </button>
+                            <button type="button" mat-raised-button (click)="createGitlabGroup()" *ngIf="forceGitlabGroupCreation" class="warning">
+                                <span jhiTranslate="migration-process.create" *ngIf="!creatingGitlabGroup">Create it</span>
+                                <span jhiTranslate="migration-process.creating" *ngIf="creatingGitlabGroup">Creating</span>
+                            </button>
+                            <mat-error *ngIf="!gitlabGroupKO && gitlabGroupKO !== null">
+                                <fa-icon icon="check"></fa-icon>
+                                <span class="pl-2" jhiTranslate="migration-process.gitlab.group-found">Group found</span>
+                            </mat-error>
+                            <mat-error *ngIf="gitlabGroupKO">
+                                <fa-icon icon="ban"></fa-icon>
+                                <span class="pl-2" jhiTranslate="migration-process.gitlab.group-unknown">Group not found or account not a member of it</span>
+                            </mat-error>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <mat-divider class="mb-4"></mat-divider>
             <div>
-                <mat-form-field style="width:250px">
-                    <input matInput placeholder="{{'migration-process.gitlab.user' | translate}}" formControlName="gitlabUser" required>
-                </mat-form-field>
-                <button type="submit" mat-raised-button (click)="checkGitlabUser()" [ngClass]="cssClass(gitlabUserKO)" [disabled]="checkingGitlabUser">
-                    <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabUser">Check</span>
-                    <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabUser">Checking</span>
+                <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO !== false || gitlabUserKO !== false">
+                    <i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span>
                 </button>
-            </div>
-            <div>
-                <mat-form-field style="width:250px">
-                    <input matInput placeholder="{{'migration-process.gitlab.group' | translate}}" formControlName="gitlabGroup" required>
-                </mat-form-field>
-                <button type="button" mat-raised-button (click)="checkGitlabGroup()" [ngClass]="cssClass(gitlabGroupKO)" [disabled]="checkingGitlabGroup">
-                    <span jhiTranslate="migration-process.check" *ngIf="!checkingGitlabGroup">Check</span>
-                    <span jhiTranslate="migration-process.checking" *ngIf="checkingGitlabGroup">Checking</span>
-                </button>
-                <button type="button" mat-raised-button (click)="createGitlabGroup()" *ngIf="forceGitlabGroupCreation" class="warning">
-                    <span jhiTranslate="migration-process.create" *ngIf="!creatingGitlabGroup">Create it</span>
-                    <span jhiTranslate="migration-process.creating" *ngIf="creatingGitlabGroup">Creating</span>
-                </button>
-            </div>
-            <mat-divider style="margin-bottom: 10px"></mat-divider>
-            <div>
-                <button mat-stroked-button matStepperNext [disabled]="gitlabGroupKO || gitlabUserKO"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
     </mat-step>
@@ -48,282 +122,344 @@
     <mat-step [stepControl]="svnFormGroup">
         <form [formGroup]="svnFormGroup">
             <ng-template matStepLabel><span jhiTranslate="migration-process.svn.check.repository">Check your SVN repository</span></ng-template>
-            <div style="margin-bottom: 10px">
-                <span jhiTranslate="migration-process.svn.use.default">Use default URL</span>
-                <mat-checkbox [checked]="useDefaultSvn" (change)="reverseSvn()" [disabled]="!svnUrlModifiable"></mat-checkbox>
-            </div>
-            <div>
-                <mat-form-field style="width:250px">
-                    <input matInput placeholder="{{'migration-process.svn.url' | translate}}" formControlName="svnURL" [disabled]="useDefaultSvn" required="true">
-                </mat-form-field>
-                <mat-form-field *ngIf="svnCredsOption === 'required'">
-                    <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser" [required]="svnCredsOption === 'required'">
-                </mat-form-field>
-                <mat-form-field *ngIf="svnCredsOption === 'required'">
-                    <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password" [required]="svnCredsOption === 'required'">
-                </mat-form-field>
-            </div>
-            <div>
-                <mat-form-field style="width:250px">
-                    <input matInput placeholder="{{'migration-process.svn.repo.name' | translate}}" formControlName="svnRepository" required>
-                </mat-form-field>
-                <button type="button" mat-raised-button (click)="checkSvnRepository()"
-                        [ngClass]="{ko: getSvnRepoKo(), ok: !getSvnRepoKo()}" [disabled]="checkingSvnRepo">
-                    <span jhiTranslate="migration-process.check" *ngIf="!checkingSvnRepo">Check</span>
-                    <span jhiTranslate="migration-process.checking" *ngIf="checkingSvnRepo">Checking</span>
-                </button>
-            </div>
-            <div>
-                <span jhiTranslate="migration-process.svn.depth">Depth : </span>
-                <mat-form-field style="width: 35px">
-                    <input matInput type="number" formControlName="svnDepth" min="2">
-                </mat-form-field>
-            </div>
-            <hr/>
-            <div *ngIf="svnDirectories !== null && (svnDirectories.modules.length > 0 || svnDirectories.flat)">
-                <ul class="fa-ul">
-                    <li>
-                        <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                        <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
-                        <table mat-table [dataSource]="svnDirectories.modules" class="large-table">
-                            <ng-container matColumnDef="svnDir">
-                                <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
-                                <td mat-cell *matCellDef="let directory">
-                                    <span [ngClass]="svnFontStyle(directory)">{{ directory.path }}</span> (
-                                    <span *ngIf="directory.flat" jhiTranslate="migration-process.svn.no-trunk">has no trunk/tag/branches</span>
-                                    <span *ngIf="directory.layoutElements.length > 0"><span jhiTranslate="migration-process.svn.with-layout">has </span>{{ directory.layoutElements }}</span>
-                                    <span *ngIf="directory.layoutElements.length == 0 && !directory.flat" jhiTranslate="migration-process.svn.max-depth-reached"></span>
-                                    )
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="selectSvn">
-                                <th mat-header-cell *matHeaderCellDef style="width: 70px">
-                                    <mat-checkbox (change)="$event ? masterSvnToggle() : null"
-                                                  [checked]="svnSelection.hasValue() && isAllSvnSelected()"
-                                                  [indeterminate]="svnSelection.hasValue() && !isAllSvnSelected()">
-                                    </mat-checkbox>
-                                </th>
-                                <td mat-cell *matCellDef="let directory" style="width: 70px">
+                <div class="row">
+                    <div class="col-md-12 pt-4 pb-4 pl-5">
+                        <b><span jhiTranslate="migration-process.svn.configuration">Subversion configuration</span></b>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 col-xs-12 p-4">
+                        <div class="row">
+                            <div class="col-md-2 pl-4 pt-3 text-center">
+                                <span jhiTranslate="migration-process.svn.url">URL</span>
+                            </div>
+                            <div class="col-md-2 pt-3">
+                                <mat-slide-toggle (click)="reverseSvn()" [disabled]="!this.svnUrlModifiable">
+                                    <span class="pl-2" *ngIf="useDefaultSvn" jhiTranslate="migration-process.svn.url-default">
+                                        Default
+                                    </span>
+                                            <span class="pl-2" *ngIf="!useDefaultSvn" jhiTranslate="migration-process.svn.url-custom">
+                                        Custom
+                                    </span>
+                                </mat-slide-toggle>
+                            </div>
+                            <div class="col-md-8 p-0">
+                                <mat-form-field style="width: 300px">
+                                    <input matInput formControlName="svnURL" [disabled]="useDefaultSvn">
+                                </mat-form-field>
+                                <fa-icon icon="info-circle" matTooltip="{{'migration-process.svn.url-help' | translate}}"></fa-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 col-xs-12 p-4">
+                        <div class="row">
+                            <div class="col-md-2 pl-4 pt-3 pr-2 text-center">
+                                <span jhiTranslate="migration-process.svn.credentials">
+                                    Credentials
+                                </span>
+                            </div>
+                            <div class="col-md-10">
+                                <mat-form-field *ngIf="svnCredsOption === 'required'">
+                                    <input matInput placeholder="{{'migration-process.svn.user' | translate}}" formControlName="svnUser" [required]="svnCredsOption === 'required'">
+                                </mat-form-field>
+                                <mat-form-field *ngIf="svnCredsOption === 'required'">
+                                    <input matInput placeholder="{{'migration-process.svn.password' | translate}}" formControlName="svnPwd" type="password" [required]="svnCredsOption === 'required'">
+                                </mat-form-field>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 col-xs-12 pl-4">
+                        <div class="row">
+                            <div class="col-md-2 pl-4 pt-3 pr-2 text-center">
+                                <span jhiTranslate="migration-process.svn.repository">Repository</span>
+                            </div>
+                            <div class="col-md-10">
+                                <mat-form-field>
+                                    <input matInput placeholder="{{'migration-process.svn.repository' | translate}}" formControlName="svnRepository" (change)="loadExtensions()" required>
+                                </mat-form-field>
+                                <fa-icon icon="info-circle" matTooltip="{{'migration-process.svn.repository-help' | translate}}"></fa-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 col-xs-12 pl-4 pb-5">
+                        <div class="row">
+                            <div class="col-md-2 pl-4 pt-3 pr-2 text-center">
+                                <span jhiTranslate="migration-process.svn.depth">Depth (optional)</span>
+                            </div>
+                            <div class="col-md-3">
+                                <mat-form-field>
+                                    <input matInput placeholder="{{'migration-process.svn.depth' | translate}}" formControlName="svnDepth" type="number" [min]="2">
+                                </mat-form-field>
+                                <fa-icon icon="info-circle" matTooltip="{{'migration-process.svn.depth-help' | translate}}"></fa-icon>
+                            </div>
+                            <div class="col-md-7">
+                                <button type="button" class="btn" [ngClass]="{'btn-primary': !checkingSvnRepo}"
+                                        (click)="checkSvnRepository()" [disabled]="checkingSvnRepo || svnFormGroup.invalid">
+                                    <span *ngIf="!checkingSvnRepo" jhiTranslate="migration-process.svn.show-directories">Show directories</span>
+                                    <span *ngIf="checkingSvnRepo">
+                                        <fa-icon spin="true" icon="circle-notch" class="mr-2"></fa-icon>
+                                        <span jhiTranslate="migration-process.svn.loading-directories">Loading</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="svnDirectories && svnDirectories.modules && (svnDirectories.modules.length || svnDirectories.flat)">
+                    <div class="col-md-4 pb-5 text-center" *ngIf="!svnDirectories.modules.length">
+                        <div class="p-2 mb-2">
+                            <fa-icon icon="ban"></fa-icon>
+                            <span class="pl-2" jhiTranslate="migration-process.svn.no-directories">No directories found. Check the subversion configuration.</span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 pt-2 pb-4 pl-5" *ngIf="svnDirectories.modules.length">
+                        <div class="mb-5">
+                            <b><span jhiTranslate="migration-process.svn.select-directories">Directories to migrate</span></b>
+                        </div>
+                        <mat-slide-toggle class="mb-5 ml-5" (change)="onSelectionChange($event)" [disabled]="isTrunkBranchesTagsEverywhere()" hidden="false">
+                            <span class="pl-2" *ngIf="!useSvnRootFolder" jhiTranslate="migration-process.svn.only-directories">
+                                Only selection
+                            </span>
+                            <span class="pl-2" *ngIf="useSvnRootFolder" jhiTranslate="migration-process.svn.all-directories">
+                                All
+                            </span>
+                        </mat-slide-toggle>
+                        <div class="ml-5" *ngIf="!useSvnRootFolder">
+                            <div class="row" *ngFor="let directory of svnDirectories.modules">
+                                <div class="col-md-12 pb-2">
                                     <mat-checkbox (click)="$event.stopPropagation()"
                                                   (change)="svnToggle($event, directory.path)"
-                                                  [checked]="svnChecked(directory.path)"
-                                                  [disabled]="isSvnOnlyTags(directory)">
+                                                  [checked]="svnChecked(directory.path)">
+                                        <span class="pl-2">
+                                            <span [ngClass]="svnFontStyle(directory)">{{ directory.path }}</span> (
+                                            <small *ngIf="directory.flat" jhiTranslate="migration-process.svn.no-trunk">has no trunk/tag/branches</small>
+                                            <small *ngIf="directory.layoutElements.length > 0"><span jhiTranslate="migration-process.svn.with-layout">has </span>{{ directory.layoutElements }}</small>
+                                            <small *ngIf="directory.layoutElements.length == 0 && !directory.flat" jhiTranslate="migration-process.svn.max-depth-reached"></small>
+                                            )
+                                        </span>
                                     </mat-checkbox>
-                                </td>
-                            </ng-container>
-
-                            <tr mat-header-row *matHeaderRowDef="svnDisplayedColumns"></tr>
-                            <tr mat-row *matRowDef="let directory; columns: svnDisplayedColumns;"></tr>
-                        </table>
-                    </li>
-                    <li>
-                        <span class="fa-li"><fa-icon [icon]="'check'"></fa-icon></span>
-                        <span>
-                            <span jhiTranslate="migration-process.svn.root-directory">Or use root folder</span>
-                            <mat-checkbox [checked]="useSvnRootFolder" (change)="onSelectionChange($event)" [disabled]="isOneSvnOnlyTags()"></mat-checkbox>
-                        </span>
-                    </li>
-                </ul>
-            </div>
-            <mat-divider style="margin-bottom: 10px"></mat-divider>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <mat-divider class="mb-4"></mat-divider>
             <div>
-                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext (click)="historyStepSetDisabledBranchesTags()" [disabled]="getSvnRepoKo() && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperPrevious>
+                    <i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span>
+                </button>
+                <button mat-stroked-button matStepperNext [disabled]="getSvnRepoKo() && !useSvnRootFolder">
+                    <i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span>
+                </button>
             </div>
         </form>
     </mat-step>
 
     <!-- History step -->
     <mat-step [stepControl]="historyFormGroup">
-
-            <ng-template matStepLabel><span jhiTranslate="migration-process.history.options">History options</span></ng-template>
-            <ul class="fa-ul">
-                <li>
-                    <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                    <span jhiTranslate="migration-process.svn.directories">Choose directories to migrate</span> :
-                    <table mat-table [dataSource]="staticDirectories" class="large-table">
-                        <ng-container matColumnDef="svnDir">
-                            <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.directory">Directory</span></th>
-                            <td mat-cell *matCellDef="let directory">{{ directory }}</td>
-                        </ng-container>
-                        <ng-container matColumnDef="selectSvn">
-                            <th mat-header-cell *matHeaderCellDef style="width: 70px">
-                                <mat-checkbox (change)="$event ? masterHistoryToggle() : null"
-                                              [checked]="historySelection.hasValue() && isAllHistoriesSelected()"
-                                              [disabled]="noStdLayout()"
-                                              [indeterminate]="historySelection.hasValue() && !isAllHistoriesSelected()">
-                                </mat-checkbox>
-                            </th>
-                            <td mat-cell *matCellDef="let directory" style="width: 70px">
-                                <mat-checkbox (click)="$event.stopPropagation()"
-                                              (change)="$event ? historyToggle(directory) : null"
-                                              [disabled]="(noTrunk() && directory === 'trunk') || noStdLayout()"
-                                              [checked]="historyChecked(directory)">
-                                </mat-checkbox>
-                            </td>
-                        </ng-container>
-
-                        <tr mat-header-row *matHeaderRowDef="svnDisplayedColumns"></tr>
-                        <tr mat-row *matRowDef="let directory; columns: svnDisplayedColumns;"></tr>
-                    </table>
-                </li>
-                <li>
-                    <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                    <span jhiTranslate="migration-process.history.option">History</span> :
-                    <mat-radio-group [(ngModel)]="historyOption">
-                        <mat-radio-button [value]="'trunk'"><span jhiTranslate="migration-process.history.trunk-only">Trunk</span></mat-radio-button>
-                        <mat-radio-button [value]="'nothing'"><span jhiTranslate="migration-process.history.no">No History</span></mat-radio-button>
-                        <mat-radio-button [value]="'all'"><span jhiTranslate="migration-process.history.all">All History</span></mat-radio-button>
-                    </mat-radio-group>
-                </li>
-                <li>
-                    <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                    <span jhiTranslate="migration-process.svn.sources-in-folder">Sources are in root folder (no branches, tags, trunk...)</span>
-                    <mat-checkbox (change)="flatManager()" [checked]="flatRepo"></mat-checkbox>
-                </li>
-                <form [formGroup]="historyFormGroup">
-                    <li>
-                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
-                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                            <input matInput placeholder="{{'migration-process.history.branches-to-migrate-placeholder' | translate}}" formControlName="branchesToMigrate">
-                        </mat-form-field>
-                    </li>
-                    <li>
-                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
-                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                            <input matInput placeholder="{{'migration-process.history.tags-to-migrate-placeholder' | translate}}" formControlName="tagsToMigrate">
-                        </mat-form-field>
-                    </li>
-                    <li>
-                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
-                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                            <input matInput placeholder="{{'migration-process.history.branch-for-master' | translate}}" formControlName="branchForMaster">
-                        </mat-form-field>
-                    </li>
-                    <li>
-                        <mat-form-field *ngIf="true" class="tagsbranches-to-migrate">
-                            <span class="fa-li"><fa-icon [icon]="'check-double'"></fa-icon></span>
-                            <input matInput placeholder="{{'migration-process.history.start-revision' | translate}}" formControlName="svnRevision">
-                        </mat-form-field>
-                    </li>
-                </form>
-            </ul>
-            <mat-divider style="margin-bottom: 10px"></mat-divider>
-            <div>
-                <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext [disabled]="getSvnRepoKo() && !useSvnRootFolder"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+        <ng-template matStepLabel><span jhiTranslate="migration-process.history.options">History options</span></ng-template>
+        <div class="row">
+            <div class="offset-md-1 col-md-11 p-4">
+                <b><span jhiTranslate="migration-process.history.directories">Directories planned in migration</span></b>
             </div>
+        </div>
+        <div *ngFor="let directory of staticDirectories">
+            <div class="row">
+                <div class="col-md-2 col-xs-12 text-right">
+                    <button type="button"
+                            class="btn btn-xs ml-5"
+                            (click)="historyToggle(directory)"
+                            [ngClass]="{'btn-outline-primary': !historyChecked(directory), 'btn-outline-danger': historyChecked(directory)}"
+                            *ngIf="directory !== 'trunk'">
+                        <fa-icon [icon]="historyChecked(directory) ? 'ban' : 'plus'"></fa-icon>
+                        <span class="ml-2" jhiTranslate="entity.action.ignore" *ngIf="historyChecked(directory)">Ignore</span>
+                        <span class="ml-2" jhiTranslate="entity.action.add" *ngIf="!historyChecked(directory)">Add</span>
+                    </button>
+                </div>
+                <div class="col-md-2 col-xs-12">
+                    <div class="pt-2">
+                        <fa-icon [icon]="historyChecked(directory) ? 'check' : 'times'"></fa-icon>
+                        <span class="ml-1">{{ directory }}</span>
+                    </div>
+                </div>
+                <div class="col-md-8 col-xs-12">
+                    <div class="row">
+                        <div class="col-md-2 pt-2">
+                            <mat-slide-toggle (click)="toggleFilter(directory + 'ToMigrate')" [(ngModel)]="enableDirectoryFilter[directory + 'ToMigrate']" *ngIf="directory !== 'trunk' && historyChecked(directory)">
+                                <span class="pl-2" *ngIf="!enableDirectoryFilter[directory + 'ToMigrate']" jhiTranslate="global.all">
+                                    All
+                                </span>
+                                <span class="pl-2" *ngIf="enableDirectoryFilter[directory + 'ToMigrate']" jhiTranslate="global.only">
+                                    Only
+                                </span>
+                            </mat-slide-toggle>
+                        </div>
+                        <div class="col-md-4">
+                            <form [formGroup]="historyFormGroup" *ngIf="directory !== 'trunk' && enableDirectoryFilter[directory + 'ToMigrate'] && historyChecked(directory)">
+                                <input [placeholder]="('migration-process.history.' + (directory === 'branches' ? 'branches-to-migrate' : 'tags-to-migrate')) | translate"
+                                       [formControlName]="directory + 'ToMigrate'"
+                                       class="form-control p-1" type="text"
+                                       *ngIf="historyChecked(directory)">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 pt-2 pb-2">
+                    <mat-divider></mat-divider>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 p-4">
+                <div class="pt-4 pl-5 pb-5">
+                    <mat-slide-toggle [(ngModel)]="historyOption" [disabled]="disableMigrateIndividualCommits()">
+                        <span class="pl-2" jhiTranslate="migration-process.history.no-migrate-individual-commits" *ngIf="!historyOption">
+                            All commits are not migrated
+                        </span>
+                        <span class="pl-2" jhiTranslate="migration-process.history.migrate-individual-commits" *ngIf="historyOption">
+                            Migrate all commits
+                        </span>
+                    </mat-slide-toggle>
+                </div>
+            </div>
+        </div>
+        <mat-divider class="mb-4"></mat-divider>
+        <div>
+            <button mat-stroked-button matStepperPrevious>
+                <i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span>
+            </button>
+            <button mat-stroked-button matStepperNext [disabled]="getSvnRepoKo() && !useSvnRootFolder">
+                <i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span>
+            </button>
+        </div>
     </mat-step>
 
     <!-- Mapping options step -->
     <mat-step [stepControl]="mappingFormGroup">
+        <ng-template matStepLabel><span jhiTranslate="migration-process.mapping">Mapping</span></ng-template>
         <form [formGroup]="mappingFormGroup">
-            <table mat-table [dataSource]="mappings" class="large-table">
-                <ng-container matColumnDef="svn">
-                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.svn.directory">SVN directory</span></th>
-                    <td mat-cell *matCellDef="let mapping">{{ mapping.svnDirectory }}</td>
-                </ng-container>
-                <ng-container matColumnDef="regex">
-                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.regex">Regex</span></th>
-                    <td mat-cell *matCellDef="let mapping">{{ mapping.regex }}</td>
-                </ng-container>
-                <ng-container matColumnDef="git">
-                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.git.directory">Git directory</span></th>
-                    <td mat-cell *matCellDef="let mapping">{{ mapping.gitDirectory }}</td>
-                </ng-container>
-                <ng-container matColumnDef="selectMapping">
-                    <th mat-header-cell *matHeaderCellDef>
-                       <mat-checkbox (change)="$event ? masterToggleMapping() : null"
-                                      [checked]="selectionMapping.hasValue() && isAllSelectedMapping()"
-                                      [indeterminate]="selectionMapping.hasValue() && !isAllSelectedMapping()">
-                        </mat-checkbox> <span jhiTranslate="migration-process.apply-mapping">Git directory</span>
-                    </th>
-                    <td mat-cell *matCellDef="let row">
-                        <mat-checkbox *ngIf="row.svnDirectory !== undefined"
-                            (click)="$event.stopPropagation()"
-                            (change)="$event ? toggleMappingEntryType(row) : null"
-                            [checked]="selectionMapping.isSelected(row)"
-                            [disabled]="(row.isStatic && !overrideStaticMappings) || isOriginSvnDeleteDirectory(row)">
-                        </mat-checkbox>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="svnDirectoryDelete">
-                    <th mat-header-cell *matHeaderCellDef>
-                        <mat-checkbox (change)="$event ? masterToggleSvnDirectoryDelete() : null"
-                                      [checked]="selectionSvnDirectoryDelete.hasValue() && isAllSelectedSvnDirectoryDelete()"
-                                      [indeterminate]="selectionSvnDirectoryDelete.hasValue() && !isAllSelectedSvnDirectoryDelete()">
-                        </mat-checkbox> <span jhiTranslate="migration-process.svn-directory-delete">Not Migrated From SVN</span>
-                    </th>
-                    <td mat-cell *matCellDef="let row">
-                        <mat-checkbox *ngIf="row.svnDirectory !== undefined"
-                                      (click)="$event.stopPropagation()"
-                                      (change)="$event ? toggleSvnDirectoryDeleteType(row) : null"
-                                      [checked]="selectionSvnDirectoryDelete.isSelected(row)"
-                                      [disabled]="(row.isStatic && !overrideStaticMappings)">
-                        </mat-checkbox>
-                        <mat-icon *ngIf="row.svnDirectory === undefined" class="add-icon" (click)="addMapping()">add</mat-icon>
-                    </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            </table>
-
-            <ng-template matStepLabel><span jhiTranslate="migration-process.mapping">Mapping</span></ng-template>
+            <div class="row">
+                <div class="offset-md-1 col-md-10 pt-4 pb-4">
+                    <jhi-summary-mappings
+                        [mappings]="mappings"
+                        [isReadOnly]="false"
+                        (deleteMapping)="deleteMapping($event)"
+                        (toggleMapping)="toggleMapping($event)"
+                    ></jhi-summary-mappings>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 pt-1 pb-5 text-center">
+                    <button type="button" mat-raised-button (click)="addMapping()" class="btn btn-primary">
+                        <fa-icon icon="plus"></fa-icon>
+                        <span jhiTranslate="entity.action.add">Add</span>
+                    </button>
+                </div>
+            </div>
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
                 <button mat-stroked-button matStepperNext><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <fa-icon icon="info-circle" class="pl-2" matTooltip="{{'migration-process.mapping-help' | translate}}"></fa-icon>
             </div>
         </form>
     </mat-step>
 
     <!-- Cleaning options step -->
     <mat-step [stepControl]="cleaningFormGroup">
-        <form [formGroup]="cleaningFormGroup">
-            <br/>
-            <div><b><span jhiTranslate="migration-process.file.size">Max size authorized for a file</span></b>:</div>
-            <mat-form-field style="max-width: 60px;">
-                <input matInput type="number" formControlName="fileMaxSize" min="1" />
-            </mat-form-field>
-            <mat-select (selectionChange)="fileSizeUnit($event)" style="max-width: 35px" value="M">
-                <mat-option value="K">K</mat-option>
-                <mat-option value="M">M</mat-option>
-                <mat-option value="G">G</mat-option>
-            </mat-select>
-            <br/>
-            <mat-divider></mat-divider>
-            <b><span jhiTranslate="migration-process.file.extensions">File extensions to clean</span></b>:
-            <table mat-table [dataSource]="staticExtensions" class="large-table">
-                <ng-container matColumnDef="extensionPattern">
-                    <th mat-header-cell *matHeaderCellDef><span jhiTranslate="migration-process.pattern">Pattern</span></th>
-                    <td mat-cell *matCellDef="let extension">{{ extension.description !== null ? extension.description : extension.value }}</td>
-                </ng-container>
-                <ng-container matColumnDef="selectExtension">
-                    <th mat-header-cell *matHeaderCellDef>
-                        <mat-checkbox (change)="$event ? masterExtensionToggle() : null"
-                                      [checked]="extensionSelection.hasValue() && isAllExtensionSelected()"
-                                      [indeterminate]="extensionSelection.hasValue() && !isAllExtensionSelected()">
-                        </mat-checkbox>
-                    </th>
-                    <td mat-cell *matCellDef="let extension">
-                        <mat-checkbox (click)="$event.stopPropagation()"
-                                      (change)="extensionToggle($event, extension)"
-                                      [checked]="extensionSelection.isSelected(extension)"
-                                      [disabled]="extension.isStatic && !overrideStaticExtensions" >
-                        </mat-checkbox>
-                    </td>
-                </ng-container>
+        <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
 
-                <tr mat-header-row *matHeaderRowDef="extensionDisplayedColumns"></tr>
-                <tr mat-row *matRowDef="let extension; columns: extensionDisplayedColumns;"></tr>
-            </table>
-            <div>
-                <input matInput placeholder="{{'migration-process.extension.add' | translate}}" type="text" style="width: 250px; height: 40px; margin-bottom: 10px" [formControl]="addExtentionFormControl">
-                <button mat-mini-fab color="primary" style="margin-top: -10px; margin-bottom: 10px;" (click)="addExtension()">+</button>
+        <form [formGroup]="cleaningFormGroup">
+
+            <div class="row">
+                <div class="col-md-12 col-xs-12 p-4">
+                    <div class="row">
+                        <div class="col-md-2 pl-4 pt-3 text-center">
+                            <span jhiTranslate="migration-process.cleaning.empty-folder-config">Empty Folder Configuration</span>
+                        </div>
+                        <div class="col-md-10 pt-3">
+                            <mat-slide-toggle (click)="togglePreserveEmptyDirs()">
+                                <span class="pl-2" *ngIf="!preserveEmptyDirs" jhiTranslate="migration-process.cleaning.not-preserve-empty-dirs">
+                                    Empty Folders NOT Migrated
+                                </span>
+                                <span class="pl-2" *ngIf="preserveEmptyDirs" jhiTranslate="migration-process.cleaning.preserve-empty-dirs">
+                                    Empty Folders Migrated
+                                </span>
+                            </mat-slide-toggle>
+                            <fa-icon icon="info-circle" class="pl-2"
+                                     matTooltip="{{'migration-process.cleaning.preserve-empty-dirs-help' | translate}}">
+                            </fa-icon>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
+            <div class="row">
+                <div class="col-md-12 col-xs-12 p-4">
+                    <div class="row pb-3">
+                        <div class="col-md-2 pl-4 pt-3 text-center">
+                            <span jhiTranslate="migration-process.file.size">Max size authorized for a file</span>
+                        </div>
+                        <div class="col-md-10 pt-3 pl-3">
+                            {{ cleaningFormGroup.value['fileMaxSize'] }} {{ fileUnit }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-2 pl-4 pt-4 text-center">
+                    <span jhiTranslate="migration-process.file.extensions">File extensions to clean</span>
+                    <fa-icon class="pl-2" icon="info-circle" matTooltip="{{'migration-process.extension.specific' | translate}}" *ngIf="!isDefaultExtensions()"></fa-icon>
+                </div>
+                <div class="col-md-3 pt-3 pb-4">
+                    <table mat-table [dataSource]="staticExtensions" class="large-table table-responsive">
+                        <ng-container matColumnDef="extensionPattern">
+                            <td mat-cell *matCellDef="let extension">
+                                <div class="row">
+                                    <div class="col-8">
+                                        {{ extension.description !== null ? extension.description : extension.value }}
+                                    </div>
+                                    <div class="col-4">
+                                        <mat-checkbox (click)="$event.stopPropagation()"
+                                                      (change)="extensionToggle($event, extension)"
+                                                      [checked]="extensionSelection.isSelected(extension)"
+                                                      [disabled]="extension.isStatic && !overrideStaticExtensions" >
+                                        </mat-checkbox>
+                                    </div>
+                                </div>
+                            </td>
+                        </ng-container>
+                        <tr mat-row *matRowDef="let extension; columns: extensionDisplayedColumns;"></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-2 pl-4 pt-3 text-center">
+                    <span jhiTranslate="migration-process.extension.custom">Custom extension</span>
+                </div>
+                <div class="col-md-3 pb-4">
+                    <div class="row pb-3">
+                        <div class="col-md-10">
+                            <mat-form-field>
+                                <input matInput placeholder="{{'migration-process.extension.placeholder' | translate}}" type="text"  [formControl]="addExtentionFormControl">
+                            </mat-form-field>
+                            <button type="button" mat-raised-button (click)="addExtension()" class="btn btn-primary">
+                                <fa-icon icon="plus"></fa-icon>
+                                <span class="ml-2" jhiTranslate="entity.action.add">Add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
@@ -335,40 +471,13 @@
     <!-- Summary step -->
     <mat-step>
         <ng-template matStepLabel><span jhiTranslate="migration-process.ready">Ready</span></ng-template>
-        <mat-grid-list cols="2" rowHeight="700px">
-            <mat-grid-tile>
-                <mat-card class="summary-card">
-                    <mat-card-header class="card-header">
-                        <mat-card-title class="my-header">{{svnFormGroup.controls['svnRepository'].value | uppercase}}</mat-card-title>
-                        <mat-card-subtitle style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-subtitle>
-                    </mat-card-header>
-                    <jhi-summary-card [migration]="mig"></jhi-summary-card>
-                    <mat-card-actions class="center-block">
-                        <button mat-stroked-button (click)="go()" class="ok" *ngIf="!migrationStarted"><i class="material-icons">power_settings_new</i> <span jhiTranslate="migration-process.migration.start">Start migration</span></button>
-                        <button mat-stroked-button *ngIf="migrationStarted" disabled><i class="material-icons">check</i> <span jhiTranslate="migration-process.migration.planned">Migration planned</span></button>
-                    </mat-card-actions>
-                </mat-card>
-            </mat-grid-tile>
-            <mat-grid-tile>
-                <mat-card class="summary-card">
-                    <mat-card-header class="card-header">
-                        <mat-card-title style="margin: 0" jhiTranslate="migration-process.projects">Projects to migrate</mat-card-title>
-                    </mat-card-header>
-                    <mat-card-content *ngIf="mig !== undefined">
-                        <mat-list>
-                            <mat-list-item *ngFor="let proj of mig.svnProject.split(',')">
-                                <mat-icon mat-list-icon>folder</mat-icon> {{proj}}
-                            </mat-list-item>
-                        </mat-list>
-                    </mat-card-content>
-                    <mat-card-header class="card-header">
-                        <mat-card-title style="margin: 0" jhiTranslate="migration-process.mappings">Migration mappings</mat-card-title>
-                    </mat-card-header>
-                    <jhi-summary-mappings [migration]="mig"></jhi-summary-mappings>
-                </mat-card>
-            </mat-grid-tile>
-        </mat-grid-list>
+
+        <div class="row">
+            <div class="offset-md-2 col-md-8 col-xs-12 p-4">
+                <jhi-migration-detail [migration]="mig" (startMigration)="go()" *ngIf="mig"></jhi-migration-detail>
+            </div>
+        </div>
+
         <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-        <button mat-stroked-button routerLink="/"><i class="material-icons">home</i> <span jhiTranslate="migration-process.home">Home</span></button>
     </mat-step>
 </mat-horizontal-stepper>

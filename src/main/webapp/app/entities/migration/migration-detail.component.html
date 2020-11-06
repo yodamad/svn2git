@@ -1,27 +1,100 @@
-<div class="row justify-content-center">
-    <div class="col-8">
-        <div *ngIf="migration">
-            <h2><span jhiTranslate="svn2GitApp.migration.detail.title">Migration</span> {{migration.id}}. {{migration.svnProject | uppercase }}</h2>
-            <hr>
-            <mat-grid-list cols="2" rowHeight="420px">
-                <mat-grid-tile>
-                    <mat-card class="summary-card">
-                        <mat-card-header class="card-header">
-                            <mat-card-title style="margin: 0" jhiTranslate="migration-process.summary">Migration summary</mat-card-title>
-                        </mat-card-header>
-                        <jhi-summary-card [(migration)]="migration"></jhi-summary-card>
-                    </mat-card>
-                </mat-grid-tile>
-                <mat-grid-tile>
-                    <mat-card class="summary-card">
-                        <mat-card-header class="card-header">
-                            <mat-card-title style="margin: 0" jhiTranslate="migration-process.mappings">Migration mappings</mat-card-title>
-                        </mat-card-header>
-                        <jhi-summary-mappings [(migration)]="migration"></jhi-summary-mappings>
-                    </mat-card>
-                </mat-grid-tile>
-            </mat-grid-list>
-            <jhi-details-card [(migration)]="migration"></jhi-details-card>
+<div class="row" *ngIf="migration">
+    <div class="col-md-12 pt-1 pb-4">
+        <div class="row">
+            <div class="pl-4" [ngClass]="{ 'col-md-12': !migration.id, 'col-md-6': migration.id}">
+                <h3 jhiTranslate="migration-process.summary" *ngIf="!migration.id">Migration summary</h3>
+                <h3 jhiTranslate="migration-process.details" *ngIf="migration.id">Migration details</h3>
+                <div class="pt-2 pl-3">
+                    {{ getMigrationFromUrl() }}
+                    <span class="pl-3 pr-3"><fa-icon icon="long-arrow-alt-right"></fa-icon></span>
+                    {{ getMigrationToUrl() }}
+                    <ul>
+                        <li *ngFor="let project of migration.svnProject.split(',')">
+                            {{ project }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 pt-5 pr-5 text-center" *ngIf="migration.id">
+                <h4 [ngClass]="{ 'text-danger': migration.status === 'FAILED', 'text-success': migration.status === 'DONE', 'text-primary': migration.status === 'WAITING' }">
+                    <fa-icon [icon]="getStatusIcon()" [spin]="isStatusIconSpin()" [matTooltip]="migration.status"></fa-icon>
+                    <span class="pl-1">{{ migration.status }}</span>
+                </h4>
+            </div>
         </div>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-6" [ngClass]="{ 'col-md-6': migration.id, 'col-md-12': !migration.id }">
+        <div class="row">
+            <div class="col-md-12">
+                <mat-card>
+                    <mat-card-content>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'user', label: 'svn2GitApp.migration.user', value: migration.user, breakLine: false }"></ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'ban', label: 'svn2GitApp.migration.forbiddenFileExtensions', value: migration.forbiddenFileExtensions, breakLine: false }"></ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'weight-hanging', label: 'svn2GitApp.migration.maxFileSize', value: migration.maxFileSize, breakLine: false }"></ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'history', label: 'svn2GitApp.migration.svnHistory', value: migration.svnHistory, breakLine: false }"></ng-container>
+                                <hr />
+                                <div class="pl-3 pb-3">
+                                    <b jhiTranslate="migration-process.summary-svn">SVN data to keep</b>
+                                </div>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'dot-circle',  label: 'svn2GitApp.migration.trunk', value: migration.trunk, breakLine: true }"></ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'code-branch', label: 'svn2GitApp.migration.branches', value: migration.branchesToMigrate, breakLine: true }"></ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'tag', label: 'svn2GitApp.migration.tags', value: migration.tagsToMigrate, breakLine: true }"></ng-container>
+                                <hr />
+                                <div class="pl-3">
+                                    <b jhiTranslate="migration-process.summary-mapping">Configured mapping</b>
+                                </div>
+                                <div class="pl-5 pr-5 pt-3 pb-3">
+                                    <jhi-summary-mappings [mappings]="migration.mappings" [isReadOnly]="true" *ngIf="!migration.id"></jhi-summary-mappings>
+                                    <jhi-summary-mappings [migrationId]="migration.id" [isReadOnly]="true" *ngIf="migration.id"></jhi-summary-mappings>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+        <div class="row" *ngIf="!migration.id">
+            <div class="col-md-12 text-center p-4">
+                <button type="button" mat-raised-button class="btn btn-success" [ngClass]="{ 'btn-success': !migrationStarted }" (click)="start()" [disabled]="migrationStarted">
+                    <fa-icon icon="play"></fa-icon>
+                    <span class="pl-2" jhiTranslate="migration-process.migration.start" *ngIf="!migrationStarted">Start migration</span>
+                    <span class="pl-2" jhiTranslate="migration-process.migration.starting" *ngIf="migrationStarted">Starting...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6" *ngIf="migration.id">
+        <div class="row">
+            <div class="col-md-12">
+                <mat-card>
+                    <mat-card-content>
+                        <div class="pb-2">
+                            <jhi-details-card [migration]="migration" (migrationUpdated)="migrationUpdated()" #timeline></jhi-details-card>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </div>
+</div>
+<ng-template #labelValueTemplate let-icon="icon" let-label="label" let-value="value" let-breakLine="breakLine">
+    <div class="row pb-1" [ngClass]="{ empty: !value }">
+        <div class="col-md-1 text-right">
+            <fa-icon [icon]="icon" *ngIf="icon"></fa-icon>
+        </div>
+        <div class="col-md-3 pr-4">
+            <b [jhiTranslate]="label"></b>
+        </div>
+        <div class="col-md-8 pl-4">
+            <span *ngIf="value === '*'">
+                <fa-icon icon="check-circle"></fa-icon>
+            </span>
+            <span [innerHtml]="getValueToDisplay(value, breakLine)" *ngIf="value && value !== '*'">
+            </span>
+        </div>
+    </div>
+</ng-template>

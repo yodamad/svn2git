@@ -1,5 +1,5 @@
 import { Moment } from 'moment';
-import { IMigration } from 'app/shared/model//migration.model';
+import { IMigration, StatusEnum } from 'app/shared/model//migration.model';
 
 export const enum StepEnum {
     INIT = 'INIT',
@@ -14,14 +14,6 @@ export const enum StepEnum {
     README_MD = 'README_MD'
 }
 
-export const enum StatusEnum {
-    WAITING = 'WAITING',
-    RUNNING = 'RUNNING',
-    DONE = 'DONE',
-    FAILED = 'FAILED',
-    DONE_WITH_WARNINGS = 'DONE_WITH_WARNINGS'
-}
-
 export interface IMigrationHistory {
     id?: number;
     step?: StepEnum;
@@ -29,7 +21,6 @@ export interface IMigrationHistory {
     date?: Moment;
     data?: string;
     migration?: IMigration;
-    executionTime?: string;
 }
 
 export class MigrationHistory implements IMigrationHistory {
@@ -39,7 +30,6 @@ export class MigrationHistory implements IMigrationHistory {
         public status?: StatusEnum,
         public date?: Moment,
         public data?: string,
-        public migration?: IMigration,
-        public executionTime?: string
+        public migration?: IMigration
     ) {}
 }

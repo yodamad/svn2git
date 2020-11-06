@@ -4,16 +4,21 @@
         "check" : "Vérifier",
         "checking" : "En cours",
         "cleaning" : {
-            "options" : "Nettoyage"
+            "options" : "Nettoyage",
+            "preserve-empty-dirs" : "Oui",
+            "not-preserve-empty-dirs" : "Non",
+            "empty-folder-config" : "Repertoires vides migrés",
+            "preserve-empty-dirs-help" : "Empty .gitkeep files (master only) are generated in empty folders in order to assure that folders are pushed to gitlab"
         },
         "create" : "Créons-le !",
         "creating" : "En cours",
         "date" : "Date",
         "directory" : "Répertoire",
         "done" : "Fait",
-        "execution-time": "Temps d'execution",
         "extension" : {
-            "add" : "Autre extension (e.g. *.zip or *.jar)"
+            "custom": "Autre extension",
+            "placeholder" : "Ex: *.zip ou *.jar",
+            "specific" : "Il s'agit d'une liste prédéfinie configurée pour votre dépôt."
         },
         "file" : {
             "extensions" : "Extensions de fichiers à nettoyer",
@@ -23,22 +28,32 @@
             "directory" : "Répertoire Git"
         },
         "gitlab" : {
+            "configuration": "Configuration de Gitlab",
             "check" : {
                 "account" : "Vérifier votre compte Gitlab",
-                "group" : "Vérifier votre groupe Gitlab (chemin complet groupe/sous-groupe/...)"
+                "group" : "Vérifier votre groupe Gitlab"
             },
             "clean" : "Avez-vous nettoyé Gitlab avant de réessayer ?",
             "force" : {
                 "clean" : "Nettoyer pour moi",
                 "error" : "Nettoyage impossible automatiquement"
             },
-            "group" : "Groupe Gitlab (chemin complet groupe/sous-groupe/...",
+            "group" : "Groupe",
+            "group-help" : "L'utilisateur doit être membre du groupe avec le rôle Maintainer",
+            "group-found": "Groupe trouvé sur Gitlab",
+            "group-unknown": "Groupe Gitlab non trouvé ou le compte n'est pas membre",
             "token" : "Token",
-            "url" : "URL Gitlab",
+            "url" : "URL",
+            "url-help": "L'url de base comme https://gitlab.com/",
+            "url-default": "Par défault",
+            "url-custom": "Personnalisé",
+            "credentials": "Identifiants",
             "use" : {
                 "default" : "URL par défaut et utilisateur"
             },
-            "user" : "Utilisateur"
+            "user" : "Utilisateur",
+            "account-found": "Compte trouvé sur Gitlab",
+            "account-unknown": "Compte non trouvé sur Gitlab, vous devez vous connecter dessus au préalable"
         },
         "history" : {
             "all" : "Tout",
@@ -46,19 +61,20 @@
             "no" : "Rien",
             "option" : "Choix de conservation de l'historique",
             "options" : "Options d'historique",
-            "branch-for-master": "Branche à utiliser comme master si différente de trunk",
-            "tags-to-migrate" : "Tags à garder",
-            "branches-to-migrate" : "Branches à garder",
-            "tags-to-migrate-placeholder" : "Tags à garder (Séparées par des virgules)",
-            "branches-to-migrate-placeholder" : "Branches à garder (Séparées par des virgules)",
-            "start-revision": "Revision à laquelle démarrer (sinon 1)"
+            "directories" : "Dossiers à inclure dans la migration",
+            "tags-to-migrate" : "Liste de tags (séparés par des virgules)",
+            "branches-to-migrate" : "List de branches (séparés par des virgules)",
+            "migrate-individual-commits" : "Migrer tout l'historique des commits",
+            "no-migrate-individual-commits" : "L'historique des commits n'est pas migré"
         },
         "home" : "Accueil",
         "info" : "Infos",
+        "no-events" : "Chargement, merci de patienter...",
         "mapping": "Mapping",
         "migration" : {
             "planned" : "Migration planifiée",
             "start" : "Démarrer la migration",
+            "starting" : "Démarrage de la migration...",
             "structure" : "Conservation de la structure"
         },
         "next" : "Suivant",
@@ -70,22 +86,38 @@
         "summary" : "Résumé de la migration",
         "details" : "Détails de la migration",
         "mappings" : "Mappings",
+        "summary-svn" : "Données SVN à conserver",
+        "summary-mapping" : "Mapping configuré",
+        "mapping-help": "Mappings are applied ONLY if there are no conflicts. When the migration is complete, please check that mappings have been applied and resolve conflicts where necessary. e.g. 2 files with same name in one folder.",
         "svn" : {
             "check" : {
                 "repository" : "Vérifier votre repo SVN"
             },
-            "depth": "Profondeur pour la recherche de structures SVN : ",
+            "configuration": "Configuration de subversion",
+            "depth": "Profondeur (optionnel)",
+            "depth-help": "Profondeur pour la recherche de structures SVN",
+            "url": "URL",
+            "url-help": "L'url de base comme https://mycompany.com/svn",
+            "url-default": "Par défault",
+            "url-custom": "Personnalisé",
+            "credentials": "Identifiants",
             "directory" : "Répertoire SVN",
-            "directories" : "Choisir les répertoires à migrer",
+            "directories": "Répertoires",
+            "password" : "Mot de passe",
+            "repository": "Dépôt",
+            "repository-help": "Ex. reponame pour l'URL https://mycompany.com/svn/reponame",
             "max-depth-reached" : "profondeur max atteinte sans trouvée de structure supportée (à plat ou classique)",
             "no-trunk" : "fichiers directement à la racine i.e. pas de trunk, branches ou tags",
-            "password" : "Mot de passe",
-            "repo" : {
-                "name" : "Nom du repository"
-            },
-            "root-directory": "Ou migrer le repo complet (trunk, branches & tags ou les fichiers sont à la racine)",
+            "show-directories": "Afficher les répertoires",
+            "loading-directories": "Chargement en cours...",
+            "no-directories": "Aucun répertoire trouvé. Veuillez vérifier la configuration SVN.",
+            "select-directories": "Répertoires à migrer",
+            "only-directories": "Seulement sélection",
+            "all-directories": "Tous les répertoires",
+            "filter": "Filtre (optionnel)",
+            "filter-help": "Filter les réperoires du dépôt (les composants). ex. 'niveau1dossier' ou 'niveau1dossier/sousdossier'",
+            "root-directory": "Ou migrer le repo complet (trunk, branches & tags sont à la racine)",
             "sources-in-folder" : "Les sources sont directement à la racine",
-            "url" : "URL SVN",
             "use" : {
                 "default" : "URL par défaut"
             },
@@ -93,8 +125,8 @@
             "with-layout" : "avec "
         },
         "step" : "Etape",
-        "apply-mapping" : "Appliquer Mapping",
+        "apply-mapping" : "Migrer en appliquant le mapping",
         "status" : "Statut",
-        "svn-directory-delete" : "Non Migré de Subversion"
+        "svn-directory-delete" : "Ne pas migrer"
     }
 }

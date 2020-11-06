@@ -271,16 +271,8 @@
         </div>
         <div *ngFor="let directory of staticDirectories">
             <div class="row">
-                <div class="col-md-2 col-xs-12 text-right">
-                    <button type="button"
-                            class="btn btn-xs ml-5"
-                            (click)="historyToggle(directory)"
-                            [ngClass]="{'btn-outline-primary': !historyChecked(directory), 'btn-outline-danger': historyChecked(directory)}"
-                            *ngIf="directory !== 'trunk'">
-                        <fa-icon [icon]="historyChecked(directory) ? 'ban' : 'plus'"></fa-icon>
-                        <span class="ml-2" jhiTranslate="entity.action.ignore" *ngIf="historyChecked(directory)">Ignore</span>
-                        <span class="ml-2" jhiTranslate="entity.action.add" *ngIf="!historyChecked(directory)">Add</span>
-                    </button>
+                <div class="col-md-2 pt-2 text-right">
+                    <mat-slide-toggle (click)="historyToggle(directory)" *ngIf="directory !== 'trunk'"></mat-slide-toggle>
                 </div>
                 <div class="col-md-2 col-xs-12">
                     <div class="pt-2">

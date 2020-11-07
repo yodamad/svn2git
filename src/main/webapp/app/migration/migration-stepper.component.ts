@@ -78,7 +78,7 @@ export class MigrationStepperComponent implements OnInit {
     // History selections
     historySelection: SelectionModel<string>;
     enableDirectoryFilter = [];
-    historyOption = 'all';
+    historyOption = 'nothing';
     svnRevision: string;
 
     // Mapping selections
@@ -734,6 +734,12 @@ export class MigrationStepperComponent implements OnInit {
         this.useSvnRootFolder = event.checked;
         this.svnSelection.clear();
         this.svnRepoKO = !event.checked;
+    }
+
+    /** Root svn directory use selection change. */
+    onFlatSelectionChange(event: MatSlideToggleChange) {
+        this.flatRepo = event.checked;
+        this.svnSelection.clear();
     }
 
     /**

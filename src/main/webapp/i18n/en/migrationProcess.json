@@ -122,7 +122,7 @@
             "all-directories": "All directories",
             "filter": "Filter (optional)",
             "filter-help": "Filter the repository folders (components). e.g. 'level1folder' or 'level1folder/subfolder'",
-            "root-directory": "Or migrate full repository (assuming trunk, branches & tags are directly in root folder)",
+            "root-directory": "No trunk, branches, tags (files directly in folder)",
             "sources-in-folder" : "Sources are in root folder",
             "use" : {
                 "default" : "Use default URL"

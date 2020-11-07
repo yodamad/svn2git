@@ -14,6 +14,8 @@ public class SvnStructure {
     public String name;
     /** Flag for flat repository. */
     public boolean flat = false;
+    /** Flag for classic repository at root level. */
+    public boolean root = false;
     /** SVN modules. */
     public List<SvnModule> modules = new ArrayList<>();
 
@@ -56,6 +58,13 @@ public class SvnStructure {
         @Override
         public String toString() {
             return name;
+        }
+    }
+
+    /** Fake module for root repository detection. */
+    public static class FakeModule extends SvnModule {
+        public FakeModule() {
+            super("", "");
         }
     }
 }

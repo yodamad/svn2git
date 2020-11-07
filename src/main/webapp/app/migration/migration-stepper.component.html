@@ -218,16 +218,23 @@
                             <span class="pl-1" jhiTranslate="migration-process.svn.no-directories">No directories found. Check the subversion configuration.</span>
                         </div>
                     </div>
-                    <div class="col-md-12 pb-2" *ngIf="!svnDirectories.modules.length">
+                    <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
                         <div class="mb-2">
-                            <mat-slide-toggle class="mb-3 ml-5" (change)="onSelectionChange($event)">
+                            <mat-slide-toggle class="mb-1 ml-5" (change)="onSelectionChange($event)">
                                 <span class="pl-0" jhiTranslate="migration-process.svn.sources-in-folder">Sources in root folder</span>
                             </mat-slide-toggle>
                         </div>
-                        <div class="mb-2">
-                            <mat-slide-toggle class="mb-2 ml-5" (change)="onFlatSelectionChange($event)">
-                                <span class="pl-0" jhiTranslate="migration-process.svn.root-directory">Files in root folder</span>
-                            </mat-slide-toggle>
+                    </div>
+                    <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
+                        <div class="mb-3 ml-5" *ngIf="!svnDirectories.root">
+                            <fa-icon icon="ban"></fa-icon>
+                            <span class="pl-0" jhiTranslate="migration-process.svn.root-directory">Files in root folder</span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
+                        <div class="mb-3 ml-5" *ngIf="svnDirectories.root">
+                            <fa-icon icon="check"></fa-icon>
+                            <span class="pl-0" jhiTranslate="migration-process.svn.keyword-in-folder">Files in root folder</span>
                         </div>
                     </div>
                     <div class="col-md-12 pt-2 pb-4 pl-5" *ngIf="svnDirectories.modules.length">
@@ -276,7 +283,7 @@
         <div *ngFor="let directory of staticDirectories">
             <div class="row">
                 <div class="col-md-2 pt-2 text-right">
-                    <mat-slide-toggle (click)="historyToggle(directory)" *ngIf="directory !== 'trunk' && !flatRepo"></mat-slide-toggle>
+                    <mat-slide-toggle (click)="historyToggle(directory)" *ngIf="directory !== 'trunk' && flatRepo"></mat-slide-toggle>
                 </div>
                 <div class="col-md-2 col-xs-12">
                     <div class="pt-2">
@@ -288,7 +295,7 @@
                     <div class="row">
                         <div class="col-md-2 pt-2">
                             <mat-slide-toggle (click)="toggleFilter(directory + 'ToMigrate')" [(ngModel)]="enableDirectoryFilter[directory + 'ToMigrate']"
-                                              *ngIf="directory !== 'trunk' && historyChecked(directory)" [disabled]="flatRepo">
+                                              *ngIf="directory !== 'trunk' && historyChecked(directory)" [disabled]="!flatRepo">
                                 <span class="pl-2" *ngIf="!enableDirectoryFilter[directory + 'ToMigrate']" jhiTranslate="global.all">
                                     All
                                 </span>
@@ -322,7 +329,7 @@
                 <mat-radio-group [(ngModel)]="historyOption">
                     <mat-radio-button [value]="'trunk'" labelPosition="before"><span jhiTranslate="migration-process.history.trunk-only" class="pl-2">Trunk</span></mat-radio-button>
                     <mat-radio-button [value]="'nothing'" labelPosition="before"><span jhiTranslate="migration-process.history.no" class="pl-2">No History</span></mat-radio-button>
-                    <mat-radio-button [value]="'all'" labelPosition="before" [disabled]="flatRepo"><span jhiTranslate="migration-process.history.all" class="pl-2">All History</span></mat-radio-button>
+                    <mat-radio-button [value]="'all'" labelPosition="before" [disabled]="!flatRepo"><span jhiTranslate="migration-process.history.all" class="pl-2">All History</span></mat-radio-button>
                 </mat-radio-group>
             </div>
         </div>

@@ -316,8 +316,10 @@ export class MigrationStepperComponent implements OnInit {
         this.svnRepoKO = true;
         this.svnDirectories = null;
         this.svnSelection.clear();
-
         this.checkingSvnRepo = true;
+        this.useSvnRootFolder = false;
+        this.flatRepo = false;
+
         this._migrationProcessService
             .checkSvn(
                 this.svnFormGroup.controls['svnRepository'].value,
@@ -328,13 +330,15 @@ export class MigrationStepperComponent implements OnInit {
             )
             .subscribe(
                 res => {
-                    if (res.body.modules) {
-                        this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, []);
+                    this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, res.body.root, []);
+                    if (res.body.modules && res.body.modules.length > 0) {
                         res.body.modules.forEach(module => this.fillModules(module));
                     } else if (res.body.flat) {
                         this.useSvnRootFolder = true;
+                        if (res.body.root) {
+                            this.flatRepo = true;
+                        }
                     }
-
                     this.checkingSvnRepo = false;
                 },
                 error => {

@@ -283,7 +283,7 @@
         <div *ngFor="let directory of staticDirectories">
             <div class="row">
                 <div class="col-md-2 pt-2 text-right">
-                    <mat-slide-toggle (click)="historyToggle(directory)" *ngIf="directory !== 'trunk' && flatRepo"></mat-slide-toggle>
+                    <mat-slide-toggle (click)="historyToggle(directory)" *ngIf="enableHistoryButtons(directory)"></mat-slide-toggle>
                 </div>
                 <div class="col-md-2 col-xs-12">
                     <div class="pt-2">
@@ -295,7 +295,7 @@
                     <div class="row">
                         <div class="col-md-2 pt-2">
                             <mat-slide-toggle (click)="toggleFilter(directory + 'ToMigrate')" [(ngModel)]="enableDirectoryFilter[directory + 'ToMigrate']"
-                                              *ngIf="directory !== 'trunk' && historyChecked(directory)" [disabled]="!flatRepo">
+                                              *ngIf="enableHistoryButtons(directory) && historyChecked(directory)">
                                 <span class="pl-2" *ngIf="!enableDirectoryFilter[directory + 'ToMigrate']" jhiTranslate="global.all">
                                     All
                                 </span>

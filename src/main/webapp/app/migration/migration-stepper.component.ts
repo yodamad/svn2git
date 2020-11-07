@@ -431,13 +431,23 @@ export class MigrationStepperComponent implements OnInit {
             this.mig.svnPassword = this.svnFormGroup.controls['svnPwd'].value;
         }
 
-        this.mig.flat = this.flatRepo;
-        if (this.flatRepo) {
+        const module = this.svnDirectories.modules.find(m => m.path === project);
+        if (this.svnDirectories.modules && this.svnDirectories.modules.length > 0) {
+            if (module.flat) {
+                this.mig.trunk = 'trunk';
+                this.mig.flat = true;
+            }
+        } else if (!this.svnDirectories.root) {
             this.mig.trunk = 'trunk';
+            this.mig.flat = this.svnDirectories.flat;
         }
 
         // History
-        if (this.historySelection !== undefined && !this.historySelection.isEmpty()) {
+        if (
+            this.historySelection !== undefined &&
+            !this.historySelection.isEmpty() &&
+            ((module && module.layoutElements.length !== 0) || this.svnDirectories.root)
+        ) {
             this.historySelection.selected.forEach(hst => {
                 if (hst === 'trunk') {
                     this.mig.trunk = 'trunk';
@@ -774,6 +784,10 @@ export class MigrationStepperComponent implements OnInit {
             this.extensionSelection.select(newExtension);
         }
         this.addExtentionFormControl.reset();
+    }
+
+    enableHistoryButtons(directory: string) {
+        return directory !== 'trunk' && (this.flatRepo || this.svnSelection.selected.length > this.flatRepos);
     }
 
     /**

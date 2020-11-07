@@ -74,6 +74,7 @@ export class MigrationStepperComponent implements OnInit {
 
     // Svn selections
     svnSelection: SelectionModel<string>;
+    flatRepos = 0;
 
     // History selections
     historySelection: SelectionModel<string>;
@@ -319,6 +320,7 @@ export class MigrationStepperComponent implements OnInit {
         this.checkingSvnRepo = true;
         this.useSvnRootFolder = false;
         this.flatRepo = false;
+        this.flatRepos = 0;
 
         this._migrationProcessService
             .checkSvn(
@@ -334,7 +336,6 @@ export class MigrationStepperComponent implements OnInit {
                     if (res.body.modules && res.body.modules.length > 0) {
                         res.body.modules.forEach(module => this.fillModules(module));
                     } else if (res.body.flat) {
-                        this.useSvnRootFolder = true;
                         if (res.body.root) {
                             this.flatRepo = true;
                         }
@@ -647,10 +648,17 @@ export class MigrationStepperComponent implements OnInit {
      * @param event
      * @param directory
      */
-    svnToggle(event: any, directory: string) {
+    svnToggle(event: MatCheckboxChange, module: SvnModule) {
         if (event) {
             this.useSvnRootFolder = false;
-            return this.svnSelection.toggle(directory);
+            if (module.flat) {
+                if (event.checked) {
+                    this.flatRepos++;
+                } else {
+                    this.flatRepos--;
+                }
+            }
+            return this.svnSelection.toggle(module.path);
         }
         return null;
     }
@@ -665,16 +673,6 @@ export class MigrationStepperComponent implements OnInit {
 
     getSvnRepoKo(): boolean {
         return this.svnSelection.selected.length === 0;
-    }
-
-    /**
-     * SVN section. If directory only contains tags layoutElement it is considered as a composite project
-     * (used to group together other tags). Projects like these are not migrated.
-     * Only Projects with a trunk folder can be migrated
-     * @param directory
-     */
-    isContainsTrunk(directory: SvnModule) {
-        return directory != null && directory.layoutElements.length > 0 && directory.layoutElements.includes('trunk');
     }
 
     isContainsTrunkBranchesTags(directory: SvnModule) {
@@ -738,6 +736,7 @@ export class MigrationStepperComponent implements OnInit {
         this.useSvnRootFolder = event.checked;
         this.svnSelection.clear();
         this.svnRepoKO = !event.checked;
+        event.checked && !this.svnDirectories.root ? (this.flatRepos = 1) : (this.flatRepos = 0);
     }
 
     /** Root svn directory use selection change. */
@@ -817,6 +816,10 @@ export class MigrationStepperComponent implements OnInit {
         this.preserveEmptyDirs = !this.preserveEmptyDirs;
     }
 
+    /**
+     * Pick CSS class according to module type : flat, classic, error.
+     * @param module
+     */
     svnFontStyle(module: SvnModule) {
         if (module.layoutElements.length > 0) {
             return 'svn-ok';
@@ -825,5 +828,12 @@ export class MigrationStepperComponent implements OnInit {
         } else {
             return 'svn-ko';
         }
+    }
+
+    /**
+     * Check if selection contains at least on flatRepo
+     */
+    containsFlatRepo() {
+        return !this.flatRepo || this.flatRepos > 0;
     }
 }

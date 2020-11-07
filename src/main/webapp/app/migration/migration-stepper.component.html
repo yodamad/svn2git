@@ -245,7 +245,7 @@
                             <div class="row" *ngFor="let directory of svnDirectories.modules">
                                 <div class="col-md-12 pb-2">
                                     <mat-checkbox (click)="$event.stopPropagation()"
-                                                  (change)="svnToggle($event, directory.path)"
+                                                  (change)="svnToggle($event, directory)"
                                                   [checked]="svnChecked(directory.path)">
                                         <span class="pl-2">
                                             <span [ngClass]="svnFontStyle(directory)">{{ directory.path }}</span> (
@@ -357,7 +357,12 @@
                 </div>
             </div>
         </form>
-        <mat-divider class="mb-4"></mat-divider>
+        <mat-divider class="mb-2"></mat-divider>
+        <div class="row" [hidden]="this.flatRepos === 0">
+            <div class="pt-0 pl-5 pb-2">
+                <i><span jhiTranslate="migration-process.svn.contains-flat">Contains flat</span></i>
+            </div>
+        </div>
         <div>
             <button mat-stroked-button matStepperPrevious>
                 <i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span>

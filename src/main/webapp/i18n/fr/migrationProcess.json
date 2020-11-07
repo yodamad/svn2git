@@ -100,6 +100,7 @@
                 "repository" : "Vérifier votre repo SVN"
             },
             "configuration": "Configuration de subversion",
+            "contains-flat": "* Les répertoires sans trunk ne contiendront qu'une branche master, pas concernés par certaines options",
             "depth": "Profondeur (optionnel)",
             "depth-help": "Profondeur pour la recherche de structures SVN",
             "url": "URL",

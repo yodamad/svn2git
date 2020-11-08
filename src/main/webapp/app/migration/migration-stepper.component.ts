@@ -850,4 +850,15 @@ export class MigrationStepperComponent implements OnInit {
     containsFlatRepo() {
         return !this.flatRepo || this.flatRepos > 0;
     }
+
+    /**
+     * Disable element if only flat repos.
+     */
+    disableWhenOnlyFlat() {
+        return (
+            this.svnDirectories &&
+            ((!this.svnDirectories.root && this.svnDirectories.modules.length === 0) ||
+                (this.svnDirectories.modules.length > 0 && this.svnSelection.selected.length === this.flatRepos))
+        );
+    }
 }

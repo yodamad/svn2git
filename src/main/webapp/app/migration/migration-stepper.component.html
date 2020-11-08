@@ -329,7 +329,7 @@
                 <mat-radio-group [(ngModel)]="historyOption">
                     <mat-radio-button [value]="'trunk'" labelPosition="before"><span jhiTranslate="migration-process.history.trunk-only" class="pl-2">Trunk</span></mat-radio-button>
                     <mat-radio-button [value]="'nothing'" labelPosition="before"><span jhiTranslate="migration-process.history.no" class="pl-2">No History</span></mat-radio-button>
-                    <mat-radio-button [value]="'all'" labelPosition="before" [disabled]="svnDirectories && !svnDirectories.root && svnDirectories.flat"><span jhiTranslate="migration-process.history.all" class="pl-2">All History</span></mat-radio-button>
+                    <mat-radio-button [value]="'all'" labelPosition="before" [hidden]="disableWhenOnlyFlat()"><span jhiTranslate="migration-process.history.all" class="pl-2">All History</span></mat-radio-button>
                 </mat-radio-group>
             </div>
         </div>
@@ -345,7 +345,7 @@
                     <fa-icon icon="info-circle" matTooltip="{{'migration-process.history.start-revision-help' | translate}}"></fa-icon>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" [hidden]="disableWhenOnlyFlat()">
                 <div class="col-md-2 pl-0 pt-3 pr-2 text-center">
                     <span jhiTranslate="migration-process.history.branch-for-master">Branch</span>
                 </div>

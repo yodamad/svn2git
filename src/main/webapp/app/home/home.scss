@@ -2,10 +2,13 @@
 Main page styles
 ========================================================================== */
 
-.hipster {
-    display: inline-block;
-    width: 347px;
-    height: 297px;
+.home-logo {
+    margin-left: auto;
+    display: block;
+    max-height: 297px;
+    max-width: 347px;
+    height: 100%;
+    width: 100%;
     background: url('../../content/images/logo-full.png') no-repeat center top;
     background-size: contain;
 }

@@ -6,7 +6,6 @@ import org.gitlab4j.api.GroupApi;
 import org.gitlab4j.api.ProjectApi;
 import org.gitlab4j.api.UserApi;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,6 @@ public class GitlabAdmin {
         gitLabApi = new GitLabApi(applicationProperties.gitlab.url, applicationProperties.gitlab.token);
         gitLabApi.setIgnoreCertificateErrors(true);
     }
-
 
     // Getter on api
 

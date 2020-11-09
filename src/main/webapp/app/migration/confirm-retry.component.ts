@@ -34,7 +34,7 @@ export class JhiConfirmRetryModalComponent implements OnInit {
         this.errorCleaning = false;
         this._migrationService.retry(this.data.migId, this.forceRemoveGroup).subscribe(
             res => {
-                this.dialogRef.close();
+                this.dialogRef.close(res.body);
                 this.cleaning = false;
             },
             err => {

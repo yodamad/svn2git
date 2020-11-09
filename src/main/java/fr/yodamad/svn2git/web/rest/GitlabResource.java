@@ -9,10 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.UserApi;
-import org.gitlab4j.api.models.Group;
-import org.gitlab4j.api.models.Project;
-import org.gitlab4j.api.models.User;
-import org.gitlab4j.api.models.Visibility;
+import org.gitlab4j.api.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -70,59 +67,75 @@ public class GitlabResource {
     }
 
     /**
-     * Check if a group exists on Gitlab
+     * Check if a group exists on Gitlab, AND that the passed in userName is a member of that group
      *
+     * @param groupName Group name search
+     * @param userName  Member of group we are checking for
      * @return if group found
      */
-    @PostMapping("group")
+    @PostMapping("group/{groupName}/members/{userName}")
     @Timed
-    public ResponseEntity<Boolean> checkGroup(@RequestBody GitlabInfo gitlabInfo) {
+    public ResponseEntity<Boolean> checkGroup(@PathVariable("groupName") String groupName,
+                                              @PathVariable("userName") String userName,
+                                              @RequestBody GitlabInfo gitlabInfo) {
+
         GitLabApi gitlab = overrideGitlab(gitlabInfo);
-        String name = gitlabInfo.additionalData;
+        // Group where project will be created
+        Optional<Group> group = gitlab.getGroupApi().getOptionalGroup(groupName);
 
-        if (name == null) {
-            return ResponseEntity.badRequest().build();
+        // User that will be used to create a project
+        Optional<User> user = null;
+        // if token is blank / emtpy, we use the default gitlab user
+        if (StringUtils.isBlank(gitlabInfo.token)) {
+            user = gitlab.getUserApi().getOptionalUser(applicationProperties.gitlab.account);
+        } else {
+            // Username is the username that is checked in first step of wizard
+            user = gitlab.getUserApi().getOptionalUser(userName);
         }
 
-        int depth = 0;
-        String[] subParts = {};
-        if (name.contains("/")) {
-            subParts = name.split("/");
-            name = subParts[0];
-            depth = subParts.length;
-        }
-        Optional<Group> group = gitlab.getGroupApi().getOptionalGroup(name);
+        // if the group is present and the user that will use it is present
+        if (group.isPresent() && user.isPresent()) {
 
-        if (group.isPresent()) {
-            if (depth > 0) {
-                try {
-                    int cycle = 1;
-                    Integer groupId = group.get().getId();
-                    while (cycle < depth) {
-                        List<Group> subGroups = gitlab.getGroupApi().getSubGroups(groupId);
-                        String[] finalSubParts = subParts;
-                        int finalCycle = cycle;
-                        Optional<Group> subgroup = subGroups.stream()
-                            .filter(sg -> sg.getName().equalsIgnoreCase(finalSubParts[finalCycle]))
-                            .findAny();
-                        if (subgroup.isPresent()) {
-                            if (cycle == (depth-1)) {
-                                return ResponseEntity.ok().body(subgroup.isPresent());
-                            }
-                            cycle++;
-                            groupId = subgroup.get().getId();
-                        } else {
-                            return ResponseEntity.notFound().build();
-                        }
-                    }
-                    return ResponseEntity.notFound().build();
-                } catch (GitLabApiException gitLabApiException) {
+            try {
+
+                // check if userName passed in is a member of the group (includingInherited)
+                // An exception is thrown if member is not found in group.
+                Member member = gitlab.getGroupApi().getMember(group.get().getId(), user.get().getId());
+                if (member != null) {
+                    LOG.info(String.format("User:%s is a member of the target group:%s", user.get().getUsername(), group.get().getName()));
+
+                    // Group exists and the passed in username is a member of it
+                    return ResponseEntity.ok()
+                        .body(group.isPresent());
+
+                } else {
+                    // This should not be possible
+                    LOG.error(String.format("Member:%s not found in group:%s",
+                        user.get().getUsername(), group.get().getName()));
+
+                    // Group exists but an unexpected error getting user
                     return ResponseEntity.notFound().build();
                 }
+
+            } catch (GitLabApiException apiEx) {
+
+                // just in case token in message
+                String message = apiEx.getMessage().replace(applicationProperties.gitlab.token, STARS);
+
+                if (apiEx.getReason().equalsIgnoreCase("Not Found")) {
+                    // UserName not found : is a possible case. i.e. we only raise a warning in logs.
+                    LOG.warn(String.format("Member:%s not found in group:%s",
+                        user.get().getUsername(), group.get().getName()));
+                } else {
+                    LOG.error("Error getting member of group", message);
+                }
+
+                // User didn't exist in group
+                return ResponseEntity.notFound().build();
             }
-            return ResponseEntity.ok()
-                .body(group.isPresent());
+
         } else {
+            // Group didn't exist or user didn't exist
             return ResponseEntity.notFound().build();
         }
     }

@@ -1,24 +1,20 @@
-.ok {
-    background-color: #28a745;
-    color: white;
-}
-
-.ko {
-    background-color: darkred;
-    color: white;
-}
-
-.summary-card {
-    width: 600px;
-    margin: 20px;
+mat-card-content {
+    max-width: 100%;
+    max-height: 500px;
+    overflow-x: hidden;
     overflow-y: auto;
 }
 
-.my-header {
-    font-size: x-large;
+.empty {
+    opacity: 0.25;
 }
 
-.center-block {
-    width: 50%;
-    margin: 0 auto;
+ul {
+    padding-inline-start: 25px;
+}
+
+li {
+    list-style-type: circle;
+    padding-top: 10px;
+    font-style: italic;
 }

@@ -11,6 +11,7 @@ import {
     migrationRoute,
     migrationPopupRoute
 } from './';
+import { MigrationStepperComponent } from 'app/migration/migration-stepper.component';
 
 const ENTITY_STATES = [...migrationRoute, ...migrationPopupRoute];
 
@@ -21,7 +22,8 @@ const ENTITY_STATES = [...migrationRoute, ...migrationPopupRoute];
         MigrationDetailComponent,
         MigrationUpdateComponent,
         MigrationDeleteDialogComponent,
-        MigrationDeletePopupComponent
+        MigrationDeletePopupComponent,
+        MigrationStepperComponent
     ],
     entryComponents: [MigrationComponent, MigrationUpdateComponent, MigrationDeleteDialogComponent, MigrationDeletePopupComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]

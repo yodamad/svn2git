@@ -1,13 +1,12 @@
 /* tslint:disable max-line-length */
 import { TestBed, getTestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { of } from 'rxjs';
 import { take, map } from 'rxjs/operators';
 import * as moment from 'moment';
 import { DATE_TIME_FORMAT } from 'app/shared/constants/input.constants';
 import { MigrationHistoryService } from 'app/entities/migration-history/migration-history.service';
-import { IMigrationHistory, MigrationHistory, StepEnum, StatusEnum } from 'app/shared/model/migration-history.model';
+import { IMigrationHistory, MigrationHistory, StepEnum } from 'app/shared/model/migration-history.model';
+import { StatusEnum } from 'app/shared/model/migration.model';
 
 describe('Service Tests', () => {
     describe('MigrationHistory Service', () => {
@@ -110,7 +109,10 @@ describe('Service Tests', () => {
                 );
                 service
                     .query(expected)
-                    .pipe(take(1), map(resp => resp.body))
+                    .pipe(
+                        take(1),
+                        map(resp => resp.body)
+                    )
                     .subscribe(body => expect(body).toContainEqual(expected));
                 const req = httpMock.expectOne({ method: 'GET' });
                 req.flush(JSON.stringify([returnedFromService]));

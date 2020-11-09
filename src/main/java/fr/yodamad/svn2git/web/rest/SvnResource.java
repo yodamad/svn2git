@@ -82,6 +82,12 @@ public class SvnResource {
     protected SvnStructure listSVN(SvnInfo svnInfo, String repo, Integer depth) {
         SvnStructure structure = new SvnStructure(repo);
         structure.modules = listModulesSVN(svnInfo, repo, null, 0, depth);
+
+        if (structure.modules.stream().anyMatch(m -> m instanceof SvnStructure.FakeModule)) {
+            structure.root = true;
+            structure.modules.clear();
+        }
+
         structure.flat = structure.modules.isEmpty();
         log.info("SVN structure found : {}", structure);
         return structure;
@@ -159,9 +165,14 @@ public class SvnResource {
                 }
             }
 
-            if (module != null && name != null && !name.isEmpty() && KEYWORDS.contains(name)) {
-                log.info(format("Module %s with layout %s", module.name, name));
-                module.layoutElements.add(name);
+            if (name != null && !name.isEmpty() && KEYWORDS.contains(name)) {
+                if (module != null) {
+                    log.info(format("Module %s with layout %s", module.name, name));
+                    module.layoutElements.add(name);
+                } else {
+                    // Root level case
+                    modulesFounds.add(new SvnStructure.FakeModule());
+                }
             }
         });
 
@@ -171,14 +182,18 @@ public class SvnResource {
             log.error("Cannot list SVN", ex);
         }
 
-        if (!modulesFounds.isEmpty()) {
-            modules.addAll(modulesFounds);
-        }
+        modulesFounds.stream()
+            .filter(m -> !(m instanceof SvnStructure.FakeModule))
+            .map(modules::add).count();
 
         if (!modules.isEmpty()) {
             modules.forEach(
                 svnSubMod -> svnSubMod.subModules.addAll(
                     listModulesSVN(svnInfo, repo, svnSubMod, level + 1, maxDepth)));
+        }
+
+        if (modulesFounds.stream().anyMatch(m -> m instanceof SvnStructure.FakeModule)) {
+            return modulesFounds;
         }
 
         log.debug("SVN modules found in {} : {}", module, modules);

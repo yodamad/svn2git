@@ -36,6 +36,7 @@ public class SvnResourceTest {
         SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
         assertThat(svnStructure.modules).isEmpty();
         assertThat(svnStructure.flat).isTrue();
+        assertThat(svnStructure.root).isTrue();
     }
 
     @Test
@@ -43,6 +44,7 @@ public class SvnResourceTest {
         SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.flat().name, DEPTH);
         assertThat(svnStructure.modules).isEmpty();
         assertThat(svnStructure.flat).isTrue();
+        assertThat(svnStructure.root).isFalse();
     }
 
     @Test

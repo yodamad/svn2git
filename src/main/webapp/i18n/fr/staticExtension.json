@@ -16,9 +16,10 @@
             "detail": {
                 "title": "Static Extension"
             },
-            "value": "Value (e.g. *.zip or *.jar)",
+            "value": "Value",
             "description": "Description",
-            "enabled": "Enabled"
+            "enabled": "Enabled",
+            "name": "Name"
         }
     }
 }

@@ -30,6 +30,11 @@
                     <input type="checkbox" class="form-control" name="enabled" id="field_enabled"
                         [(ngModel)]="staticExtension.enabled" />
                 </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="svn2GitApp.staticExtension.name" for="field_name">Name</label>
+                    <input type="text" class="form-control" name="name" id="field_name"
+                        [(ngModel)]="staticExtension.name" />
+                </div>
 
             </div>
             <div>

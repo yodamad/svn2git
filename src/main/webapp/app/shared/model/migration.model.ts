@@ -31,14 +31,15 @@ export interface IMigration {
     trunk?: string;
     branches?: string;
     tags?: string;
-    flat?: boolean;
     svnHistory?: string;
     tagsToMigrate?: string;
     branchesToMigrate?: string;
     createdTimestamp?: Moment;
     workingDirectory?: string;
+    preserveEmptyDirs?: boolean;
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
+    flat?: boolean;
 }
 
 export class Migration implements IMigration {
@@ -61,13 +62,16 @@ export class Migration implements IMigration {
         public trunk?: string,
         public branches?: string,
         public tags?: string,
-        public flat?: boolean,
         public svnHistory?: string,
         public tagsToMigrate?: string,
         public branchesToMigrate?: string,
         public createdTimestamp?: Moment,
         public workingDirectory?: string,
+        public preserveEmptyDirs?: boolean,
         public histories?: IMigrationHistory[],
-        public mappings?: IMapping[]
-    ) {}
+        public mappings?: IMapping[],
+        public flat?: boolean
+    ) {
+        this.preserveEmptyDirs = this.preserveEmptyDirs || false;
+    }
 }

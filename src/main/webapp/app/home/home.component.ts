@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { JhiEventManager } from 'ng-jhipster';
 
 import { LoginModalService, Principal, Account } from 'app/core';
 import { Router } from '@angular/router';
 import { ConfigurationService } from 'app/shared/service/configuration-service';
-import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
+import { IMigration, Migration, StatusEnum } from 'app/shared/model/migration.model';
 import { HttpResponse } from '@angular/common/http';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
@@ -16,18 +16,21 @@ import { TranslateService } from '@ngx-translate/core';
     templateUrl: './home.component.html',
     styleUrls: ['home.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+    // Migration refresh
+    static migrationRefreshInterval = 20000; // ms
+    migrationRefreshTimer;
+
     account: Account;
     modalRef: NgbModalRef;
 
     // migrations in Running or Waiting State initialised in ngOnInit
     migrations: IMigration[] = [];
 
-    // last migrations
-    lastMigrations: IMigration[] = [];
-
     // SnackBar config
     snackBarConfig = new MatSnackBarConfig();
+
+    isLoading = false;
 
     constructor(
         private principal: Principal,
@@ -52,13 +55,29 @@ export class HomeComponent implements OnInit {
         this.registerAuthenticationSuccess();
         this.configService.init();
 
-        this._migrationProcessService
-            .findActiveMigrations()
-            .subscribe((res: HttpResponse<IMigration[]>) => (this.migrations = res.body), () => this.openSnackBar('error.http.504'));
+        this.loadActiveMigrations();
+        this.migrationRefreshTimer = setInterval(() => this.loadActiveMigrations(), HomeComponent.migrationRefreshInterval);
+    }
 
-        this._migrationProcessService
-            .findLastMigrations(5)
-            .subscribe(res => (this.lastMigrations = res.body), () => this.openSnackBar('error.http.504'));
+    ngOnDestroy() {
+        clearInterval(this.migrationRefreshTimer);
+    }
+
+    loadActiveMigrations() {
+        if (this.isLoading) {
+            // If slow database
+            return;
+        }
+        this.isLoading = true;
+        this._migrationProcessService.findActiveMigrations().subscribe(
+            (res: HttpResponse<IMigration[]>) => {
+                const migrations = res.body;
+                migrations.sort((a: Migration, b: Migration) => a.id - b.id);
+                this.migrations = migrations;
+                this.isLoading = false;
+            },
+            () => this.openSnackBar('error.http.504')
+        );
     }
 
     registerAuthenticationSuccess() {

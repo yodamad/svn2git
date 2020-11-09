@@ -5,13 +5,15 @@
         "link": {
             "gitlab": "Gitlab"
         },
-        "start" : "Commencer",
-        "check" : "Vérifier la migration",
-        "messageTitle" : "Important",
-        "message" : "",
-        "migrations": {
-            "in_progress": "Migration en cours",
-            "last": "5 dernières migrations"
-        }
+        "prerequisites" : "Prérequis",
+        "prerequisites1" : "Avoir un compte GitLab",
+        "prerequisites2" : "Connaître la structure du repository SVN",
+        "prerequisites3" : "Connaître le nom du groupe GitLab",
+        "start" : "Commencer une migration",
+        "check" : "Vérifier une migration",
+        "help" : "Besoin d'aide",
+        "contact" : "Merci de contacter l'admin",
+        "loading" : "Chargement des migrations en cours...",
+        "noMigration" : "Aucune migration en cours"
     }
 }

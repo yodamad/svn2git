@@ -116,7 +116,7 @@ public class Migration implements Serializable {
 
     @Column(name = "flat")
     @JsonView(View.Public.class)
-    private Boolean flat;
+    private Boolean flat = false;
 
     @Column(name = "svn_revision")
     @JsonView(View.Public.class)

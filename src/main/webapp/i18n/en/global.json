@@ -95,7 +95,10 @@
         "item-count": "Showing {{first}} - {{second}} of {{total}} items.",
         "search": "Search",
         "search-by": "Search by",
-        "or": "or"
+        "or": "or",
+        "no-result": "No result",
+        "all": "All",
+        "only": "Only"
     },
     "entity": {
         "action": {
@@ -109,7 +112,10 @@
             "open": "Open",
             "retry": "Retry",
             "save": "Save",
-            "view": "View"
+            "view": "View",
+            "ignore": "Ignore",
+            "add": "Add",
+            "download": "Download"
         },
         "detail": {
             "field": "Field",
@@ -143,7 +149,7 @@
         "idexists": "A new {{ entityName }} cannot already have an ID",
         "idnull": "Invalid ID"
     },
-    "footer": "Copyright - 2019",
+    "footer": "Copyright - 2020",
     "migration": {
         "title": "Migration",
         "confirm": "Confirm migration retry",

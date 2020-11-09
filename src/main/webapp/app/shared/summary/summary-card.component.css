@@ -60,3 +60,14 @@
 td.mat-cell {
     padding: 9px;
 }
+
+code {
+    color: #000;
+}
+
+.status {
+    text-align: center;
+    vertical-align: middle;
+    padding: 6px;
+    border-radius: 8px;
+}

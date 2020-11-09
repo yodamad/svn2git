@@ -32,6 +32,7 @@
             <th jhiSortBy="branchesToMigrate"><span jhiTranslate="svn2GitApp.migration.branchesToMigrate">Branches To Migrate</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="createdTimestamp"><span jhiTranslate="svn2GitApp.migration.createdTimestamp">Created Timestamp</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="workingDirectory"><span jhiTranslate="svn2GitApp.migration.workingDirectory">Working Directory</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="preserveEmptyDirs"><span jhiTranslate="svn2GitApp.migration.preserveEmptyDirs">Preserve Empty Dirs</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -55,6 +56,7 @@
                 <td>{{migration.branchesToMigrate}}</td>
                 <td>{{migration.createdTimestamp | date:'medium'}}</td>
                 <td>{{migration.workingDirectory}}</td>
+                <td>{{migration.preserveEmptyDirs}}</td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

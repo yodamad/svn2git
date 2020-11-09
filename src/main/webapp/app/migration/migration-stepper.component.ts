@@ -151,11 +151,8 @@ export class MigrationStepperComponent implements OnInit {
             gitlabToken: ['']
         });
         this.svnFormGroup = this._formBuilder.group({
-            svnRepository: ['', [Validators.required, Validators.pattern('^[a-zA-Z0-9_-]*$')]],
-            svnURL: [
-                { value: this.svnUrl, disabled: true },
-                [Validators.required, Validators.pattern('(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})[/\\w .-]*/')]
-            ],
+            svnRepository: ['', Validators.required],
+            svnURL: [{ value: this.svnUrl, disabled: true }, Validators.required],
             svnUser: ['', Validators.required],
             svnPwd: ['', Validators.required],
             svnDepth: [this.svnDepth]

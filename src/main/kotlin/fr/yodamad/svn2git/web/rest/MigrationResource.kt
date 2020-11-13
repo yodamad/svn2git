@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.lang.Boolean
 import java.net.URI
 import java.net.URISyntaxException
 import java.time.Instant
@@ -65,7 +64,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
         migration.createdTimestamp = Instant.now()
         migration.status = StatusEnum.WAITING
         val result: Migration = init(migration)
-        migrationManager.startMigration(result.id, Boolean.FALSE)
+        migrationManager.startMigration(result.id, false)
         return ResponseEntity.created(URI("/api/migrations/" + result.id))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.id.toString()))
             .body(migration)
@@ -84,13 +83,13 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
     open fun retryMigraton(@PathVariable id: Long, @RequestBody forceClean: String?): ResponseEntity<Long>? {
         log.debug("REST request to retry Migration : {}", id)
         val mig = migrationRepository.findById(id).orElseThrow { BadRequestAlertException("Migration cannot be retried", ENTITY_NAME, "iddonotexist") }
-        if (Boolean.valueOf(forceClean) && applicationProperties.flags.projectCleaningOption) {
+        if (forceClean.toBoolean() && applicationProperties.flags.projectCleaningOption) {
             gitlabResource.removeGroup(mig)
         }
         log.debug("Create a new migration to retry")
         mig.id = null
         val result = init(mig)
-        migrationManager.startMigration(result.id, Boolean.TRUE)
+        migrationManager.startMigration(result.id, true)
         return ResponseEntity.created(URI("/api/migrations/" + result.id))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.id.toString()))
             .body(id)

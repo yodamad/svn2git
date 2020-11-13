@@ -117,7 +117,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
             log.error("Cannot list SVN", e)
         }
         val modulesFounds: MutableList<SvnModule> = ArrayList()
-        list.receiver = ISvnObjectReceiver { target: SvnTarget?, `object`: SVNDirEntry ->
+        list.receiver = ISvnObjectReceiver { _, `object`: SVNDirEntry ->
             val name = `object`.relativePath
             if (name != null && !name.isEmpty() && !keywords().contains(name)) {
 

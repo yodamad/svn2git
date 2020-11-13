@@ -54,7 +54,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      */
     @Timed
     @PostMapping("/migrations")
-    @Throws(URISyntaxException::class)
+    @Throws(URISyntaxException::class, BadRequestAlertException::class)
     open fun createMigration(@RequestBody migration: @Valid Migration?): ResponseEntity<Migration?>? {
         log.debug("REST request to save Migration : {}", migration)
         if (migration!!.id != null) {
@@ -100,7 +100,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @param migration Migration to initialize
      * @return Migration initialized
      */
-    private fun init(migration: Migration): Migration {
+    open fun init(migration: Migration): Migration {
         val result = migrationRepository.save(migration)
 
         // Save any mapping where git directory is not empty Or is flagged for svnDirectoryDelete

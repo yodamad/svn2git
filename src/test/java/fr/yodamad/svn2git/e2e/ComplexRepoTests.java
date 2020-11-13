@@ -24,7 +24,8 @@ import java.util.concurrent.Future;
 
 import static fr.yodamad.svn2git.data.Repository.complex;
 import static fr.yodamad.svn2git.utils.Checks.*;
-import static fr.yodamad.svn2git.utils.MigrationUtils.*;
+import static fr.yodamad.svn2git.utils.MigrationUtils.GITLAB_API;
+import static fr.yodamad.svn2git.utils.MigrationUtils.initComplexMigration;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,7 +48,7 @@ public class ComplexRepoTests {
     }
 
     @Test
-    public void test_migration_on_flat_repository() throws ExecutionException, InterruptedException, GitLabApiException {
+    public void test_migration_on_complex_repository() throws ExecutionException, InterruptedException, GitLabApiException {
         Migration migration = initComplexMigration();
         migration.setSvnHistory("all");
         migration.setTrunk("trunk");

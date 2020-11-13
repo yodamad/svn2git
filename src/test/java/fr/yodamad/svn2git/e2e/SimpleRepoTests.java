@@ -50,10 +50,12 @@ public class SimpleRepoTests {
     }
 
     @After
-    public void cleanGitlab() throws GitLabApiException {
+    public void cleanGitlab() throws GitLabApiException, InterruptedException {
         Optional<Project> project = GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
         if (project.isPresent()) GITLAB_API.getProjectApi().deleteProject(project.get().getId());
-        GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
+        while(GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name).isPresent()) {
+            Thread.sleep(500);
+        }
     }
 
     @Test

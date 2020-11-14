@@ -26,7 +26,6 @@ import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.function.Function
 import java.util.stream.Collectors
 import kotlin.NoSuchElementException
 
@@ -40,6 +39,8 @@ open class MigrationManager(val cleaner: Cleaner,
                             val markdownGenerator: MarkdownGenerator) {
 
     private val LOG = LoggerFactory.getLogger(MigrationManager::class.java)
+
+    private val FAILED_DIR = "Failed to create directory : %s"
 
     /**
      * Start a migration in a dedicated thread
@@ -65,17 +66,17 @@ open class MigrationManager(val cleaner: Cleaner,
             }
             historyMgr.endStep(history, StatusEnum.DONE, null)
         } catch (ex: IOException) {
-            historyMgr.endStep(history, StatusEnum.FAILED, String.format("Failed to create directory : %s", ex.message))
+            historyMgr.endStep(history, StatusEnum.FAILED, String.format(FAILED_DIR, ex.message))
             migration.status = StatusEnum.FAILED
             migrationRepository.save(migration)
             return AsyncResult("KO")
         } catch (ex: InterruptedException) {
-            historyMgr.endStep(history, StatusEnum.FAILED, String.format("Failed to create directory : %s", ex.message))
+            historyMgr.endStep(history, StatusEnum.FAILED, String.format(FAILED_DIR, ex.message))
             migration.status = StatusEnum.FAILED
             migrationRepository.save(migration)
             return AsyncResult("KO")
         } catch (ex: RuntimeException) {
-            historyMgr.endStep(history, StatusEnum.FAILED, String.format("Failed to create directory : %s", ex.message))
+            historyMgr.endStep(history, StatusEnum.FAILED, String.format(FAILED_DIR, ex.message))
             migration.status = StatusEnum.FAILED
             migrationRepository.save(migration)
             return AsyncResult("KO")
@@ -118,7 +119,7 @@ open class MigrationManager(val cleaner: Cleaner,
             commandManager.isReexecutable = true
 
             // Apply dynamic local configuration
-            applicationProperties.getGitlab().getDynamicLocalConfig().stream().map { s: String -> s.split(",").toTypedArray() }.collect(Collectors.toMap(Function { a: Array<String> -> a[0].trim { it <= ' ' } }, Function { a: Array<String> -> a[1].trim { it <= ' ' } })).forEach { (key: String?, value: String?) ->
+            applicationProperties.getGitlab().getDynamicLocalConfig().stream().map { s: String -> s.split(",").toTypedArray() }.collect(Collectors.toMap({ a: Array<String> -> a[0].trim { it <= ' ' } }, { a: Array<String> -> a[1].trim { it <= ' ' } })).forEach { (key: String?, value: String?) ->
                 try {
                     addDynamicLocalConfig(workUnit, key, value)
                 } catch (e: IOException) {
@@ -377,8 +378,7 @@ open class MigrationManager(val cleaner: Cleaner,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) +
                 "Copying Root Folder")
         if (workUnit.commandManager.isFirstAttemptMigration) {
-            var gitCommand = ""
-            gitCommand = if (Shell.isWindows) {
+            val gitCommand: String = if (Shell.isWindows) {
                 // /J Copy using unbuffered I/O. Recommended for very large files.
                 String.format("Xcopy /E /I /H /Q %s %s_copy", workUnit.root, workUnit.root)
             } else {
@@ -406,8 +406,7 @@ open class MigrationManager(val cleaner: Cleaner,
                     "Initialising Root Directory from Copy in context of migration reexecution.")
 
             // The clean copy folder is used to reinitialise the workUnit.root Folder
-            var gitCommand = ""
-            gitCommand = if (Shell.isWindows) {
+            var gitCommand : String = if (Shell.isWindows) {
                 // /J Copy using unbuffered I/O. Recommended for very large files.
                 String.format("Xcopy /E /I /H /Q %s_copy %s", workUnit.root, workUnit.root)
             } else {

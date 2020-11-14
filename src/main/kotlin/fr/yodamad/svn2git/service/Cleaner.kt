@@ -2,6 +2,7 @@ package fr.yodamad.svn2git.service
 
 import com.madgag.git.bfg.cli.Main
 import fr.yodamad.svn2git.config.ApplicationProperties
+import fr.yodamad.svn2git.data.CleanedFiles
 import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
 import fr.yodamad.svn2git.domain.WorkUnit
@@ -25,7 +26,6 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.stream.Collectors
 
 
@@ -60,7 +60,7 @@ open class Cleaner(val historyMgr: HistoryManager,
             cleanedFilesMap[workUnit.migration.trunk] = cleanedFilesTrunk
         }
         val remotes = listRemotes(workUnit.directory)
-        listBranchesOnly(remotes!!, workUnit.migration.trunk)!!.forEach(
+        listBranchesOnly(remotes, workUnit.migration.trunk)!!.forEach(
             Consumer { b: String ->
                 try {
                     // get branchName
@@ -140,7 +140,7 @@ open class Cleaner(val historyMgr: HistoryManager,
      * @throws IOException
      */
     @Throws(IOException::class)
-    open fun listCleanedFilesInSvnLocation(workUnit: WorkUnit, svnLocation: String, svnLayout: SvnLayout?): CleanedFiles {
+    open fun listCleanedFilesInSvnLocation(workUnit: WorkUnit, svnLocation: String, svnLayout: SvnLayout): CleanedFiles {
         val cleanedFiles = CleanedFiles(svnLocation, svnLayout)
         val workingPath = Paths.get(workUnit.directory)
         inspectPath(workUnit, workingPath, svnLocation, cleanedFiles)
@@ -158,7 +158,7 @@ open class Cleaner(val historyMgr: HistoryManager,
     @Throws(IOException::class)
     open fun inspectPath(workUnit: WorkUnit, workingPath: Path, svnLocation: String, cleanedFiles: CleanedFiles) {
         val initialPath = Paths.get(workUnit.directory)
-        val pathFilter = label@ DirectoryStream.Filter { path: Path ->
+        val pathFilter = DirectoryStream.Filter { path: Path ->
             if (path.toFile().isDirectory) {
                 // Ignore git folder
                 if (path.toFile().name == ".git") {
@@ -188,7 +188,7 @@ open class Cleaner(val historyMgr: HistoryManager,
 
         // If binaries directory, push binary to artifactory
         val completePath = workingPath.toFile().canonicalPath
-        if (applicationProperties.artifactory.isEnabled() // Only tags for the moment
+        if (applicationProperties.artifactory.isEnabled // Only tags for the moment
             // TODO : externalize to allow branches, trunk open configuration
             && svnLocation.startsWith("tags")
             && completePath.endsWith(workUnit.migration.svnGroup + applicationProperties.artifactory.binariesDirectory)
@@ -213,7 +213,8 @@ open class Cleaner(val historyMgr: HistoryManager,
                         workUnit.migration.svnGroup,
                         workUnit.migration.svnProject,
                         svnLocation.replace(TAGS, ""))
-                    historyMgr.endStep(history, StatusEnum.DONE, String.format("Uploading Zip file to Artifactory : %s : %s", zipPath, artifactPath))
+                    historyMgr.endStep(history, StatusEnum.DONE,
+                        String.format("Uploading Zip file to Artifactory : %s : %s", zipPath, artifactPath))
                 } finally {
                     if (zipPath != null) {
                         // Remove file after uploading to avoid git commit
@@ -233,7 +234,9 @@ open class Cleaner(val historyMgr: HistoryManager,
                         val pathForHistoryMgr = String.format("%s/%s", applicationProperties.artifactory.binariesDirectory, p.fileName)
                         artifactInfo.append(String.format("%s : %s,", pathForHistoryMgr, artifactPath))
                     }
-                    historyMgr.endStep(history, StatusEnum.DONE, if (StringUtils.isEmpty(artifactInfo.toString())) "No Files Uploaded to Artifactory" else "Uploading file(s) to Artifactory, $artifactInfo")
+                    historyMgr.endStep(history, StatusEnum.DONE,
+                        if (StringUtils.isEmpty(artifactInfo.toString())) "No Files Uploaded to Artifactory"
+                        else "Uploading file(s) to Artifactory, $artifactInfo")
                 }
             }
         }
@@ -314,7 +317,8 @@ open class Cleaner(val historyMgr: HistoryManager,
         var clean = false
         if (!StringUtils.isEmpty(workUnit.migration.maxFileSize) && Character.isDigit(workUnit.migration.maxFileSize[0])) {
             // 3.2 Clean files based on size
-            val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLEANING, String.format("Remove files bigger than %s", workUnit.migration.maxFileSize))
+            val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLEANING,
+                String.format("Remove files bigger than %s", workUnit.migration.maxFileSize))
 
             // This is necessary for BFG to work
             val gitCommand = "git gc"
@@ -343,7 +347,8 @@ open class Cleaner(val historyMgr: HistoryManager,
         var clean = false
         if (applicationProperties.artifactory.enabled && StringUtils.isNotEmpty(applicationProperties.artifactory.deleteFolderWithBFG)) {
             // Delete folders based on a folder name
-            val history = historyMgr.startStep(workUnit.migration, StepEnum.ARTIFACTORY_FOLDER_CLEANING, String.format("Remove Folders called %s", applicationProperties.artifactory.deleteFolderWithBFG))
+            val history = historyMgr.startStep(workUnit.migration, StepEnum.ARTIFACTORY_FOLDER_CLEANING,
+                String.format("Remove Folders called %s", applicationProperties.artifactory.deleteFolderWithBFG))
 
             // needed?
             val gitCommand = "git gc"
@@ -373,7 +378,7 @@ open class Cleaner(val historyMgr: HistoryManager,
 
         // ######### List git branch ##################################
 
-        // The exectution of "git branch -r" will give us a list of the branches or tags that were really phyically "clone"
+        // The execution of "git branch -r" will give us a list of the branches or tags that were really physically "clone"
         //     In the command "git svn clone"
         // This should normally correspond to the requested branches and tags (through use of branch or tag filter)
         //    However the ignore-refs configuration fails for certain project(s) - non identified issue.
@@ -386,7 +391,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 .stream()
                 .map { l: String -> l.trim { it <= ' ' }.replace("origin/", "") }
                 .filter { t: String -> t.startsWith("tags") }
-                .map(Function<String, String> { l: String -> l.replace(TAGS, "") })
+                .map { l: String -> l.replace(TAGS, "") }
                 .filter { l: String -> !l.equals(workUnit.migration.trunk, ignoreCase = true) }
                 .collect(Collectors.toList())
         } else {
@@ -397,12 +402,15 @@ open class Cleaner(val historyMgr: HistoryManager,
                 .filter { l: String -> !l.equals(workUnit.migration.trunk, ignoreCase = true) }
                 .collect(Collectors.toList())
         }
-        gitElementsToDelete.forEach(Consumer { s: String? -> LOG.debug(String.format("gitElementsToDelete(%s):%s", if (isTags) "tags" else "branches", s)) })
+        gitElementsToDelete.forEach(Consumer { s: String? -> LOG.debug(String.format("gitElementsToDelete(%s):%s",
+            if (isTags) "tags" else "branches", s)) })
 
         // ######### List from branch or tag filter ##################################
 
         // branches or tags to keep according to filter applied if any (i.e. branches or tags to keep, everything else can be deleted)
-        val keepListFromFilter: List<String>? = if (isTags) getListFromCommaSeparatedString(workUnit.migration.tagsToMigrate) else getListFromCommaSeparatedString(workUnit.migration.branchesToMigrate)
+        val keepListFromFilter: List<String>? = if (isTags)
+            getListFromCommaSeparatedString(workUnit.migration.tagsToMigrate)
+        else getListFromCommaSeparatedString(workUnit.migration.branchesToMigrate)
 
         // ######### List svn ls ##################################
 
@@ -413,7 +421,8 @@ open class Cleaner(val historyMgr: HistoryManager,
         val svnUrl = if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else String.format("%s/", workUnit.migration.svnUrl)
         val svnBranchList: String
         svnBranchList = if (StringUtils.isEmpty(workUnit.migration.svnPassword)) {
-            String.format("svn ls %s%s%s/%s > %s", svnUrl, workUnit.migration.svnGroup, workUnit.migration.svnProject, if (isTags) "tags" else "branches", SVN_LIST)
+            String.format("svn ls %s%s%s/%s > %s", svnUrl, workUnit.migration.svnGroup, workUnit.migration.svnProject,
+                if (isTags) "tags" else "branches", SVN_LIST)
         } else {
             String.format("svn ls %s%s%s/%s %s %s > %s", svnUrl,
                 if (workUnit.migration.svnGroup.endsWith("/")) workUnit.migration.svnGroup else String.format("%s/", workUnit.migration.svnGroup),

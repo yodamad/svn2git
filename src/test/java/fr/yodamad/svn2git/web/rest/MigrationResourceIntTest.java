@@ -263,7 +263,7 @@ public class MigrationResourceIntTest {
         // set the field null
         migration.setGitlabProject(null);
         migration.setId(RandomUtils.nextLong());
-        
+
         // Create the Migration, which fails.
         restMigrationMockMvc.perform(post("/api/migrations")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)

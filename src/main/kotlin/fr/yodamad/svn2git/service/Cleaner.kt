@@ -10,6 +10,7 @@ import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
+import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository
 import fr.yodamad.svn2git.service.util.ArtifactoryAdmin
 import fr.yodamad.svn2git.service.util.Shell

@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
+import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.repository.MappingRepository
 import fr.yodamad.svn2git.service.util.GitlabAdmin
 import fr.yodamad.svn2git.service.util.MigrationConstants

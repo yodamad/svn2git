@@ -7,6 +7,7 @@ import fr.yodamad.svn2git.domain.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
+import fr.yodamad.svn2git.functions.listRemotes
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository
 import fr.yodamad.svn2git.repository.MigrationRepository
 import fr.yodamad.svn2git.service.util.CommandManager

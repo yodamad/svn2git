@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static fr.yodamad.svn2git.service.GitFunctionsKt.generateIgnoreRefs;
+import static fr.yodamad.svn2git.functions.GitFunctionsKt.generateIgnoreRefs;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,4 +1,4 @@
-package fr.yodamad.svn2git.service
+package fr.yodamad.svn2git.functions
 
 import fr.yodamad.svn2git.domain.WorkUnit
 import org.apache.commons.lang3.StringUtils

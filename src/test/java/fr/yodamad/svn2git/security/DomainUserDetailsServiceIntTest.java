@@ -3,7 +3,6 @@ package fr.yodamad.svn2git.security;
 import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.domain.User;
 import fr.yodamad.svn2git.repository.UserRepository;
-
 import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;

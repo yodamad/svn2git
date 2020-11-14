@@ -5,7 +5,7 @@ import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.CleanedFiles
 import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
-import fr.yodamad.svn2git.domain.WorkUnit
+import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum

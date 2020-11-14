@@ -42,10 +42,13 @@ public class SimpleRepoTests {
     private MigrationRepository migrationRepository;
 
     @Before
-    public void checkGitlab() throws GitLabApiException {
+    public void checkGitlab() throws GitLabApiException, InterruptedException {
         Optional<Project> project = GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
         if (project.isPresent()) {
             GITLAB_API.getProjectApi().deleteProject(project.get().getId());
+        }
+        while(GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name).isPresent()) {
+            Thread.sleep(500);
         }
     }
 

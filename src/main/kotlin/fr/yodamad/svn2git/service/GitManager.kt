@@ -5,7 +5,7 @@ import fr.yodamad.svn2git.config.Constants
 import fr.yodamad.svn2git.domain.Mapping
 import fr.yodamad.svn2git.domain.Migration
 import fr.yodamad.svn2git.domain.MigrationHistory
-import fr.yodamad.svn2git.domain.WorkUnit
+import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.functions.*
@@ -78,7 +78,7 @@ open class GitManager(val historyMgr: HistoryManager,
                 gitlabAdmin = GitlabAdmin(applicationProperties)
                 val api = GitLabApi(migration.gitlabUrl, migration.gitlabToken)
                 api.ignoreCertificateErrors = true
-                gitlabAdmin.setGitLabApi(api)
+                gitlabAdmin.setGitlabApi(api)
             }
         }
         try {

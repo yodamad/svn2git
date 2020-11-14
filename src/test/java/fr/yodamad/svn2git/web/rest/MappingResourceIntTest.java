@@ -1,20 +1,16 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.service.MappingService;
-import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -25,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,9 +70,6 @@ public class MappingResourceIntTest {
     private MockMvc restMappingMockMvc;
 
     private Mapping mapping;
-
-    @MockBean
-    ArtifactoryAdmin artifactoryAdmin;
 
     @Before
     public void setup() {

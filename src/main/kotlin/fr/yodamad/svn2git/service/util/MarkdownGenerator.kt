@@ -2,7 +2,11 @@ package fr.yodamad.svn2git.service.util
 
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.CleanedFiles
-import fr.yodamad.svn2git.domain.*
+import fr.yodamad.svn2git.data.WorkUnit
+import fr.yodamad.svn2git.domain.Mapping
+import fr.yodamad.svn2git.domain.Migration
+import fr.yodamad.svn2git.domain.MigrationHistory
+import fr.yodamad.svn2git.domain.MigrationRemovedFile
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.service.CleanedFilesManager
@@ -29,7 +33,7 @@ import java.util.function.Consumer
  * Markdown generator
  */
 @Service
-class MarkdownGenerator(
+open class MarkdownGenerator(
     private val applicationProperties: ApplicationProperties,
     private val migrationRemovedFileService: MigrationRemovedFileService) {
     private val log = LoggerFactory.getLogger(MarkdownGenerator::class.java)
@@ -42,7 +46,7 @@ class MarkdownGenerator(
      * @return markdown string
      */
     @Throws(IOException::class)
-    fun generateSummaryReadme(migration: Migration, cleanedFilesManager: CleanedFilesManager, workUnit: WorkUnit) {
+    open fun generateSummaryReadme(migration: Migration, cleanedFilesManager: CleanedFilesManager, workUnit: WorkUnit) {
         val md = StringBuilder()
         // Overview
         md.append(Heading(migration.gitlabProject.toUpperCase().replace("/".toRegex(), ""), 1))
@@ -198,7 +202,7 @@ class MarkdownGenerator(
         }
     }
 
-    private fun addRemovedFileRow(migrationRemovedFileTableBuilder: Table.Builder, migrationRemovedFile: MigrationRemovedFile) {
+    open fun addRemovedFileRow(migrationRemovedFileTableBuilder: Table.Builder, migrationRemovedFile: MigrationRemovedFile) {
         var id = ""
         if (migrationRemovedFile.id != null) {
             id = migrationRemovedFile.id.toString()

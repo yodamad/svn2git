@@ -1,6 +1,6 @@
 package fr.yodamad.svn2git.functions
 
-import fr.yodamad.svn2git.domain.WorkUnit
+import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.service.GitManager
 import fr.yodamad.svn2git.service.util.MigrationConstants
 import fr.yodamad.svn2git.service.util.Shell
@@ -138,7 +138,7 @@ fun generateIgnorePaths(trunk: String?, tags: String?, branches: String?, svnPro
  * @throws IOException
  */
 @Throws(InterruptedException::class, IOException::class)
-fun listRemotes(directory: String?): List<String> {
+fun listRemotes(directory: String): List<String> {
     val command = "git branch -r"
     val builder = ProcessBuilder()
     if (Shell.isWindows) {

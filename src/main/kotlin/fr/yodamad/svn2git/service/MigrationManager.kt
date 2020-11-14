@@ -3,7 +3,7 @@ package fr.yodamad.svn2git.service
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.config.Constants
 import fr.yodamad.svn2git.domain.MigrationHistory
-import fr.yodamad.svn2git.domain.WorkUnit
+import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout

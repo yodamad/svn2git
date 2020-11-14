@@ -1,6 +1,6 @@
 package fr.yodamad.svn2git.functions
 
-import fr.yodamad.svn2git.domain.WorkUnit
+import fr.yodamad.svn2git.data.WorkUnit
 import org.apache.commons.lang3.StringUtils
 import java.io.IOException
 import java.nio.channels.FileChannel

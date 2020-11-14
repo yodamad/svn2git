@@ -4,14 +4,12 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.config.Constants;
 import fr.yodamad.svn2git.config.audit.AuditEventConverter;
 import fr.yodamad.svn2git.domain.PersistentAuditEvent;
-import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -24,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static fr.yodamad.svn2git.repository.CustomAuditEventRepository.EVENT_DATA_COLUMN_MAX_LENGTH;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test class for the CustomAuditEventRepository class.
@@ -42,9 +40,6 @@ public class CustomAuditEventRepositoryIntTest {
 
     @Autowired
     private AuditEventConverter auditEventConverter;
-
-    @MockBean
-    ArtifactoryAdmin artifactoryAdmin;
 
     private CustomAuditEventRepository customAuditEventRepository;
 

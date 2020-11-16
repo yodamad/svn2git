@@ -1,4 +1,4 @@
-package fr.yodamad.svn2git.service.util
+package fr.yodamad.svn2git.service.client
 
 import fr.yodamad.svn2git.config.ApplicationProperties
 import org.apache.commons.lang3.StringUtils

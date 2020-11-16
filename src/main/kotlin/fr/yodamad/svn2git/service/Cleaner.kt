@@ -12,9 +12,9 @@ import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository
-import fr.yodamad.svn2git.service.util.ArtifactoryAdmin
-import fr.yodamad.svn2git.service.util.Shell
-import fr.yodamad.svn2git.service.util.ZipUtil
+import fr.yodamad.svn2git.service.client.ArtifactoryAdmin
+import fr.yodamad.svn2git.io.Shell
+import fr.yodamad.svn2git.io.ZipUtil
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.data.util.Pair

@@ -1,6 +1,7 @@
-package fr.yodamad.svn2git.service.util
+package fr.yodamad.svn2git.io
 
 import fr.yodamad.svn2git.domain.Migration
+import fr.yodamad.svn2git.service.util.CommandManager
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.io.*

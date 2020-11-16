@@ -1,4 +1,4 @@
-package fr.yodamad.svn2git.service.util
+package fr.yodamad.svn2git.io
 
 object BytesConverterUtil {
     fun humanReadableByteCount(bytes: Long, si: Boolean): String {

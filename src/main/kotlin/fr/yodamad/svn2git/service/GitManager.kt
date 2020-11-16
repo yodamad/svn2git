@@ -9,10 +9,10 @@ import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.functions.*
+import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.repository.MappingRepository
-import fr.yodamad.svn2git.service.util.GitlabAdmin
-import fr.yodamad.svn2git.service.util.MigrationConstants
-import fr.yodamad.svn2git.service.util.Shell
+import fr.yodamad.svn2git.service.client.GitlabAdmin
+import fr.yodamad.svn2git.service.util.*
 import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils
 import org.apache.commons.lang3.StringUtils
 import org.gitlab4j.api.GitLabApi
@@ -122,7 +122,7 @@ open class GitManager(val historyMgr: HistoryManager,
                 }
             }
         } catch (exc: GitLabApiException) {
-            val message: String? = exc.message?.replace(applicationProperties.gitlab.token, MigrationConstants.STARS)
+            val message: String? = exc.message?.replace(applicationProperties.gitlab.token, STARS)
             LOG.error("Gitlab errors are " + exc.validationErrors)
             historyMgr.endStep(history, StatusEnum.FAILED, message)
             throw exc
@@ -143,11 +143,11 @@ open class GitManager(val historyMgr: HistoryManager,
         if (!StringUtils.isEmpty(workUnit.migration.svnPassword)) {
             val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
             cloneCommand = initCommand(workUnit, workUnit.migration.svnUser, escapedPassword)
-            safeCommand = initCommand(workUnit, workUnit.migration.svnUser, MigrationConstants.STARS)
+            safeCommand = initCommand(workUnit, workUnit.migration.svnUser, STARS)
         } else if (!StringUtils.isEmpty(applicationProperties.svn.password)) {
             val escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password)
             cloneCommand = initCommand(workUnit, applicationProperties.svn.user, escapedPassword)
-            safeCommand = initCommand(workUnit, applicationProperties.svn.user, MigrationConstants.STARS)
+            safeCommand = initCommand(workUnit, applicationProperties.svn.user, STARS)
         } else {
             cloneCommand = initCommand(workUnit, null, null)
             safeCommand = cloneCommand
@@ -251,7 +251,7 @@ open class GitManager(val historyMgr: HistoryManager,
                 gitCommand = String.format("git commit -m \"Apply mappings on %s\"", branch)
                 Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 // git push
-                gitCommand = String.format("%s --set-upstream origin %s", MigrationConstants.GIT_PUSH, branch.replace("origin/", ""))
+                gitCommand = String.format("%s --set-upstream origin %s", GIT_PUSH, branch.replace("origin/", ""))
                 Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } catch (iEx: IOException) {
@@ -379,9 +379,9 @@ open class GitManager(val historyMgr: HistoryManager,
                                 if (applicationProperties.getFlags().isGitMvKOption()) "-k" else "",
                                 el, Paths.get(mapping.gitDirectory, el).toString()))
                     } catch (e: InterruptedException) {
-                        return@mapToInt MigrationConstants.ERROR_CODE
+                        return@mapToInt ERROR_CODE
                     } catch (e: IOException) {
-                        return@mapToInt MigrationConstants.ERROR_CODE
+                        return@mapToInt ERROR_CODE
                     }
                 }.sum()
 
@@ -424,7 +424,7 @@ open class GitManager(val historyMgr: HistoryManager,
             if (traceStep) history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, historyCommand)
             // git mv
             val exitCode = Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-            if (MigrationConstants.ERROR_CODE == exitCode) {
+            if (ERROR_CODE == exitCode) {
                 if (traceStep) historyMgr.endStep(history, StatusEnum.IGNORED, null)
                 StatusEnum.IGNORED
             } else {
@@ -493,7 +493,7 @@ open class GitManager(val historyMgr: HistoryManager,
         if (workUnit.migration.svnHistory == "all") {
             try {
                 addRemote(workUnit, true)
-                gitCommand = String.format("%s --set-upstream origin %s", MigrationConstants.GIT_PUSH, branchName)
+                gitCommand = String.format("%s --set-upstream origin %s", GIT_PUSH, branchName)
                 Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } catch (iEx: IOException) {
@@ -546,7 +546,7 @@ open class GitManager(val historyMgr: HistoryManager,
         try {
 
             // derive local tagName from remote tag name
-            val tagName = tag.replaceFirst(MigrationConstants.ORIGIN_TAGS.toRegex(), "")
+            val tagName = tag.replaceFirst(ORIGIN_TAGS.toRegex(), "")
             LOG.debug(String.format("Tag %s", tagName))
 
             // determine noHistory flag i.e was all selected or not
@@ -688,7 +688,7 @@ open class GitManager(val historyMgr: HistoryManager,
         return String.format("git remote add origin %s://%s:%s@%s/%s/%s.git",
             uri.scheme,
             if (workUnit.migration.gitlabToken == null) applicationProperties.gitlab.account else workUnit.migration.user,
-            if (safeMode) MigrationConstants.STARS else if (workUnit.migration.gitlabToken == null) applicationProperties.gitlab.token else workUnit.migration.gitlabToken,
+            if (safeMode) STARS else if (workUnit.migration.gitlabToken == null) applicationProperties.gitlab.token else workUnit.migration.gitlabToken,
             uri.authority,
             workUnit.migration.gitlabGroup,
             project)

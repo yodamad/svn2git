@@ -2,8 +2,9 @@ package fr.yodamad.svn2git.functions
 
 import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.service.GitManager
-import fr.yodamad.svn2git.service.util.MigrationConstants
-import fr.yodamad.svn2git.service.util.Shell
+import fr.yodamad.svn2git.service.util.MASTER
+import fr.yodamad.svn2git.service.util.ORIGIN_TAGS
+import fr.yodamad.svn2git.io.Shell
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
@@ -164,8 +165,8 @@ fun listRemotes(directory: String): List<String> {
  */
 fun listBranchesOnly(remotes: List<String>, trunk: String?): List<String>? = remotes.stream()
         .map { obj: String -> obj.trim { it <= ' ' } } // Remove tags
-        .filter { b: String -> !b.startsWith(MigrationConstants.ORIGIN_TAGS) } // Remove master/trunk
-        .filter { b: String -> !b.contains(MigrationConstants.MASTER) }
+        .filter { b: String -> !b.startsWith(ORIGIN_TAGS) } // Remove master/trunk
+        .filter { b: String -> !b.contains(MASTER) }
         .filter { b: String -> !b.contains(trunk!!) }
         .filter { b: String -> !b.contains("@") }
         .collect(Collectors.toList())
@@ -178,7 +179,7 @@ fun listBranchesOnly(remotes: List<String>, trunk: String?): List<String>? = rem
  */
 fun listTagsOnly(remotes: List<String>): List<String>? = remotes.stream()
         .map { obj: String -> obj.trim { it <= ' ' } } // Only tags
-        .filter { b: String -> b.startsWith(MigrationConstants.ORIGIN_TAGS) } // Remove temp tags
+        .filter { b: String -> b.startsWith(ORIGIN_TAGS) } // Remove temp tags
         .filter { b: String -> !b.contains("@") }
         .collect(Collectors.toList())
 

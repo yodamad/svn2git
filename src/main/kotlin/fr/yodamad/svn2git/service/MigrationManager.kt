@@ -8,12 +8,10 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import fr.yodamad.svn2git.functions.listRemotes
+import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository
 import fr.yodamad.svn2git.repository.MigrationRepository
-import fr.yodamad.svn2git.service.util.CommandManager
-import fr.yodamad.svn2git.service.util.MarkdownGenerator
-import fr.yodamad.svn2git.service.util.MigrationConstants
-import fr.yodamad.svn2git.service.util.Shell
+import fr.yodamad.svn2git.service.util.*
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -196,10 +194,10 @@ open class MigrationManager(val cleaner: Cleaner,
 
                     // if no history option set
                     if (migration.svnHistory == "nothing") {
-                        gitManager.removeHistory(workUnit, MigrationConstants.MASTER, false, history)
+                        gitManager.removeHistory(workUnit, MASTER, false, history)
                     } else {
                         // Push with upstream
-                        gitCommand = String.format("%s --set-upstream origin master", MigrationConstants.GIT_PUSH)
+                        gitCommand = String.format("%s --set-upstream origin master", GIT_PUSH)
                         Shell.execCommand(commandManager, workUnit.directory, gitCommand)
                         historyMgr.endStep(history, StatusEnum.DONE, null)
                     }
@@ -209,7 +207,7 @@ open class MigrationManager(val cleaner: Cleaner,
                     Shell.execCommand(commandManager, workUnit.directory, gitCommand)
 
                     // 5. Apply mappings if some
-                    val warning = gitManager.applyMapping(workUnit, MigrationConstants.MASTER)
+                    val warning = gitManager.applyMapping(workUnit, MASTER)
                     workUnit.warnings.set(workUnit.warnings.get() || warning)
                 } else {
                     history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, migration.trunk)
@@ -261,7 +259,7 @@ open class MigrationManager(val cleaner: Cleaner,
                     Shell.execCommand(commandManager, workUnit.directory, gitCommand)
                     gitCommand = "git commit -m \"📃 Add generated README.md\""
                     Shell.execCommand(commandManager, workUnit.directory, gitCommand)
-                    gitCommand = String.format("%s --set-upstream origin master", MigrationConstants.GIT_PUSH)
+                    gitCommand = String.format("%s --set-upstream origin master", GIT_PUSH)
                     Shell.execCommand(commandManager, workUnit.directory, gitCommand)
                     historyMgr.endStep(history, StatusEnum.DONE, null)
                 } catch (exc: Exception) {

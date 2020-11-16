@@ -32,19 +32,22 @@ open class MigrationChecker(
     open fun checkDb() {
         try {
             // Start waiting migrations
-            repository.findAllByStatusOrderByDateDesc(StatusEnum.WAITING).forEach(Consumer { mig: Migration -> manager.startMigration(mig.id, Boolean.FALSE) })
+            repository.findAllByStatusOrderByDateDesc(StatusEnum.WAITING).forEach(
+                Consumer { mig: Migration -> manager.startMigration(mig.id, Boolean.FALSE) })
             // Fail running migrations
-            repository.findAllByStatusOrderByDateDesc(StatusEnum.RUNNING).forEach(Consumer { mig: Migration ->
-                mig.status(StatusEnum.FAILED)
-                repository.save(mig)
-            })
+            repository.findAllByStatusOrderByDateDesc(StatusEnum.RUNNING).forEach(
+                Consumer { mig: Migration ->
+                    mig.status(StatusEnum.FAILED)
+                    repository.save(mig)
+                })
         } catch (exc: Exception) {
             LOG.error("Failed to check migration on startup", exc)
             // Fail running migrations
-            repository.findAllByStatusOrderByDateDesc(StatusEnum.RUNNING).forEach(Consumer { mig: Migration ->
-                mig.status(StatusEnum.FAILED)
-                repository.save(mig)
-            })
+            repository.findAllByStatusOrderByDateDesc(StatusEnum.RUNNING).forEach(
+                Consumer { mig: Migration ->
+                    mig.status(StatusEnum.FAILED)
+                    repository.save(mig)
+                })
         }
     }
 

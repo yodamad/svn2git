@@ -9,6 +9,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
+import fr.yodamad.svn2git.io.BytesConverterUtil
 import fr.yodamad.svn2git.service.CleanedFilesManager
 import fr.yodamad.svn2git.service.MigrationRemovedFileService
 import net.steppschuh.markdowngenerator.table.Table

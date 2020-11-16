@@ -4,8 +4,8 @@ import com.codahale.metrics.annotation.Timed
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.domain.GitlabInfo
 import fr.yodamad.svn2git.domain.Migration
-import fr.yodamad.svn2git.service.util.GitlabAdmin
-import fr.yodamad.svn2git.service.util.MigrationConstants
+import fr.yodamad.svn2git.service.client.GitlabAdmin
+import fr.yodamad.svn2git.service.util.STARS
 import org.apache.commons.lang3.StringUtils
 import org.gitlab4j.api.GitLabApi
 import org.gitlab4j.api.GitLabApiException
@@ -105,7 +105,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
             } catch (apiEx: GitLabApiException) {
 
                 // just in case token in message
-                val message = apiEx.message!!.replace(applicationProperties.gitlab.token, MigrationConstants.STARS)
+                val message = apiEx.message!!.replace(applicationProperties.gitlab.token, STARS)
                 if (apiEx.reason.equals("Not Found", ignoreCase = true)) {
                     // UserName not found : is a possible case. i.e. we only raise a warning in logs.
                     logger.warn(String.format("Member:%s not found in group:%s",
@@ -197,7 +197,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                 logger.info("Unknown project, cannot delete it (or maybe already deleted)")
                 return
             }
-            val message = apiEx.message!!.replace(applicationProperties.gitlab.token, MigrationConstants.STARS)
+            val message = apiEx.message!!.replace(applicationProperties.gitlab.token, STARS)
             logger.error("Impossible to remove group", message)
             throw apiEx
         }

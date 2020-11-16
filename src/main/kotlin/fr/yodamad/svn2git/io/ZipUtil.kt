@@ -1,4 +1,4 @@
-package fr.yodamad.svn2git.service.util
+package fr.yodamad.svn2git.io
 
 import fr.yodamad.svn2git.data.WorkUnit
 import org.slf4j.LoggerFactory

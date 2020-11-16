@@ -16,7 +16,7 @@ import java.net.URISyntaxException
  * REST controller for managing MigrationHistory.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("$API$HISTORY")
 open class MigrationHistoryResource(val migrationHistoryService: MigrationHistoryService) {
     private val log = LoggerFactory.getLogger(MigrationHistoryResource::class.java)
 
@@ -30,7 +30,7 @@ open class MigrationHistoryResource(val migrationHistoryService: MigrationHistor
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PostMapping("/migration-histories")
+    @PostMapping
     @Throws(URISyntaxException::class)
     open fun createMigrationHistory(@RequestBody migrationHistory: MigrationHistory): ResponseEntity<MigrationHistory>? {
         log.debug("REST request to save MigrationHistory : {}", migrationHistory)
@@ -53,7 +53,7 @@ open class MigrationHistoryResource(val migrationHistoryService: MigrationHistor
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PutMapping("/migration-histories")
+    @PutMapping
     @Throws(URISyntaxException::class)
     open fun updateMigrationHistory(@RequestBody migrationHistory: MigrationHistory): ResponseEntity<MigrationHistory>? {
         log.debug("REST request to update MigrationHistory : {}", migrationHistory)
@@ -72,7 +72,7 @@ open class MigrationHistoryResource(val migrationHistoryService: MigrationHistor
      * @return the ResponseEntity with status 200 (OK) and the list of migrationHistories in body
      */
     @Timed
-    @GetMapping("/migration-histories")
+    @GetMapping
     open fun getAllMigrationHistories(): List<MigrationHistory?>? = migrationHistoryService.findAll()
 
     /**
@@ -82,7 +82,7 @@ open class MigrationHistoryResource(val migrationHistoryService: MigrationHistor
      * @return the ResponseEntity with status 200 (OK) and with body the migrationHistory, or with status 404 (Not Found)
      */
     @Timed
-    @GetMapping("/migration-histories/{id}")
+    @GetMapping("/{id}")
     open fun getMigrationHistory(@PathVariable id: Long?): ResponseEntity<MigrationHistory>? {
         log.debug("REST request to get MigrationHistory : {}", id)
         val migrationHistory = migrationHistoryService.findOne(id)
@@ -96,7 +96,7 @@ open class MigrationHistoryResource(val migrationHistoryService: MigrationHistor
      * @return the ResponseEntity with status 200 (OK)
      */
     @Timed
-    @DeleteMapping("/migration-histories/{id}")
+    @DeleteMapping("/{id}")
     open fun deleteMigrationHistory(@PathVariable id: Long): ResponseEntity<Void?>? {
         log.debug("REST request to delete MigrationHistory : {}", id)
         migrationHistoryService.delete(id)

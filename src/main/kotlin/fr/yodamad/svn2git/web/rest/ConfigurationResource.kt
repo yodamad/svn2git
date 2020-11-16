@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RestController
  * Expose API to retrieve some configuration elements
  */
 @RestController
-@RequestMapping("/api/config/")
+@RequestMapping("$API$CONFIG")
 open class ConfigurationResource(val applicationProperties: ApplicationProperties) {
     /**
      * @return Configured SVN URL
      */
     @Timed
-    @GetMapping("svn")
+    @GetMapping(SVN)
     open fun getSvnUrl(): ResponseEntity<String?>? = ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
             .body(applicationProperties.svn.url)
@@ -27,7 +27,7 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
      * @return Configured SVN credentials option
      */
     @Timed
-    @GetMapping("svn/credentials")
+    @GetMapping("$SVN/credentials")
     open fun getSvnCredentialsOption(): ResponseEntity<String?>? =
         ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
@@ -37,7 +37,7 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
      * @return Configured svnUrlModifiable option
      */
     @Timed
-    @GetMapping("svn/svnUrlModifiable")
+    @GetMapping("$SVN/svnUrlModifiable")
     open fun getSvnUrlModifiableOption(): ResponseEntity<String?>? = ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
             .body(applicationProperties.svn.svnUrlModifiable)
@@ -46,7 +46,7 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
      * @return Configured svn depth searched authorized
      */
     @Timed
-    @GetMapping("svn/depth")
+    @GetMapping("$SVN/depth")
     open fun getSvnDepthSearch(): ResponseEntity<String>? = ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
             .body(applicationProperties.work.maxSvnLevel.toString())
@@ -55,7 +55,7 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
      * @return Configured Gitlab URL
      */
     @Timed
-    @GetMapping("gitlab")
+    @GetMapping(GITLAB)
     open fun getGitlabUrl(): ResponseEntity<String?>? = ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
             .body(applicationProperties.gitlab.url)
@@ -64,7 +64,7 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
      * @return Configured gitlab credentials option
      */
     @Timed
-    @GetMapping("gitlab/credentials")
+    @GetMapping("$GITLAB/credentials")
     open fun getGitlabCredentialsOption(): ResponseEntity<String?>? = ResponseEntity.ok()
             .contentType(MediaType.TEXT_PLAIN)
             .body(applicationProperties.gitlab.credentials)
@@ -73,7 +73,7 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
      * @return Configured extensions policy
      */
     @Timed
-    @GetMapping("override/extensions")
+    @GetMapping("$OVERRIDE/extensions")
     open fun getOverrideExtensions(): ResponseEntity<Boolean?>? = ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.override.extensions)
@@ -82,19 +82,19 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
      * @return Configured mappings policy
      */
     @Timed
-    @GetMapping("override/mappings")
+    @GetMapping("$OVERRIDE/mappings")
     open fun getOverrideMappings(): ResponseEntity<Boolean?>? = ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.override.mappings)
 
     @Timed
-    @GetMapping("flags/projectCleaningOption")
+    @GetMapping("$FLAGS/projectCleaningOption")
     open fun getProjectCleaningOption(): ResponseEntity<Boolean?>? = ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.flags.projectCleaningOption)
 
     @Timed
-    @GetMapping("flags/gitlabGroupCreationOption")
+    @GetMapping("$FLAGS/gitlabGroupCreationOption")
     open fun getGitlabGroupCreationOption(): ResponseEntity<Boolean?>? = ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.flags.gitlabGroupCreationOption)

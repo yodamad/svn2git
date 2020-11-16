@@ -27,7 +27,7 @@ import java.util.stream.IntStream
  * Controller to use Gitlab API
  */
 @RestController
-@RequestMapping("/api/gitlab/")
+@RequestMapping("$API$GITLAB")
 open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                           val applicationProperties: ApplicationProperties) {
 
@@ -40,7 +40,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
      * @return if user found
      */
     @Timed
-    @PostMapping("user/{username}")
+    @PostMapping("/user/{username}")
     open fun checkUser(@PathVariable("username") userName: String?, @RequestBody gitlabInfo: GitlabInfo): ResponseEntity<Boolean?>? {
         val api: UserApi = overrideGitlab(gitlabInfo).userApi
         val user = api.getOptionalUser(userName)
@@ -64,7 +64,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
      * @return if group found
      */
     @Timed
-    @PostMapping("group/{groupName}/members/{userName}")
+    @PostMapping("/group/{groupName}/members/{userName}")
     open fun checkGroup(@PathVariable("groupName") groupName: String?,
                         @PathVariable("userName") userName: String?,
                         @RequestBody gitlabInfo: GitlabInfo): ResponseEntity<Boolean>? {
@@ -130,7 +130,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
      * @return
      */
     @Timed
-    @PutMapping("group/{groupName}")
+    @PutMapping("/group/{groupName}")
     open fun createGroup(@PathVariable("groupName") groupName: String?, @RequestBody gitlabInfo: GitlabInfo?): ResponseEntity<Boolean>? {
         val group = Group()
         group.name = groupName

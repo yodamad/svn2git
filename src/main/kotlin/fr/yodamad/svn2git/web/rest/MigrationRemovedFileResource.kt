@@ -16,7 +16,7 @@ import java.net.URISyntaxException
  * REST controller for managing MigrationRemovedFile.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("$API$REMOVED_FILES")
 open class MigrationRemovedFileResource(val migrationRemovedFileService: MigrationRemovedFileService) {
 
     private val log = LoggerFactory.getLogger(MigrationRemovedFileResource::class.java)
@@ -31,7 +31,7 @@ open class MigrationRemovedFileResource(val migrationRemovedFileService: Migrati
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PostMapping("/migration-removed-files")
+    @PostMapping
     @Throws(URISyntaxException::class)
     open fun createMigrationRemovedFile(@RequestBody migrationRemovedFile: MigrationRemovedFile): ResponseEntity<MigrationRemovedFile>? {
         log.debug("REST request to save MigrationRemovedFile : {}", migrationRemovedFile)
@@ -54,7 +54,7 @@ open class MigrationRemovedFileResource(val migrationRemovedFileService: Migrati
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PutMapping("/migration-removed-files")
+    @PutMapping
     @Throws(URISyntaxException::class)
     open fun updateMigrationRemovedFile(@RequestBody migrationRemovedFile: MigrationRemovedFile): ResponseEntity<MigrationRemovedFile>? {
         log.debug("REST request to update MigrationRemovedFile : {}", migrationRemovedFile)
@@ -73,7 +73,7 @@ open class MigrationRemovedFileResource(val migrationRemovedFileService: Migrati
      * @return the ResponseEntity with status 200 (OK) and the list of migrationRemovedFiles in body
      */
     @Timed
-    @GetMapping("/migration-removed-files")
+    @GetMapping
     open fun getAllMigrationRemovedFiles(): List<MigrationRemovedFile?>? {
         log.debug("REST request to get all MigrationRemovedFiles")
         return migrationRemovedFileService.findAll()
@@ -86,7 +86,7 @@ open class MigrationRemovedFileResource(val migrationRemovedFileService: Migrati
      * @return the ResponseEntity with status 200 (OK) and with body the migrationRemovedFile, or with status 404 (Not Found)
      */
     @Timed
-    @GetMapping("/migration-removed-files/{id}")
+    @GetMapping("/{id}")
     open fun getMigrationRemovedFile(@PathVariable id: Long?): ResponseEntity<MigrationRemovedFile>? {
         log.debug("REST request to get MigrationRemovedFile : {}", id)
         val migrationRemovedFile = migrationRemovedFileService.findOne(id)
@@ -100,7 +100,7 @@ open class MigrationRemovedFileResource(val migrationRemovedFileService: Migrati
      * @return the ResponseEntity with status 200 (OK)
      */
     @Timed
-    @DeleteMapping("/migration-removed-files/{id}")
+    @DeleteMapping("/{id}")
     open fun deleteMigrationRemovedFile(@PathVariable id: Long): ResponseEntity<Void?>? {
         log.debug("REST request to delete MigrationRemovedFile : {}", id)
         migrationRemovedFileService.delete(id)

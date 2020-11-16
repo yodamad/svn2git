@@ -16,7 +16,7 @@ import java.net.URISyntaxException
  * REST controller for managing Mapping.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("$API$MAPPINGS")
 open class MappingResource(val mappingService: MappingService) {
 
     private val log = LoggerFactory.getLogger(MappingResource::class.java)
@@ -31,7 +31,7 @@ open class MappingResource(val mappingService: MappingService) {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PostMapping("/mappings")
+    @PostMapping
     @Throws(URISyntaxException::class)
     open fun createMapping(@RequestBody mapping: Mapping): ResponseEntity<Mapping>? {
         log.debug("REST request to save Mapping : {}", mapping)
@@ -54,7 +54,7 @@ open class MappingResource(val mappingService: MappingService) {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PutMapping("/mappings")
+    @PutMapping
     @Throws(URISyntaxException::class)
     open fun updateMapping(@RequestBody mapping: Mapping): ResponseEntity<Mapping>? {
         log.debug("REST request to update Mapping : {}", mapping)
@@ -73,7 +73,7 @@ open class MappingResource(val mappingService: MappingService) {
      * @return the ResponseEntity with status 200 (OK) and the list of mappings in body
      */
     @Timed
-    @GetMapping("/mappings")
+    @GetMapping
     open fun getAllMappings(): List<Mapping?>? = mappingService.findAll()
 
     /**
@@ -83,7 +83,7 @@ open class MappingResource(val mappingService: MappingService) {
      * @return the ResponseEntity with status 200 (OK) and with body the mapping, or with status 404 (Not Found)
      */
     @Timed
-    @GetMapping("/mappings/{id}")
+    @GetMapping("/{id}")
     open fun getMapping(@PathVariable id: Long?): ResponseEntity<Mapping>? {
         log.debug("REST request to get Mapping : {}", id)
         val mapping = mappingService.findOne(id)
@@ -97,7 +97,7 @@ open class MappingResource(val mappingService: MappingService) {
      * @return the ResponseEntity with status 200 (OK)
      */
     @Timed
-    @DeleteMapping("/mappings/{id}")
+    @DeleteMapping("/{id}")
     open fun deleteMapping(@PathVariable id: Long): ResponseEntity<Void?>? {
         log.debug("REST request to delete Mapping : {}", id)
         mappingService.delete(id)

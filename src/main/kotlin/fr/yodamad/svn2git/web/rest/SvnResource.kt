@@ -29,7 +29,7 @@ fun keywords() : MutableList<String> {
 }
 
 @RestController
-@RequestMapping("/api/svn/")
+@RequestMapping("$API$SVN")
 open class SvnResource(val applicationProperties: ApplicationProperties) {
 
     /** Logger.  */
@@ -41,7 +41,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
      * @return if repository found
      */
     @Timed
-    @PostMapping("repository/{repositoryName}")
+    @PostMapping("/repository/{repositoryName}")
     open fun checkSVN(
         @PathVariable("repositoryName") repositoryName: String?,
         @RequestParam("depth") depth: Int?,

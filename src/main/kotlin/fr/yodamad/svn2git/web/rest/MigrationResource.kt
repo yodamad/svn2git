@@ -33,7 +33,7 @@ import javax.validation.Valid
  * REST controller for managing Migration.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("$API$MIGRATIONS")
 open class MigrationResource(val migrationRepository: MigrationRepository,
                              val migrationManager: MigrationManager,
                              val migrationHistoryService: MigrationHistoryService,
@@ -53,7 +53,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PostMapping("/migrations")
+    @PostMapping
     @Throws(URISyntaxException::class, BadRequestAlertException::class)
     open fun createMigration(@RequestBody migration: @Valid Migration?): ResponseEntity<Migration?>? {
         log.debug("REST request to save Migration : {}", migration)
@@ -78,7 +78,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @throws GitLabApiException
      */
     @Timed
-    @PostMapping("/migrations/{id}/retry")
+    @PostMapping("/{id}/retry")
     @Throws(URISyntaxException::class, GitLabApiException::class)
     open fun retryMigraton(@PathVariable id: Long, @RequestBody forceClean: String?): ResponseEntity<Long>? {
         log.debug("REST request to retry Migration : {}", id)
@@ -127,7 +127,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @Timed
-    @PutMapping("/migrations")
+    @PutMapping
     @Throws(URISyntaxException::class)
     open fun updateMigration(@RequestBody migration: @Valid Migration?): ResponseEntity<Migration>? {
         log.debug("REST request to update Migration : {}", migration)
@@ -147,7 +147,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
      */
     @Timed
-    @GetMapping("/migrations")
+    @GetMapping
     @JsonView(Public::class)
     open fun getAllMigrations(pageable: Pageable?): ResponseEntity<List<Migration>>? {
         log.debug("REST request to get a page of Migrations")
@@ -162,7 +162,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
      */
     @Timed
-    @GetMapping("/migrations/active")
+    @GetMapping("/active")
     @JsonView(Public::class)
     open fun getAllActiveMigrations(): ResponseEntity<List<Migration>>? {
         log.debug("REST request to get a page of Migrations")
@@ -177,7 +177,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
      */
     @Timed
-    @GetMapping("/migrations/user/{user}")
+    @GetMapping("/user/{user}")
     @JsonView(Public::class)
     open fun getMigrationsByUser(@PathVariable user: String?): ResponseEntity<List<Migration>>? {
         log.debug("REST request to get a migrations of Migrations for a given user")
@@ -192,7 +192,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
      */
     @Timed
-    @GetMapping("/migrations/group/{group}")
+    @GetMapping("/group/{group}")
     @JsonView(Public::class)
     open fun getMigrationsByGroup(@PathVariable group: String?): ResponseEntity<List<Migration>>? {
         log.debug("REST request to get a migrationRepositoryAllBySvnGroup of Migrations for a given group")
@@ -207,7 +207,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and the list of migrations in body
      */
     @Timed
-    @GetMapping("/migrations/project/{project}")
+    @GetMapping("/project/{project}")
     @JsonView(Public::class)
     open fun getMigrationsByProject(@PathVariable project: String?): ResponseEntity<List<Migration>>? {
         log.debug("REST request to get a migrations of Migrations for a given project")
@@ -222,7 +222,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and with body the migration, or with status 404 (Not Found)
      */
     @Timed
-    @GetMapping("/migrations/{id}")
+    @GetMapping("/{id}")
     @JsonView(Public::class)
     open fun getMigration(@PathVariable id: Long?): ResponseEntity<Migration>? {
         log.debug("REST request to get Migration : {}", id)
@@ -237,7 +237,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and with body the histories array, or with status 404 (Not Found)
      */
     @Timed
-    @GetMapping("/migrations/{id}/histories")
+    @GetMapping("/{id}/histories")
     @JsonView(Public::class)
     open fun getMigrationHistories(@PathVariable id: Long?): ResponseEntity<List<MigrationHistory>>? {
         log.debug("REST request to get Migration : {}", id)
@@ -252,7 +252,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK) and with body the mappings array, or with status 404 (Not Found)
      */
     @Timed
-    @GetMapping("/migrations/{id}/mappings")
+    @GetMapping("/{id}/mappings")
     open fun getMigrationMappings(@PathVariable id: Long?): ResponseEntity<List<Mapping>>? {
         log.debug("REST request to get Migration : {}", id)
         val mappings = mappingService.findAllForMigration(id)
@@ -266,7 +266,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
      * @return the ResponseEntity with status 200 (OK)
      */
     @Timed
-    @DeleteMapping("/migrations/{id}")
+    @DeleteMapping("/{id}")
     open fun deleteMigration(@PathVariable id: Long): ResponseEntity<Void?>? {
         log.debug("REST request to delete Migration : {}", id)
         migrationRepository.deleteById(id)

@@ -208,8 +208,19 @@ public class MigrationManager {
 
 
                 if (cleanExtensions || cleanLargeFiles || cleanFolderWithBFG) {
-                    gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive";
-                    execCommand(commandManager, workUnit.directory, gitCommand);
+                    try {
+                        gitCommand = "git reflog expire --expire=now --all";execCommand(commandManager, workUnit.directory, gitCommand);
+                        execCommand(commandManager, workUnit.directory, gitCommand);
+                    } catch (java.lang.RuntimeException rEx) {
+                        LOG.error("Failed to run git reflog expire --expire=now --all");
+                    }
+                    try {
+                        gitCommand = "git gc --prune=now --aggressive";execCommand(commandManager, workUnit.directory, gitCommand);
+                        execCommand(commandManager, workUnit.directory, gitCommand);
+                    } catch (java.lang.RuntimeException rEx) {
+                        LOG.error("Failed to run git gc --prune=now --aggressive");
+                    }
+
                     gitCommand = "git reset HEAD";
                     execCommand(commandManager, workUnit.directory, gitCommand);
                     gitCommand = "git clean -fd";

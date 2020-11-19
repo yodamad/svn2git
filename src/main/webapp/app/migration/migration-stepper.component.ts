@@ -371,7 +371,7 @@ export class MigrationStepperComponent implements OnInit {
     async go() {
         const migrationToStart: IMigration[] = [];
 
-        if (this.useSvnRootFolder) {
+        if (this.useSvnRootFolder || (this.svnDirectories && this.svnDirectories.root)) {
             migrationToStart.push(this.initMigration(''));
         } else {
             this.svnSelection.selected.forEach((selection: string) => {
@@ -397,7 +397,7 @@ export class MigrationStepperComponent implements OnInit {
      */
     initMigration(project: string): IMigration {
         if (project === null) {
-            if (this.useSvnRootFolder) {
+            if (this.useSvnRootFolder || (this.svnDirectories && this.svnDirectories.root)) {
                 project = this.svnFormGroup.controls['svnRepository'].value;
             } else {
                 project = this.svnSelection.selected.toString();
@@ -434,9 +434,13 @@ export class MigrationStepperComponent implements OnInit {
                 this.mig.trunk = 'trunk';
                 this.mig.flat = true;
             }
-        } else if (!this.svnDirectories.root) {
+        } else {
             this.mig.trunk = 'trunk';
-            this.mig.flat = this.svnDirectories.flat;
+            if (!this.svnDirectories.root) {
+                this.mig.flat = this.svnDirectories.flat;
+            } else {
+                this.mig.flat = false;
+            }
         }
 
         // History
@@ -679,7 +683,10 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     getSvnRepoKo(): boolean {
-        return this.svnSelection.selected.length === 0;
+        if (this.svnDirectories) {
+            return this.svnSelection.selected.length === 0 && !this.useSvnRootFolder && !this.svnDirectories.root;
+        }
+        return this.svnSelection.selected.length === 0 && !this.useSvnRootFolder;
     }
 
     isContainsTrunkBranchesTags(directory: SvnModule) {
@@ -744,12 +751,6 @@ export class MigrationStepperComponent implements OnInit {
         this.svnSelection.clear();
         this.svnRepoKO = !event.checked;
         event.checked && !this.svnDirectories.root ? (this.flatRepos = 1) : (this.flatRepos = 0);
-    }
-
-    /** Root svn directory use selection change. */
-    onFlatSelectionChange(event: MatSlideToggleChange) {
-        this.flatRepo = event.checked;
-        this.svnSelection.clear();
     }
 
     /**

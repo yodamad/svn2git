@@ -124,7 +124,7 @@
             "filter": "Filter (optional)",
             "filter-help": "Filter the repository folders (components). e.g. 'level1folder' or 'level1folder/subfolder'",
             "root-directory": "No trunk, branches, tags (files directly in folder)",
-            "sources-in-folder" : "Sources are in root folder",
+            "sources-in-folder" : "Sources are in root folder (i.e. no trunk, branches or tags)",
             "keyword-in-folder" : "Found trunk, branches or tags in folder",
             "use" : {
                 "default" : "Use default URL"

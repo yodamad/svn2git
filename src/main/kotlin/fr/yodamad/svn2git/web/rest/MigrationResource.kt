@@ -83,7 +83,10 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
     open fun retryMigraton(@PathVariable id: Long, @RequestBody forceClean: String?): ResponseEntity<Long>? {
         log.debug("REST request to retry Migration : {}", id)
         val mig = migrationRepository.findById(id).orElseThrow { BadRequestAlertException("Migration cannot be retried", ENTITY_NAME, "iddonotexist") }
-        if (forceClean.toBoolean() && applicationProperties.flags.projectCleaningOption) {
+
+        val clean = forceClean ?: "false";
+
+        if (clean.toBoolean() && applicationProperties.flags.projectCleaningOption) {
             gitlabResource.removeGroup(mig)
         }
         log.debug("Create a new migration to retry")

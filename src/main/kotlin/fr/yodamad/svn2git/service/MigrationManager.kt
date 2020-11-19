@@ -2,16 +2,20 @@ package fr.yodamad.svn2git.service
 
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.config.Constants
-import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.data.WorkUnit
+import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import fr.yodamad.svn2git.functions.listRemotes
 import fr.yodamad.svn2git.io.Shell
+import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository
 import fr.yodamad.svn2git.repository.MigrationRepository
-import fr.yodamad.svn2git.service.util.*
+import fr.yodamad.svn2git.service.util.CommandManager
+import fr.yodamad.svn2git.service.util.GIT_PUSH
+import fr.yodamad.svn2git.service.util.MASTER
+import fr.yodamad.svn2git.service.util.MarkdownGenerator
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
@@ -37,7 +41,9 @@ open class MigrationManager(val cleaner: Cleaner,
                             val applicationProperties: ApplicationProperties,
                             val markdownGenerator: MarkdownGenerator) {
 
-    private val LOG = LoggerFactory.getLogger(MigrationManager::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(MigrationManager::class.java)
+    }
 
     private val FAILED_DIR = "Failed to create directory : %s"
 
@@ -167,8 +173,18 @@ open class MigrationManager(val cleaner: Cleaner,
                 val cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit)
                 val cleanLargeFiles = cleaner.cleanLargeFiles(workUnit)
                 if (cleanExtensions || cleanLargeFiles || cleanFolderWithBFG) {
-                    gitCommand = "git reflog expire --expire=now --all && git gc --prune=now --aggressive"
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    try {
+                        gitCommand = "git reflog expire --expire=now --all"
+                        execCommand(commandManager, workUnit.directory, gitCommand)
+                    } catch (rEx: RuntimeException) {
+                        LOG.error("Failed to run git reflog expire --expire=now --all")
+                    }
+                    try {
+                        gitCommand = "git gc --prune=now --aggressive"
+                        execCommand(commandManager, workUnit.directory, gitCommand)
+                    } catch (rEx: RuntimeException) {
+                        LOG.error("Failed to run git gc --prune=now --aggressive")
+                    }
                     gitCommand = "git reset HEAD"
                     Shell.execCommand(commandManager, workUnit.directory, gitCommand)
                     gitCommand = "git clean -fd"

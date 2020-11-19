@@ -45,7 +45,7 @@ fun exceedsMaxSize(workUnit: WorkUnit, path: Path): Boolean {
             "K" -> digits *= 1024
             else -> { }
         }
-        var isFileExceedsMaxSize: Boolean
+        var isFileExceedsMaxSize: Boolean = false
         FileChannel.open(path).use { fileChannel -> isFileExceedsMaxSize = fileChannel.size() > digits }
         return isFileExceedsMaxSize
     }

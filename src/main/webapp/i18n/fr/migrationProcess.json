@@ -124,7 +124,7 @@
             "filter": "Filtre (optionnel)",
             "filter-help": "Filter les réperoires du dépôt (les composants). ex. 'niveau1dossier' ou 'niveau1dossier/sousdossier'",
             "root-directory": "Pas de trunk, branches ou tags (fichiers directement à la racine)",
-            "sources-in-folder" : "Les sources sont directement à la racine",
+            "sources-in-folder" : "Les sources sont directement à la racine (i.e. pas de trunk, branches ou tags)",
             "keyword-in-folder" : "Trunk, branches ou tags présent(s) dans le répertoire",
             "use" : {
                 "default" : "URL par défaut"

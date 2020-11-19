@@ -58,7 +58,7 @@
         <mapstruct.version>1.2.0.Final</mapstruct.version>
 
         <!-- Kotlin support -->
-        <kotlin.version>1.4.10</kotlin.version>
+        <kotlin.version>1.4.20</kotlin.version>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
 
         <!-- Plugin versions -->

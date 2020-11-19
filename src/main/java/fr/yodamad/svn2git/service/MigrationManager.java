@@ -209,13 +209,13 @@ public class MigrationManager {
 
                 if (cleanExtensions || cleanLargeFiles || cleanFolderWithBFG) {
                     try {
-                        gitCommand = "git reflog expire --expire=now --all";execCommand(commandManager, workUnit.directory, gitCommand);
+                        gitCommand = "git reflog expire --expire=now --all";
                         execCommand(commandManager, workUnit.directory, gitCommand);
                     } catch (java.lang.RuntimeException rEx) {
                         LOG.error("Failed to run git reflog expire --expire=now --all");
                     }
                     try {
-                        gitCommand = "git gc --prune=now --aggressive";execCommand(commandManager, workUnit.directory, gitCommand);
+                        gitCommand = "git gc --prune=now --aggressive";
                         execCommand(commandManager, workUnit.directory, gitCommand);
                     } catch (java.lang.RuntimeException rEx) {
                         LOG.error("Failed to run git gc --prune=now --aggressive");

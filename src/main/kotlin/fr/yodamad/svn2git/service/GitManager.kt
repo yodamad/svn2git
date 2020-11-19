@@ -264,7 +264,7 @@ open class GitManager(val historyMgr: HistoryManager,
         }
 
         // No mappings, OK
-        return results?.contains(StatusEnum.DONE_WITH_WARNINGS) ?: true
+        return results?.contains(StatusEnum.DONE_WITH_WARNINGS) ?: false
         // Some errors, WARNING to be set
     }
 

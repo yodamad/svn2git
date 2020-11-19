@@ -60,3 +60,24 @@
     color: red;
     font-weight: bold;
 }
+
+.circle-icon-ok {
+    background: green;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.circle-icon-ko {
+    background: red;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.circle-icon-warn {
+    background: orange;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+}

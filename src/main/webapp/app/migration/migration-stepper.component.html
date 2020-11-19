@@ -214,8 +214,20 @@
                 <div class="row" *ngIf="svnDirectories && svnDirectories.modules && (svnDirectories.modules.length || svnDirectories.flat)">
                     <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
                         <div class="mb-3 ml-5">
-                            <fa-icon icon="ban"></fa-icon>
+                            <fa-icon icon="exclamation-triangle" class="circle-icon-warn"></fa-icon>
                             <span class="pl-1" jhiTranslate="migration-process.svn.no-directories">No directories found. Check the subversion configuration.</span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
+                        <div class="mb-3 ml-5" *ngIf="!svnDirectories.root">
+                            <fa-icon icon="ban" class="circle-icon-ko"></fa-icon>
+                            <span class="pl-0" jhiTranslate="migration-process.svn.root-directory">Files in root folder</span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
+                        <div class="mb-3 ml-5" *ngIf="svnDirectories.root">
+                            <fa-icon icon="check" class="circle-icon-ok"></fa-icon>
+                            <span class="pl-0" jhiTranslate="migration-process.svn.keyword-in-folder">Trunk root folder</span>
                         </div>
                     </div>
                     <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
@@ -223,18 +235,6 @@
                             <mat-slide-toggle class="mb-1 ml-5" (change)="onSelectionChange($event)">
                                 <span class="pl-0" jhiTranslate="migration-process.svn.sources-in-folder">Sources in root folder</span>
                             </mat-slide-toggle>
-                        </div>
-                    </div>
-                    <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
-                        <div class="mb-3 ml-5" *ngIf="!svnDirectories.root">
-                            <fa-icon icon="ban"></fa-icon>
-                            <span class="pl-0" jhiTranslate="migration-process.svn.root-directory">Files in root folder</span>
-                        </div>
-                    </div>
-                    <div class="col-md-12 pb-1" *ngIf="!svnDirectories.modules.length">
-                        <div class="mb-3 ml-5" *ngIf="svnDirectories.root">
-                            <fa-icon icon="check"></fa-icon>
-                            <span class="pl-0" jhiTranslate="migration-process.svn.keyword-in-folder">Files in root folder</span>
                         </div>
                     </div>
                     <div class="col-md-12 pt-2 pb-4 pl-5" *ngIf="svnDirectories.modules.length">

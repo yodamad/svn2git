@@ -679,7 +679,10 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     getSvnRepoKo(): boolean {
-        return this.svnSelection.selected.length === 0;
+        if (this.svnDirectories) {
+            return this.svnSelection.selected.length === 0 && !this.useSvnRootFolder && !this.svnDirectories.root;
+        }
+        return this.svnSelection.selected.length === 0 && !this.useSvnRootFolder;
     }
 
     isContainsTrunkBranchesTags(directory: SvnModule) {

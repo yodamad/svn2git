@@ -27,6 +27,26 @@ export class MigrationDetailComponent implements OnInit {
         });
     }
 
+    getBranchesInfo(): string {
+        if (this.migration.branchesToMigrate !== '') {
+            return this.migration.branchesToMigrate;
+        } else if (this.migration.branches === '*') {
+            return '*';
+        } else {
+            return '';
+        }
+    }
+
+    getTagsInfo(): string {
+        if (this.migration.tagsToMigrate !== '') {
+            return this.migration.tagsToMigrate;
+        } else if (this.migration.tags === '*') {
+            return '*';
+        } else {
+            return '';
+        }
+    }
+
     getMigrationFromUrl(): string {
         return `${this.migration.svnUrl}${this.migration.svnUrl.endsWith('/') ? '' : '/'}${this.migration.svnGroup}`;
     }

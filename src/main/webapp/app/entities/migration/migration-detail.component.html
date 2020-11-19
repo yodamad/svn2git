@@ -40,9 +40,15 @@
                                 <div class="pl-3 pb-3">
                                     <b jhiTranslate="migration-process.summary-svn">SVN data to keep</b>
                                 </div>
-                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'dot-circle',  label: 'svn2GitApp.migration.trunk', value: migration.trunk, breakLine: true }"></ng-container>
-                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'code-branch', label: 'svn2GitApp.migration.branches', value: migration.branchesToMigrate, breakLine: true }"></ng-container>
-                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'tag', label: 'svn2GitApp.migration.tags', value: migration.tagsToMigrate, breakLine: true }"></ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;
+                                context:{ icon: 'dot-circle',  label: 'svn2GitApp.migration.trunk', value: migration.trunk, breakLine: true }">
+                                </ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;
+                                context:{ icon: 'code-branch', label: 'svn2GitApp.migration.branches', value: getBranchesInfo(), breakLine: true }">
+                                </ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;
+                                context:{ icon: 'tag', label: 'svn2GitApp.migration.tags', value: getTagsInfo(), breakLine: true }">
+                                </ng-container>
                                 <hr />
                                 <div class="pl-3">
                                     <b jhiTranslate="migration-process.summary-mapping">Configured mapping</b>
@@ -93,8 +99,8 @@
             <span *ngIf="value === '*'">
                 <fa-icon icon="check-circle"></fa-icon>
             </span>
-            <span [innerHtml]="getValueToDisplay(value, breakLine)" *ngIf="value && value !== '*'">
-            </span>
+            <span [innerHtml]="getValueToDisplay(value, breakLine)" *ngIf="value && value !== '*'"></span>
+            <span *ngIf="value && value === ''" jhiTranslate="global.all">All</span>
         </div>
     </div>
 </ng-template>

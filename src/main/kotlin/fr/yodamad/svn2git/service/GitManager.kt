@@ -451,20 +451,22 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun manageBranches(workUnit: WorkUnit, remotes: List<String>) {
         listBranchesOnly(remotes, workUnit.migration.trunk)?.forEach(Consumer { b: String ->
             val warn: Boolean = pushBranch(workUnit, b)
-            workUnit.warnings.set(workUnit.warnings.get() || warn)
-            if (applicationProperties.gitlab.gitPushPauseMilliSeconds > 0) {
-                try {
-                    LOG.info(String.format("Waiting gitPushPauseMilliSeconds:%s", applicationProperties.gitlab.gitPushPauseMilliSeconds))
-                    Thread.sleep(applicationProperties.gitlab.gitPushPauseMilliSeconds)
-                } catch (e: InterruptedException) {
-                    Thread.currentThread().interrupt()
-                    throw RuntimeException(e)
-                }
-            }
-        }
-        )
+            sleepBeforePush(workUnit, warn)
+        })
     }
 
+    open fun sleepBeforePush(workUnit: WorkUnit, warn: Boolean) {
+        workUnit.warnings.set(workUnit.warnings.get() || warn)
+        if (applicationProperties.gitlab.gitPushPauseMilliSeconds > 0) {
+            try {
+                LOG.info(String.format("Waiting gitPushPauseMilliSeconds:%s", applicationProperties.gitlab.gitPushPauseMilliSeconds))
+                Thread.sleep(applicationProperties.gitlab.gitPushPauseMilliSeconds)
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw RuntimeException(e)
+            }
+        }
+    }
 
     /**
      * Push a branch
@@ -520,19 +522,8 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun manageTags(workUnit: WorkUnit, remotes: List<String>) {
         listTagsOnly(remotes)?.forEach(Consumer { t: String ->
             val warn: Boolean = pushTag(workUnit, t)
-            workUnit.warnings.set(workUnit.warnings.get() || warn)
-            if (applicationProperties.gitlab.gitPushPauseMilliSeconds > 0) {
-                try {
-                    LOG.info(String.format("Waiting gitPushPauseMilliSeconds:%s",
-                        applicationProperties.gitlab.gitPushPauseMilliSeconds))
-                    Thread.sleep(applicationProperties.gitlab.gitPushPauseMilliSeconds)
-                } catch (e: InterruptedException) {
-                    Thread.currentThread().interrupt()
-                    throw RuntimeException(e)
-                }
-            }
-        }
-        )
+            sleepBeforePush(workUnit, warn)
+        })
     }
 
     /**

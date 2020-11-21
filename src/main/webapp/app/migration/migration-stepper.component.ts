@@ -430,7 +430,7 @@ export class MigrationStepperComponent implements OnInit {
 
         const module = this.svnDirectories.modules.find(m => m.path === project);
         if (this.svnDirectories.modules && this.svnDirectories.modules.length > 0) {
-            if (module.flat) {
+            if (module && module.flat) {
                 this.mig.trunk = 'trunk';
                 this.mig.flat = true;
             }
@@ -687,6 +687,14 @@ export class MigrationStepperComponent implements OnInit {
             return this.svnSelection.selected.length === 0 && !this.useSvnRootFolder && !this.svnDirectories.root;
         }
         return this.svnSelection.selected.length === 0 && !this.useSvnRootFolder;
+    }
+
+    getSvnModules(): string[] {
+        if (this.svnSelection && this.svnSelection.selected && this.svnSelection.selected.length > 0) {
+            return this.svnSelection.selected;
+        } else {
+            return [this.svnFormGroup.controls['svnRepository'].value];
+        }
     }
 
     isContainsTrunkBranchesTags(directory: SvnModule) {

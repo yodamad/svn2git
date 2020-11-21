@@ -62,7 +62,8 @@ import {
     faEllipsisH,
     faEraser,
     faFileCsv,
-    faExclamationTriangle
+    faExclamationTriangle,
+    faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 
 // Adds the SVG icon to the library so you can use it in your page
@@ -123,5 +124,6 @@ library.add(faEllipsisH);
 library.add(faEraser);
 library.add(faFileCsv);
 library.add(faExclamationTriangle);
+library.add(faSpinner);
 
 // jhipster-needle-add-element-to-vendor - JHipster will add new menu items here

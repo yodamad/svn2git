@@ -28,10 +28,13 @@
             "directory" : "Répertoire Git"
         },
         "gitlab" : {
+            "already-taken": "Namespace déjà existant",
+            "available": "Namespace disponible",
             "configuration": "Configuration de Gitlab",
             "check" : {
                 "account" : "Vérifier votre compte Gitlab",
-                "group" : "Vérifier votre groupe Gitlab"
+                "group" : "Vérifier votre groupe Gitlab",
+                "running": "Vérification du namespace"
             },
             "clean" : "Avez-vous nettoyé Gitlab avant de réessayer ?",
             "force" : {

@@ -28,10 +28,13 @@
             "directory" : " Git directory"
         },
         "gitlab" : {
+            "already-taken": "Namespace already taken",
+            "available": "Namespace is available",
             "configuration": "Gitlab configuration",
             "check" : {
                 "account" : "Check your Gitlab account",
-                "group" : "Check your Gitlab group"
+                "group" : "Check your Gitlab group",
+                "running": "Checking namespace"
             },
             "clean" : "Have you cleaned Gitlab before retrying ?",
             "force" : {

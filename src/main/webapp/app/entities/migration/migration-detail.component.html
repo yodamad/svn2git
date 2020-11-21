@@ -9,8 +9,20 @@
                     <span class="pl-3 pr-3"><fa-icon icon="long-arrow-alt-right"></fa-icon></span>
                     {{ getMigrationToUrl() }}
                     <ul>
-                        <li *ngFor="let project of migration.svnProject.split(',')">
-                            {{ project }}
+                        <li *ngFor="let project of projects">
+                            {{ project.name }}
+                            <span *ngIf="project.status === running">
+                                <fa-icon icon="sync" spin="true"></fa-icon>
+                                <span jhiTranslate="migration-process.gitlab.check.running"></span>
+                            </span>
+                            <span *ngIf="project.status === done">
+                                <fa-icon icon="check" class="circle-icon-ok"></fa-icon>
+                                <span jhiTranslate="migration-process.gitlab.available"></span>
+                            </span>
+                            <span *ngIf="project.status === failed">
+                                <fa-icon icon="ban" class="circle-icon-ko"></fa-icon>
+                                <span jhiTranslate="migration-process.gitlab.already-taken"></span>
+                            </span>
                         </li>
                     </ul>
                 </div>
@@ -96,11 +108,8 @@
             <b [jhiTranslate]="label"></b>
         </div>
         <div class="col-md-8 pl-4">
-            <span *ngIf="value === '*'">
-                <fa-icon icon="check-circle"></fa-icon>
-            </span>
+            <span *ngIf="value === '*'"><fa-icon icon="check-circle"></fa-icon></span>
             <span [innerHtml]="getValueToDisplay(value, breakLine)" *ngIf="value && value !== '*'"></span>
-            <span *ngIf="value && value === ''" jhiTranslate="global.all">All</span>
         </div>
     </div>
 </ng-template>

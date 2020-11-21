@@ -18,10 +18,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.stream.IntStream
+import javax.swing.text.html.Option
 
 /**
  * Controller to use Gitlab API
@@ -64,16 +66,24 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
      * @return if group found
      */
     @Timed
-    @PostMapping("/group/{groupName}/members/{userName}")
-    open fun checkGroup(@PathVariable("groupName") groupName: String?,
-                        @PathVariable("userName") userName: String?,
+    @PostMapping("/group/members/{userName}")
+    open fun checkGroup(@PathVariable("userName") userName: String?,
                         @RequestBody gitlabInfo: GitlabInfo): ResponseEntity<Boolean>? {
         val gitlab = overrideGitlab(gitlabInfo)
+        var groupName = gitlabInfo.additionalData
+
+        var depth = 0
+        var subParts = arrayOf<String>()
+        if (groupName.contains("/")) {
+            subParts = groupName.split("/").toTypedArray()
+            groupName = subParts[0]
+            depth = subParts.size
+        }
         // Group where project will be created
         val group = gitlab.groupApi.getOptionalGroup(groupName)
 
         // User that will be used to create a project
-        var user: Optional<User>?
+        val user: Optional<User>?
         // if token is blank / emtpy, we use the default gitlab user
         user = if (StringUtils.isBlank(gitlabInfo.token)) {
             gitlab.userApi.getOptionalUser(applicationProperties.gitlab.account)
@@ -82,8 +92,42 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
             gitlab.userApi.getOptionalUser(userName)
         }
 
-        // if the group is present and the user that will use it is present
-        return if (group.isPresent && user.isPresent) {
+        if (group.isPresent) {
+            if (depth > 0) {
+                try {
+                    var cycle = 1
+                    var groupId = group.get().id
+                    while (cycle < depth) {
+                        val subGroups = gitlab.groupApi.getSubGroups(groupId)
+                        val finalSubParts = subParts
+                        val finalCycle: Int = cycle
+                        val subgroup = subGroups.stream()
+                            .filter { sg: Group -> sg.name.equals(finalSubParts[finalCycle], ignoreCase = true) }
+                            .findAny()
+                        if (subgroup.isPresent) {
+                            if (cycle == depth - 1) {
+                                return checkUserForProject(user, group, gitlab)
+                            }
+                            cycle++
+                            groupId = subgroup.get().id
+                        } else {
+                            return ResponseEntity.notFound().build()
+                        }
+                    }
+                } catch (gitLabApiException: GitLabApiException) {
+                    return ResponseEntity.notFound().build();
+                }
+            } else {
+                return checkUserForProject(user, group, gitlab)
+            }
+        } else {
+            return ResponseEntity.notFound().build()
+        }
+        return ResponseEntity.notFound().build()
+    }
+
+    open fun checkUserForProject(user: Optional<User>, group: Optional<Group>, gitlab: GitLabApi): ResponseEntity<Boolean> {
+        if (user.isPresent) {
             try {
 
                 // check if userName passed in is a member of the group (includingInherited)
@@ -93,14 +137,14 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                     logger.info(String.format("User:%s is a member of the target group:%s", user.get().username, group.get().name))
 
                     // Group exists and the passed in username is a member of it
-                    ResponseEntity.ok().body(group.isPresent)
+                    return ResponseEntity.ok().body(group.isPresent)
                 } else {
                     // This should not be possible
                     logger.error(String.format("Member:%s not found in group:%s",
                         user.get().username, group.get().name))
 
                     // Group exists but an unexpected error getting user
-                    ResponseEntity.notFound().build()
+                    return ResponseEntity.notFound().build()
                 }
             } catch (apiEx: GitLabApiException) {
 
@@ -115,10 +159,30 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                 }
 
                 // User didn't exist in group
-                ResponseEntity.notFound().build()
+                return ResponseEntity.notFound().build()
             }
         } else {
             // Group didn't exist or user didn't exist
+            return ResponseEntity.notFound().build()
+        }
+    }
+
+    @Timed
+    @PostMapping("/project")
+    open fun checkProject(@RequestBody gitlabInfo: GitlabInfo) : ResponseEntity<Boolean>? {
+        val gitlab = overrideGitlab(gitlabInfo)
+        val project = gitlabInfo.additionalData
+
+        val projects = project.split("/")
+        val namespace = projects
+            .joinToString(separator = "/", truncated = "", limit = projects.size - 1, postfix = "")
+            .trimEnd { c -> c == '/' }
+
+        val result = gitlab.projectApi.getOptionalProject(namespace, projects[projects.size - 1])
+
+        return if (!result.isPresent) {
+            ResponseEntity.ok(true)
+        } else {
             ResponseEntity.notFound().build()
         }
     }
@@ -154,7 +218,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
 
         // If gitlabInfo.token is empty assure using values found in application.yml.
         // i.e. those in default GitlabAdmin object
-        if (StringUtils.isEmpty(gitlabInfo.token)) {
+        if (gitlab.api().gitLabServerUrl.equals(gitlabInfo.url, ignoreCase = true) && StringUtils.isEmpty(gitlabInfo.token)) {
             logger.info("Already using default url and token")
         } else {
             // If gitlabInfo.token has a value we overide as appropriate

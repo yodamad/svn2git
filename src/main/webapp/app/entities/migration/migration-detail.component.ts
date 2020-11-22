@@ -19,6 +19,7 @@ export class MigrationDetailComponent implements OnInit {
     @Input() migration: IMigration;
     @Input() svnModules: string[];
     @Output() startMigration = new EventEmitter<void>();
+    @Output() removeMigration = new EventEmitter<string>();
     @ViewChild('timeline') timeline: DetailsCardComponent;
 
     private running = StatusEnum.RUNNING;
@@ -57,6 +58,12 @@ export class MigrationDetailComponent implements OnInit {
             },
             _ => (this.projects.find(prj => prj.name === projectName).status = StatusEnum.FAILED)
         );
+    }
+
+    removeProject(project: string) {
+        this.removeMigration.emit(project);
+        this.projects = this.projects.filter(p => p.name !== project);
+        this.svnModules = this.svnModules.filter(p => p !== project);
     }
 
     getBranchesInfo(): string {

@@ -22,6 +22,7 @@
                             <span *ngIf="project.status === failed">
                                 <fa-icon icon="ban" class="circle-icon-ko"></fa-icon>
                                 <span jhiTranslate="migration-process.gitlab.already-taken"></span>
+                                <fa-icon icon="trash-alt" (click)="removeProject(project.name)"></fa-icon>
                             </span>
                         </li>
                     </ul>

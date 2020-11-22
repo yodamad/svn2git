@@ -365,6 +365,12 @@ export class MigrationStepperComponent implements OnInit {
         }
     }
 
+    removeSelection(module: string) {
+        const copy = this.svnSelection.selected;
+        this.svnSelection.clear();
+        copy.filter(s => s !== module).forEach(m => this.svnSelection.select(m));
+    }
+
     /**
      * Start migration(s)
      */

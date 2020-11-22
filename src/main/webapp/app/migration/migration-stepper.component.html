@@ -507,7 +507,7 @@
 
         <div class="row">
             <div class="offset-md-2 col-md-8 col-xs-12 p-4">
-                <jhi-migration-detail [migration]="mig" [svnModules]="getSvnModules()" (startMigration)="go()" *ngIf="mig"></jhi-migration-detail>
+                <jhi-migration-detail [migration]="mig" [svnModules]="getSvnModules()" (startMigration)="go()" (removeMigration)="removeSelection($event)" *ngIf="mig"></jhi-migration-detail>
             </div>
         </div>
 

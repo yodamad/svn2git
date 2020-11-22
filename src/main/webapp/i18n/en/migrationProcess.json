@@ -1,6 +1,7 @@
 {
     "migration-process" : {
         "back" : " Back",
+        "blocked": "Some namespaces aren't available. Fix before starting migration",
         "check" : "Check",
         "checking" : "Checking",
         "cleaning" : {

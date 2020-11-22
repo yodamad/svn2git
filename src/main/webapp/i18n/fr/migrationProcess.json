@@ -1,6 +1,7 @@
 {
     "migration-process" : {
         "back" : " Retour",
+        "blocked": "Certains namespaces ne sont pas disponibles. Corriger pour continuer",
         "check" : "Vérifier",
         "checking" : "En cours",
         "cleaning" : {

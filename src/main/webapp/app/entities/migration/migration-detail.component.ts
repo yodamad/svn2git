@@ -116,6 +116,10 @@ export class MigrationDetailComponent implements OnInit {
             }
         });
     }
+
+    migrationNotPossible(): boolean {
+        return this.projects && this.projects.find(p => p.status === StatusEnum.FAILED) !== undefined;
+    }
 }
 
 export const StatusIcons: Record<StatusEnum, string> = {

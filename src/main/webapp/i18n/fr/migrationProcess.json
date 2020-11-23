@@ -52,6 +52,7 @@
             "url-default": "Par défault",
             "url-custom": "Personnalisé",
             "credentials": "Identifiants",
+            "rename": "Nouveau nom du projet dans Gitlab",
             "use" : {
                 "default" : "URL par défaut et utilisateur"
             },

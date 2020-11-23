@@ -90,7 +90,7 @@ open class GitManager(val historyMgr: HistoryManager,
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } else {
                 // split svn structure to create gitlab elements (group(s), project)
-                val structure = migration.svnProject.split("/").toTypedArray()
+                val structure = migration.gitlabProject.split("/").toTypedArray()
                 var groupId = group.id
                 var currentPath = group.path
                 if (structure.size > 2) {

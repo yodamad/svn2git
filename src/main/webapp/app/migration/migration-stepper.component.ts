@@ -2,8 +2,8 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MigrationProcessService, SvnModule, SvnStructure } from 'app/migration/migration-process.service';
 import { MigrationService } from 'app/entities/migration';
-import { IMigration, Migration } from 'app/shared/model/migration.model';
-import { IMapping, Mapping } from 'app/shared/model/mapping.model';
+import { IMigration, Migration, MigrationRenaming } from 'app/shared/model/migration.model';
+import { IMapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
 import { GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
@@ -68,6 +68,7 @@ export class MigrationStepperComponent implements OnInit {
     svnDepth: number;
     gitlabUrl: string;
     gitlabCredsOption: string;
+    renamings: MigrationRenaming[] = [];
 
     // Cleaning Section
     preserveEmptyDirs = false;
@@ -371,6 +372,11 @@ export class MigrationStepperComponent implements OnInit {
         copy.filter(s => s !== module).forEach(m => this.svnSelection.select(m));
     }
 
+    renameModule(module: MigrationRenaming) {
+        this.renamings = this.renamings.filter(r => r.oldName !== module.oldName);
+        this.renamings.push(module);
+    }
+
     /**
      * Start migration(s)
      */
@@ -420,7 +426,12 @@ export class MigrationStepperComponent implements OnInit {
         }
         this.mig.user = this.gitlabFormGroup.controls['gitlabUser'].value;
         this.mig.gitlabGroup = this.gitlabFormGroup.controls['gitlabGroup'].value;
-        this.mig.gitlabProject = project;
+        const renaming = this.renamings.find(r => r.oldName === project);
+        if (renaming === undefined) {
+            this.mig.gitlabProject = project;
+        } else {
+            this.mig.gitlabProject = renaming.newName;
+        }
 
         // SVN
         this.mig.svnUrl = this.svnFormGroup.controls['svnURL'].value;

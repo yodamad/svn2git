@@ -1,13 +1,14 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
+import { IMigration, MigrationRenaming, StatusEnum } from 'app/shared/model/migration.model';
 import { MigrationService } from 'app/entities/migration/migration.service';
 import { DetailsCardComponent } from 'app/shared/summary/summary-details.component';
 import { MigrationProcessService } from 'app/migration/migration-process.service';
+import { FormControl, Validators } from '@angular/forms';
 
 class InnerProject {
-    constructor(public name: string, public group: string, public status: StatusEnum) {}
+    constructor(public name: string, public group: string, public status: StatusEnum, public rename = '') {}
 }
 
 @Component({
@@ -20,6 +21,7 @@ export class MigrationDetailComponent implements OnInit {
     @Input() svnModules: string[];
     @Output() startMigration = new EventEmitter<void>();
     @Output() removeMigration = new EventEmitter<string>();
+    @Output() rename = new EventEmitter<MigrationRenaming>();
     @ViewChild('timeline') timeline: DetailsCardComponent;
 
     private running = StatusEnum.RUNNING;
@@ -28,6 +30,8 @@ export class MigrationDetailComponent implements OnInit {
 
     migrationStarted = false;
     projects: InnerProject[] = [];
+    newName: FormControl;
+    editing = '';
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -36,28 +40,55 @@ export class MigrationDetailComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.newName = new FormControl('/', Validators.required);
         this.activatedRoute.data.subscribe(({ migration, svnModules }) => {
             if (migration !== undefined) {
                 this.migration = migration;
             }
         });
         if (this.migration && this.svnModules) {
-            this.svnModules.forEach(s => this.initProject(s, this.migration.gitlabGroup));
+            this.svnModules.forEach(s => this.initProject(s));
         }
     }
 
-    initProject(projectName: string, groupName: string) {
-        this.projects.push(new InnerProject(projectName, groupName, StatusEnum.RUNNING));
-        this._gitlabService.checkProject(`${groupName}${projectName}`, this.migration.gitlabUrl, this.migration.gitlabToken).subscribe(
-            res => {
-                if (res.body) {
-                    this.projects.find(prj => prj.name === projectName).status = StatusEnum.DONE;
-                } else {
-                    this.projects.find(prj => prj.name === projectName).status = StatusEnum.FAILED;
+    initProject(projectName: string) {
+        this.projects.push(new InnerProject(projectName, this.migration.gitlabGroup, StatusEnum.RUNNING));
+        this.checkProject(projectName);
+    }
+
+    checkProject(projectName: string, oldName = '') {
+        this._gitlabService
+            .checkProject(`${this.migration.gitlabGroup}${projectName}`, this.migration.gitlabUrl, this.migration.gitlabToken)
+            .subscribe(
+                res => {
+                    if (res.body) {
+                        this.projects.find(prj => prj.name === projectName || prj.rename === projectName).status = StatusEnum.DONE;
+                        if (oldName !== '') {
+                            this.rename.emit(new MigrationRenaming(oldName, projectName));
+                        }
+                    } else {
+                        const project = this.projects.find(prj => prj.name === projectName || prj.rename === projectName);
+                        project.status = StatusEnum.FAILED;
+                        if (oldName !== '') {
+                            project.rename = '';
+                        }
+                    }
+                },
+                _ => {
+                    const project = this.projects.find(prj => prj.name === projectName || prj.rename === projectName);
+                    project.status = StatusEnum.FAILED;
+                    if (oldName !== '') {
+                        project.rename = '';
+                    }
                 }
-            },
-            _ => (this.projects.find(prj => prj.name === projectName).status = StatusEnum.FAILED)
-        );
+            );
+    }
+
+    getProjectName(project: InnerProject): string {
+        if (project.rename !== '') {
+            return project.rename;
+        }
+        return project.name;
     }
 
     removeProject(project: string) {
@@ -126,6 +157,18 @@ export class MigrationDetailComponent implements OnInit {
 
     migrationNotPossible(): boolean {
         return this.projects && this.projects.find(p => p.status === StatusEnum.FAILED) !== undefined;
+    }
+
+    edit(project: string) {
+        this.editing = project;
+    }
+
+    renameMigration(old: string) {
+        this.projects.find(p => p.name === old).rename = this.newName.value;
+        console.log(new MigrationRenaming(old, this.newName.value));
+        this.checkProject(this.newName.value, old);
+        this.editing = '';
+        this.newName.setValue('/');
     }
 }
 

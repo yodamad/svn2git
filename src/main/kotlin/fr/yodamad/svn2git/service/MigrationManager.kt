@@ -516,7 +516,7 @@ open class MigrationManager(val cleaner: Cleaner,
      */
     @Throws(IOException::class, InterruptedException::class)
     open fun initDirectory(workUnit: WorkUnit): String {
-        val svn = if (StringUtils.isEmpty(workUnit.migration.svnProject)) workUnit.migration.svnGroup else workUnit.migration.svnProject
+        val svn = if (StringUtils.isEmpty(workUnit.migration.svnProject)) workUnit.migration.svnGroup else workUnit.migration.gitlabProject
         if (workUnit.commandManager.isFirstAttemptMigration) {
             val mkdir: String
             if (Shell.isWindows) {

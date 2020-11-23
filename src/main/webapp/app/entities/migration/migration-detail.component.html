@@ -10,7 +10,7 @@
                     {{ getMigrationToUrl() }}
                     <ul>
                         <li *ngFor="let project of projects">
-                            {{ project.name }}
+                            {{ getProjectName(project) }}
                             <span *ngIf="project.status === running">
                                 <fa-icon icon="sync" spin="true"></fa-icon>
                                 <span jhiTranslate="migration-process.gitlab.check.running"></span>
@@ -23,6 +23,18 @@
                                 <fa-icon icon="ban" class="circle-icon-ko"></fa-icon>
                                 <span jhiTranslate="migration-process.gitlab.already-taken"></span>
                                 <fa-icon icon="trash-alt" (click)="removeProject(project.name)"></fa-icon>
+                            </span>
+                            <span *ngIf="project.status !== running">
+                                <fa-icon icon="edit" (click)="edit(project.name)"></fa-icon>
+                                <form>
+                                    <div *ngIf="editing === project.name">
+                                        <mat-form-field appearance="legacy">
+                                            <mat-label><span jhiTranslate="migration-process.gitlab.rename"></span></mat-label>
+                                            <input matInput [formControl] = "newName">
+                                        </mat-form-field>
+                                        <fa-icon icon="save" (click)="renameMigration(project.name)"></fa-icon>
+                                    </div>
+                                </form>
                             </span>
                         </li>
                     </ul>

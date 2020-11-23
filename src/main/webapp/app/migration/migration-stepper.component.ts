@@ -426,7 +426,11 @@ export class MigrationStepperComponent implements OnInit {
         }
         this.mig.user = this.gitlabFormGroup.controls['gitlabUser'].value;
         this.mig.gitlabGroup = this.gitlabFormGroup.controls['gitlabGroup'].value;
-        const renaming = this.renamings.find(r => r.oldName === project);
+        const renaming = this.renamings.find(
+            r =>
+                r.oldName === project ||
+                (this.svnDirectories && this.svnDirectories.flat && this.svnFormGroup.controls['svnRepository'].value === r.oldName)
+        );
         if (renaming === undefined) {
             this.mig.gitlabProject = project;
         } else {

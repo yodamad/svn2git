@@ -18,6 +18,7 @@ import fr.yodamad.svn2git.service.util.MASTER
 import fr.yodamad.svn2git.service.util.MarkdownGenerator
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.isEmpty
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.AsyncResult
@@ -233,7 +234,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 // 6. List branches & tags
                 val remotes: List<String> = listRemotes(workUnit.directory)
                 // Extract branches
-                if (!StringUtils.isEmpty(migration.branches) && migration.branches == "*") {
+                if (!isEmpty(migration.branches) && migration.branches == "*") {
                     gitManager.manageBranches(workUnit, remotes)
                 } else {
                     history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "Branches")
@@ -241,7 +242,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 }
 
                 // Extract tags
-                if (!StringUtils.isEmpty(migration.tags) && migration.tags == "*") {
+                if (!isEmpty(migration.tags) && migration.tags == "*") {
                     gitManager.manageTags(workUnit, remotes)
                 } else {
                     history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "Tags")
@@ -516,7 +517,7 @@ open class MigrationManager(val cleaner: Cleaner,
      */
     @Throws(IOException::class, InterruptedException::class)
     open fun initDirectory(workUnit: WorkUnit): String {
-        val svn = if (StringUtils.isEmpty(workUnit.migration.svnProject)) workUnit.migration.svnGroup else workUnit.migration.gitlabProject
+        val svn = if (isEmpty(workUnit.migration.svnProject) && isEmpty(workUnit.migration.gitlabProject)) workUnit.migration.svnGroup else workUnit.migration.gitlabProject
         if (workUnit.commandManager.isFirstAttemptMigration) {
             val mkdir: String
             if (Shell.isWindows) {

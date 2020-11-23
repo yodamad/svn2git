@@ -15,6 +15,7 @@ import fr.yodamad.svn2git.service.client.GitlabAdmin
 import fr.yodamad.svn2git.service.util.*
 import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.isEmpty
 import org.gitlab4j.api.GitLabApi
 import org.gitlab4j.api.GitLabApiException
 import org.gitlab4j.api.models.Group
@@ -68,7 +69,7 @@ open class GitManager(val historyMgr: HistoryManager,
 
         // If gitlabInfo.token is empty assure using values found in application.yml.
         // i.e. those in default GitlabAdmin object
-        if (StringUtils.isEmpty(migration.gitlabToken)) {
+        if (isEmpty(migration.gitlabToken)) {
             LOG.info("Already using default url and token")
         } else {
             // If gitlabInfo.token has a value we overide as appropriate
@@ -85,7 +86,7 @@ open class GitManager(val historyMgr: HistoryManager,
             val group = gitlabAdmin!!.groupApi().getGroup(migration.gitlabGroup)
 
             // If no svn project specified, use svn group instead
-            if (StringUtils.isEmpty(migration.svnProject)) {
+            if (isEmpty(migration.svnProject) && isEmpty(migration.gitlabProject)) {
                 gitlabAdmin.projectApi().createProject(group.id, migration.svnGroup)
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } else {
@@ -140,11 +141,11 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun gitSvnClone(workUnit: WorkUnit) {
         val cloneCommand: String
         val safeCommand: String
-        if (!StringUtils.isEmpty(workUnit.migration.svnPassword)) {
+        if (!isEmpty(workUnit.migration.svnPassword)) {
             val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
             cloneCommand = initCommand(workUnit, workUnit.migration.svnUser, escapedPassword)
             safeCommand = initCommand(workUnit, workUnit.migration.svnUser, STARS)
-        } else if (!StringUtils.isEmpty(applicationProperties.svn.password)) {
+        } else if (!isEmpty(applicationProperties.svn.password)) {
             val escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password)
             cloneCommand = initCommand(workUnit, applicationProperties.svn.user, escapedPassword)
             safeCommand = initCommand(workUnit, applicationProperties.svn.user, STARS)
@@ -179,14 +180,14 @@ open class GitManager(val historyMgr: HistoryManager,
         // regex with negative look forward allows us to choose the branch and tag names to keep
         val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
         val sCommand = String.format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",  // Set password
-            if (StringUtils.isEmpty(secret)) "" else if (Shell.isWindows) String.format("echo(%s|", secret) else String.format("echo %s |", secret),  // Set username
-            if (StringUtils.isEmpty(username)) "" else String.format("--username %s", username),  // Set specific revision
-            if (StringUtils.isEmpty(workUnit.migration.svnRevision)) "" else String.format("-r%s:HEAD", workUnit.migration.svnRevision),  // Set specific trunk
+            if (isEmpty(secret)) "" else if (Shell.isWindows) String.format("echo(%s|", secret) else String.format("echo %s |", secret),  // Set username
+            if (isEmpty(username)) "" else String.format("--username %s", username),  // Set specific revision
+            if (isEmpty(workUnit.migration.svnRevision)) "" else String.format("-r%s:HEAD", workUnit.migration.svnRevision),  // Set specific trunk
             if ((workUnit.migration.trunk == null || workUnit.migration.trunk != "trunk") && !workUnit.migration.flat) "" else buildTrunk(workUnit),  // Enable branches migrations
             if (workUnit.migration.branches == null) "" else String.format("--branches=%s/branches", workUnit.migration.svnProject),  // Enable tags migrations
             if (workUnit.migration.tags == null) "" else String.format("--tags=%s/tags", workUnit.migration.svnProject),  // Ignore some paths
-            if (StringUtils.isEmpty(ignorePaths)) "" else ignorePaths,  // Ignore some ref
-            if (StringUtils.isEmpty(ignoreRefs)) "" else ignoreRefs,  // Set flag for empty dir
+            if (isEmpty(ignorePaths)) "" else ignorePaths,  // Ignore some ref
+            if (isEmpty(ignoreRefs)) "" else ignoreRefs,  // Set flag for empty dir
             if (applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else "",  // Set svn information
             if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else String.format("%s/", workUnit.migration.svnUrl),
             workUnit.migration.svnGroup)
@@ -228,7 +229,7 @@ open class GitManager(val historyMgr: HistoryManager,
         if (!CollectionUtils.isEmpty(mappings)) {
             // Extract mappings with regex
             val regexMappings = mappings.stream()
-                .filter { mapping: Mapping? -> !StringUtils.isEmpty(mapping!!.regex) && "*" != mapping.regex }
+                .filter { mapping: Mapping? -> !isEmpty(mapping!!.regex) && "*" != mapping.regex }
                 .collect(Collectors.toList())
             results = regexMappings.stream()
                 .map { mapping: Mapping? -> mvRegex(workUnit, mapping!!, branch) }
@@ -672,8 +673,14 @@ open class GitManager(val historyMgr: HistoryManager,
      */
     open fun buildRemoteCommand(workUnit: WorkUnit, project: String?, safeMode: Boolean): String? {
         var project = project
-        if (StringUtils.isEmpty(project)) {
-            project = if (StringUtils.isEmpty(workUnit.migration.svnProject)) workUnit.migration.svnGroup else workUnit.migration.svnProject
+        if (isEmpty(project)) {
+            project = if (isEmpty(workUnit.migration.svnProject) && isEmpty(workUnit.migration.gitlabProject)) {
+                workUnit.migration.svnGroup
+            } else if (isEmpty(workUnit.migration.gitlabProject)) {
+                workUnit.migration.svnProject
+            } else {
+                workUnit.migration.gitlabProject
+            }
         }
         val uri = URI.create(workUnit.migration.gitlabUrl)
         return String.format("git remote add origin %s://%s:%s@%s/%s/%s.git",

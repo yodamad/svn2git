@@ -24,9 +24,9 @@ export class MigrationDetailComponent implements OnInit {
     @Output() rename = new EventEmitter<MigrationRenaming>();
     @ViewChild('timeline') timeline: DetailsCardComponent;
 
-    private running = StatusEnum.RUNNING;
-    private done = StatusEnum.DONE;
-    private failed = StatusEnum.FAILED;
+    running = StatusEnum.RUNNING;
+    done = StatusEnum.DONE;
+    failed = StatusEnum.FAILED;
 
     migrationStarted = false;
     projects: InnerProject[] = [];

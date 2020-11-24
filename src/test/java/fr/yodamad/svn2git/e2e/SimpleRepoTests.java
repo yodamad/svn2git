@@ -42,18 +42,23 @@ public class SimpleRepoTests {
     private MigrationRepository migrationRepository;
 
     @Before
-    public void checkGitlab() throws GitLabApiException {
+    public void checkGitlab() throws GitLabApiException, InterruptedException {
         Optional<Project> project = GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
         if (project.isPresent()) {
             GITLAB_API.getProjectApi().deleteProject(project.get().getId());
         }
+        while(GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name).isPresent()) {
+            Thread.sleep(500);
+        }
     }
 
     @After
-    public void cleanGitlab() throws GitLabApiException {
+    public void cleanGitlab() throws GitLabApiException, InterruptedException {
         Optional<Project> project = GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
         if (project.isPresent()) GITLAB_API.getProjectApi().deleteProject(project.get().getId());
-        GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name);
+        while(GITLAB_API.getProjectApi().getOptionalProject(simple().namespace, simple().name).isPresent()) {
+            Thread.sleep(500);
+        }
     }
 
     @Test
@@ -299,7 +304,7 @@ public class SimpleRepoTests {
         result.get();
 
         Migration closed = migrationRepository.findById(saved.getId()).get();
-        assertThat(closed.getStatus()).isEqualTo(StatusEnum.DONE_WITH_WARNINGS);
+        assertThat(closed.getStatus()).isEqualTo(StatusEnum.DONE);
     }
 
     private static Optional<Project> checkProject() {

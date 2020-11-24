@@ -1,9 +1,7 @@
 package fr.yodamad.svn2git.service;
-import fr.yodamad.svn2git.config.Constants;
-
 import fr.yodamad.svn2git.Svn2GitApp;
+import fr.yodamad.svn2git.config.Constants;
 import fr.yodamad.svn2git.domain.User;
-import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
 import io.github.jhipster.config.JHipsterProperties;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +12,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -51,9 +48,6 @@ public class MailServiceIntTest {
     private ArgumentCaptor<MimeMessage> messageCaptor;
 
     private MailService mailService;
-
-    @MockBean
-    ArtifactoryAdmin artifactoryAdmin;
 
     @Before
     public void setup() {

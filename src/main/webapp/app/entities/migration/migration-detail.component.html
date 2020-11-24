@@ -9,8 +9,33 @@
                     <span class="pl-3 pr-3"><fa-icon icon="long-arrow-alt-right"></fa-icon></span>
                     {{ getMigrationToUrl() }}
                     <ul>
-                        <li *ngFor="let project of migration.svnProject.split(',')">
-                            {{ project }}
+                        <li *ngFor="let project of projects">
+                            {{ getProjectName(project) }}
+                            <span *ngIf="project.status === running">
+                                <fa-icon icon="sync" spin="true"></fa-icon>
+                                <span jhiTranslate="migration-process.gitlab.check.running"></span>
+                            </span>
+                            <span *ngIf="project.status === done">
+                                <fa-icon icon="check" class="circle-icon-ok"></fa-icon>
+                                <span jhiTranslate="migration-process.gitlab.available"></span>
+                            </span>
+                            <span *ngIf="project.status === failed">
+                                <fa-icon icon="ban" class="circle-icon-ko"></fa-icon>
+                                <span jhiTranslate="migration-process.gitlab.already-taken"></span>
+                                <fa-icon icon="trash-alt" (click)="removeProject(project.name)"></fa-icon>
+                            </span>
+                            <span *ngIf="project.status !== running">
+                                <fa-icon icon="edit" (click)="edit(project.name)"></fa-icon>
+                                <form>
+                                    <div *ngIf="editing === project.name">
+                                        <mat-form-field appearance="legacy">
+                                            <mat-label><span jhiTranslate="migration-process.gitlab.rename"></span></mat-label>
+                                            <input matInput [formControl] = "newName">
+                                        </mat-form-field>
+                                        <fa-icon icon="save" (click)="renameMigration(project.name)"></fa-icon>
+                                    </div>
+                                </form>
+                            </span>
                         </li>
                     </ul>
                 </div>
@@ -40,9 +65,15 @@
                                 <div class="pl-3 pb-3">
                                     <b jhiTranslate="migration-process.summary-svn">SVN data to keep</b>
                                 </div>
-                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'dot-circle',  label: 'svn2GitApp.migration.trunk', value: migration.trunk, breakLine: true }"></ng-container>
-                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'code-branch', label: 'svn2GitApp.migration.branches', value: migration.branchesToMigrate, breakLine: true }"></ng-container>
-                                <ng-container *ngTemplateOutlet="labelValueTemplate;context:{ icon: 'tag', label: 'svn2GitApp.migration.tags', value: migration.tagsToMigrate, breakLine: true }"></ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;
+                                context:{ icon: 'dot-circle',  label: 'svn2GitApp.migration.trunk', value: migration.trunk, breakLine: true }">
+                                </ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;
+                                context:{ icon: 'code-branch', label: 'svn2GitApp.migration.branches', value: getBranchesInfo(), breakLine: true }">
+                                </ng-container>
+                                <ng-container *ngTemplateOutlet="labelValueTemplate;
+                                context:{ icon: 'tag', label: 'svn2GitApp.migration.tags', value: getTagsInfo(), breakLine: true }">
+                                </ng-container>
                                 <hr />
                                 <div class="pl-3">
                                     <b jhiTranslate="migration-process.summary-mapping">Configured mapping</b>
@@ -59,11 +90,13 @@
         </div>
         <div class="row" *ngIf="!migration.id">
             <div class="col-md-12 text-center p-4">
-                <button type="button" mat-raised-button class="btn btn-success" [ngClass]="{ 'btn-success': !migrationStarted }" (click)="start()" [disabled]="migrationStarted">
+                <button type="button" mat-raised-button class="btn btn-success" [ngClass]="{ 'btn-success': !migrationStarted }" (click)="start()" [disabled]="this.migrationStarted || migrationNotPossible()">
                     <fa-icon icon="play"></fa-icon>
                     <span class="pl-2" jhiTranslate="migration-process.migration.start" *ngIf="!migrationStarted">Start migration</span>
                     <span class="pl-2" jhiTranslate="migration-process.migration.starting" *ngIf="migrationStarted">Starting...</span>
                 </button>
+                <br/>
+                <i><span jhiTranslate="migration-process.blocked" *ngIf="migrationNotPossible()"></span></i>
             </div>
         </div>
     </div>
@@ -90,11 +123,8 @@
             <b [jhiTranslate]="label"></b>
         </div>
         <div class="col-md-8 pl-4">
-            <span *ngIf="value === '*'">
-                <fa-icon icon="check-circle"></fa-icon>
-            </span>
-            <span [innerHtml]="getValueToDisplay(value, breakLine)" *ngIf="value && value !== '*'">
-            </span>
+            <span *ngIf="value === '*'"><fa-icon icon="check-circle"></fa-icon></span>
+            <span [innerHtml]="getValueToDisplay(value, breakLine)" *ngIf="value && value !== '*'"></span>
         </div>
     </div>
 </ng-template>

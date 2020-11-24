@@ -1,16 +1,14 @@
 package fr.yodamad.svn2git.web.rest;
 
-import fr.yodamad.svn2git.Svn2GitApp;
-import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
-import fr.yodamad.svn2git.web.rest.vm.LoggerVM;
 import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.LoggerContext;
+import fr.yodamad.svn2git.Svn2GitApp;
+import fr.yodamad.svn2git.web.rest.vm.LoggerVM;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,9 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LogsResourceIntTest {
 
     private MockMvc restLogsMockMvc;
-
-    @MockBean
-    ArtifactoryAdmin artifactoryAdmin;
 
     @Before
     public void setup() {

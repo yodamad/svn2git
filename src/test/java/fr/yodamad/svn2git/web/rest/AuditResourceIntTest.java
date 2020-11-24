@@ -5,7 +5,7 @@ import fr.yodamad.svn2git.config.audit.AuditEventConverter;
 import fr.yodamad.svn2git.domain.PersistentAuditEvent;
 import fr.yodamad.svn2git.repository.PersistenceAuditEventRepository;
 import fr.yodamad.svn2git.service.AuditEventService;
-import fr.yodamad.svn2git.service.util.ArtifactoryAdmin;
+import fr.yodamad.svn2git.service.client.ArtifactoryAdmin;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

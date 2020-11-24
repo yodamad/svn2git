@@ -16,6 +16,7 @@ export class MigrationProcessService {
     private resourceUrl = this.serverUrl + 'gitlab/';
     private userUrl = this.resourceUrl + 'user';
     private groupUrl = this.resourceUrl + 'group';
+    private projectUrl = this.resourceUrl + 'project';
     private svnUrl = this.serverUrl + 'svn/';
     private repositoryUrl = this.svnUrl + 'repository';
     private migrationUrl = this.serverUrl + 'migrations';
@@ -34,16 +35,22 @@ export class MigrationProcessService {
     }
 
     checkGroup(name: string, userName: string, url: string, token?: string): Observable<EntityResponseType> {
-        const gitlabInfo = new GitlabInfo(url, token);
+        const gitlabInfo = new GitlabInfo(url, token, name);
         return this.http
-            .post<Boolean>(`${this.groupUrl}/${name}/members/${userName}`, gitlabInfo, { observe: 'response' })
+            .post<Boolean>(`${this.groupUrl}/members/${userName}`, gitlabInfo, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => res));
+    }
+
+    checkProject(project: string, url: string, token?: string): Observable<EntityResponseType> {
+        const gitlabInfo = new GitlabInfo(url, token);
+        gitlabInfo.additionalData = project;
+        return this.http.post(`${this.projectUrl}`, gitlabInfo, { observe: 'response' }).pipe(map((res: EntityResponseType) => res));
     }
 
     createGroup(name: string, url: string, token?: string): Observable<EntityResponseType> {
         const gitlabInfo = new GitlabInfo(url, token);
         return this.http
-            .put<Boolean>(`${this.groupUrl}/${name}`, gitlabInfo, { observe: 'response' })
+            .put<boolean>(`${this.groupUrl}/${name}`, gitlabInfo, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => res));
     }
 
@@ -80,7 +87,7 @@ export class MigrationProcessService {
 }
 
 class GitlabInfo {
-    constructor(public url: string, public token: string) {}
+    constructor(public url: string, public token: string, public additionalData = '') {}
 }
 
 class SvnInfo {

@@ -2,10 +2,10 @@ package fr.yodamad.svn2git.web.rest;
 
 import com.jayway.jsonpath.JsonPath;
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.MigrationRemovedFile;
+import fr.yodamad.svn2git.domain.enumeration.Reason;
 import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.MappingService;
@@ -13,7 +13,6 @@ import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.service.MigrationRemovedFileService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,14 +33,11 @@ import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
-
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import fr.yodamad.svn2git.domain.enumeration.Reason;
 /**
  * Test class for the MigrationRemovedFileResource REST controller.
  *

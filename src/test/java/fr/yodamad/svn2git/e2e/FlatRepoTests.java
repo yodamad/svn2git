@@ -79,7 +79,7 @@ public class FlatRepoTests {
         result.get();
 
         Migration closed = migrationRepository.findById(saved.getId()).get();
-        assertThat(closed.getStatus()).isEqualTo(StatusEnum.DONE_WITH_WARNINGS);
+        assertThat(closed.getStatus()).isEqualTo(StatusEnum.DONE);
     }
 
     private static Optional<Project> checkProject() {

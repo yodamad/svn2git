@@ -1,6 +1,7 @@
 {
     "migration-process" : {
         "back" : " Retour",
+        "blocked": "Certains namespaces ne sont pas disponibles. Corriger pour continuer",
         "check" : "Vérifier",
         "checking" : "En cours",
         "cleaning" : {
@@ -28,10 +29,13 @@
             "directory" : "Répertoire Git"
         },
         "gitlab" : {
+            "already-taken": "Namespace déjà existant",
+            "available": "Namespace disponible",
             "configuration": "Configuration de Gitlab",
             "check" : {
                 "account" : "Vérifier votre compte Gitlab",
-                "group" : "Vérifier votre groupe Gitlab"
+                "group" : "Vérifier votre groupe Gitlab",
+                "running": "Vérification du namespace"
             },
             "clean" : "Avez-vous nettoyé Gitlab avant de réessayer ?",
             "force" : {
@@ -48,6 +52,7 @@
             "url-default": "Par défault",
             "url-custom": "Personnalisé",
             "credentials": "Identifiants",
+            "rename": "Nouveau nom du projet dans Gitlab",
             "use" : {
                 "default" : "URL par défaut et utilisateur"
             },

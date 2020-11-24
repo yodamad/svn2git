@@ -11,6 +11,10 @@ export const enum StatusEnum {
     DONE_WITH_WARNINGS = 'DONE_WITH_WARNINGS'
 }
 
+export class MigrationRenaming {
+    constructor(public oldName: string, public newName: string) {}
+}
+
 export interface IMigration {
     id?: number;
     svnGroup?: string;

@@ -2,7 +2,6 @@ package fr.yodamad.svn2git.web.rest;
 
 import com.jayway.jsonpath.JsonPath;
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
@@ -11,7 +10,7 @@ import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
+import org.apache.commons.lang.math.RandomUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +31,6 @@ import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -131,6 +129,7 @@ public class MigrationResourceIntTest {
             .gitlabGroup(DEFAULT_GITLAB_GROUP)
             .gitlabProject(DEFAULT_GITLAB_PROJECT)
             .status(DEFAULT_STATUS);
+
         return migration;
     }
 
@@ -191,9 +190,9 @@ public class MigrationResourceIntTest {
         int databaseSizeBeforeTest = migrationRepository.findAll().size();
         // set the field null
         migration.setSvnGroup(null);
+        migration.setId(RandomUtils.nextLong());
 
         // Create the Migration, which fails.
-
         restMigrationMockMvc.perform(post("/api/migrations")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(migration)))
@@ -209,9 +208,9 @@ public class MigrationResourceIntTest {
         int databaseSizeBeforeTest = migrationRepository.findAll().size();
         // set the field null
         migration.setSvnProject(null);
+        migration.setId(RandomUtils.nextLong());
 
         // Create the Migration, which fails.
-
         restMigrationMockMvc.perform(post("/api/migrations")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(migration)))
@@ -227,9 +226,9 @@ public class MigrationResourceIntTest {
         int databaseSizeBeforeTest = migrationRepository.findAll().size();
         // set the field null
         migration.setUser(null);
+        migration.setId(RandomUtils.nextLong());
 
         // Create the Migration, which fails.
-
         restMigrationMockMvc.perform(post("/api/migrations")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(migration)))
@@ -245,9 +244,9 @@ public class MigrationResourceIntTest {
         int databaseSizeBeforeTest = migrationRepository.findAll().size();
         // set the field null
         migration.setGitlabGroup(null);
+        migration.setId(RandomUtils.nextLong());
 
         // Create the Migration, which fails.
-
         restMigrationMockMvc.perform(post("/api/migrations")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(migration)))
@@ -263,9 +262,9 @@ public class MigrationResourceIntTest {
         int databaseSizeBeforeTest = migrationRepository.findAll().size();
         // set the field null
         migration.setGitlabProject(null);
+        migration.setId(RandomUtils.nextLong());
 
         // Create the Migration, which fails.
-
         restMigrationMockMvc.perform(post("/api/migrations")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(migration)))

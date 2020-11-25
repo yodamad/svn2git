@@ -2,15 +2,21 @@ package fr.yodamad.svn2git.service.util
 
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.WorkUnit
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum
+import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.functions.*
+import fr.yodamad.svn2git.io.Shell
+import fr.yodamad.svn2git.service.HistoryManager
 import fr.yodamad.svn2git.service.MappingManager
 import org.apache.commons.lang3.StringUtils.isEmpty
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.io.IOException
 import java.net.URI
 
 @Service
-open class GitCommandManager(val mappingMgr: MappingManager,
+open class GitCommandManager(val historyMgr: HistoryManager,
+                        val mappingMgr: MappingManager,
                         var applicationProperties: ApplicationProperties) {
 
     private val LOG = LoggerFactory.getLogger(GitCommandManager::class.java)
@@ -32,19 +38,6 @@ open class GitCommandManager(val mappingMgr: MappingManager,
 
         // regex with negative look forward allows us to choose the branch and tag names to keep
         val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
-        /* val sCommand = String.format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",  // Set password
-            if (isEmpty(secret)) EMPTY else if (isWindows) String.format("echo(%s|", secret) else String.format("echo %s |", secret),  // Set username
-            if (isEmpty(username)) EMPTY else String.format("--username %s", username),  // Set specific revision
-            if (isEmpty(workUnit.migration.svnRevision)) EMPTY else String.format("-r%s:HEAD", workUnit.migration.svnRevision),  // Set specific trunk
-            if ((workUnit.migration.trunk == null || workUnit.migration.trunk != "trunk") && !workUnit.migration.flat) EMPTY else buildTrunk(workUnit),  // Enable branches migrations
-            if (workUnit.migration.branches == null) EMPTY else String.format("--branches=%s/branches", workUnit.migration.svnProject),  // Enable tags migrations
-            if (workUnit.migration.tags == null) EMPTY else String.format("--tags=%s/tags", workUnit.migration.svnProject),  // Ignore some paths
-            if (isEmpty(ignorePaths)) EMPTY else ignorePaths,  // Ignore some ref
-            if (isEmpty(ignoreRefs)) EMPTY else ignoreRefs,  // Set flag for empty dir
-            if (applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else EMPTY,  // Set svn information
-            if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else String.format("%s/", workUnit.migration.svnUrl),
-            workUnit.migration.svnGroup)
-        */
 
         val cloneCommand = String.format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",
             formattedOrEmpty(secret, "echo %s |", "echo(%s|"),
@@ -99,6 +92,31 @@ open class GitCommandManager(val mappingMgr: MappingManager,
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()
                 throw RuntimeException(e)
+            }
+        }
+    }
+
+    @Throws(IOException::class, InterruptedException::class)
+    open fun logGitConfig(workUnit: WorkUnit) {
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_SHOW_CONFIG, "Log Git Config and origin of config.")
+        val gitCommand = "git config --list --show-origin"
+        Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+        historyMgr.endStep(history, StatusEnum.DONE, null)
+    }
+
+    @Throws(IOException::class, InterruptedException::class)
+    open fun logUlimit(workUnit: WorkUnit) {
+
+        // On linux servers trace what ulimit value is
+        if (!Shell.isWindows) {
+            val history = historyMgr.startStep(workUnit.migration, StepEnum.ULIMIT, "Show Ulimit -u value.")
+            try {
+                val command = "ulimit -u"
+                Shell.execCommand(workUnit.commandManager, workUnit.directory, command)
+            } catch (exc: java.lang.Exception) {
+                // Ignore exception as it's just info displayed
+            } finally {
+                historyMgr.endStep(history, StatusEnum.DONE, null)
             }
         }
     }

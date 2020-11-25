@@ -3,18 +3,18 @@ package fr.yodamad.svn2git.service
 import com.madgag.git.bfg.cli.Main
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.CleanedFiles
+import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
-import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import fr.yodamad.svn2git.functions.*
-import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository
-import fr.yodamad.svn2git.service.client.ArtifactoryAdmin
 import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.io.ZipUtil
+import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository
+import fr.yodamad.svn2git.service.client.ArtifactoryAdmin
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.data.util.Pair
@@ -361,6 +361,27 @@ open class Cleaner(val historyMgr: HistoryManager,
             historyMgr.endStep(history, StatusEnum.DONE, null)
         }
         return clean
+    }
+
+    /**
+     * Clean elements removed in svn but clone in git svn
+     * @param tags Flag to know if tags or branches target
+     */
+    open fun cleanElementsOn(workUnit: WorkUnit, tags: Boolean) {
+
+        val elements = if (tags) Pair(workUnit.migration.tags, "tags")
+                        else Pair(workUnit.migration.branches, "branches")
+
+        if (elements.first != null) {
+            val history = historyMgr.startStep(workUnit.migration, StepEnum.BRANCH_CLEAN, "Clean removed SVN ${elements.second}")
+            val pairInfo = cleanRemovedElements(workUnit, tags)
+            if (pairInfo!!.first.get()) {
+                //  Some branches have failed
+                historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, "Failed to remove ${elements.second} %s ${pairInfo.second}")
+            } else {
+                historyMgr.endStep(history, StatusEnum.DONE, null)
+            }
+        }
     }
 
     /**

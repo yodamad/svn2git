@@ -8,7 +8,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.functions.*
-import fr.yodamad.svn2git.io.Shell
+import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.repository.MappingRepository
 import fr.yodamad.svn2git.service.util.*
 import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils
@@ -19,13 +19,13 @@ import org.springframework.stereotype.Service
 import org.springframework.util.CollectionUtils
 import java.io.File
 import java.io.IOException
+import java.nio.charset.Charset.defaultCharset
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.stream.Collectors
@@ -38,8 +38,47 @@ open class GitManager(val historyMgr: HistoryManager,
                       var applicationProperties: ApplicationProperties) {
 
     private val LOG = LoggerFactory.getLogger(GitManager::class.java)
-    private val FAILED_TO_PUSH_BRANCH = "Failed to push branch"
     private val ORIGIN_ALREADY_ADDED = "Origin already added"
+
+    /**
+     * Set git config for migration
+     */
+    open fun setGitConfig(commandManager: CommandManager, workUnit: WorkUnit) {
+        // Avoid implicit git gc that may trigger error: fatal: gc is already running on machine '<servername>' pid 124077 (use --force if not)
+        // Note: Git GC will be triggered following git svn clone (on large projects) which causes a crash in following steps.
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CONFIG_GLOBAL_GC_AUTO_OFF, "Assure Git Garbage Collection doesn't run in background to avoid conflicts.")
+        val gitCommand = "git config --global gc.auto 0"
+        execCommand(commandManager, workUnit.directory, gitCommand)
+        historyMgr.endStep(history, StatusEnum.DONE, null)
+
+        // Log all git config before
+        gitCommandManager.logGitConfig(workUnit)
+        gitCommandManager.logUlimit(workUnit)
+        // Log default character encoding
+        LOG.info("Charset.defaultCharset().displayName(): ${defaultCharset().displayName()}")
+    }
+
+    /**
+     * Git clean
+     */
+    open fun gitClean(commandManager: CommandManager, workUnit: WorkUnit) {
+        try {
+            val gitCommand = "git reflog expire --expire=now --all"
+            execCommand(commandManager, workUnit.directory, gitCommand)
+        } catch (rEx: RuntimeException) {
+            LOG.error("Failed to run git reflog expire --expire=now --all")
+        }
+        try {
+            val gitCommand = "git gc --prune=now --aggressive"
+            execCommand(commandManager, workUnit.directory, gitCommand)
+        } catch (rEx: RuntimeException) {
+            LOG.error("Failed to run git gc --prune=now --aggressive")
+        }
+        var gitCommand = "git reset HEAD"
+        execCommand(commandManager, workUnit.directory, gitCommand)
+        gitCommand = "git clean -fd"
+        execCommand(commandManager, workUnit.directory, gitCommand)
+    }
 
     /**
      * Git svn clone command to copy svn as git repository
@@ -68,7 +107,7 @@ open class GitManager(val historyMgr: HistoryManager,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
         // Only Clone if first attempt at migration
         if (workUnit.commandManager.isFirstAttemptMigration) {
-            Shell.execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
+            execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
         }
         historyMgr.endStep(history, StatusEnum.DONE, null)
     }
@@ -106,12 +145,12 @@ open class GitManager(val historyMgr: HistoryManager,
             try {
                 // git commit
                 var gitCommand = "git add ."
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 gitCommand = String.format("git commit -m \"Apply mappings on %s\"", branch)
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 // git push
                 gitCommand = String.format("%s --set-upstream origin %s", GIT_PUSH, branch.replace("origin/", ""))
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } catch (iEx: IOException) {
                 historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)
@@ -137,9 +176,7 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun mvDirectory(workUnit: WorkUnit, mapping: Mapping, branch: String): StatusEnum? {
         var history: MigrationHistory?
         val msg = String.format("git mv %s %s \"%s\" \"%s\" on %s",
-            if (applicationProperties.getFlags().isGitMvFOption) "-f" else "",
-            if (applicationProperties.getFlags().isGitMvKOption()) "-k" else "",
-            mapping.svnDirectory, mapping.gitDirectory, branch)
+            fOptionOrEmpty(), kOptionOrEmpty(), mapping.svnDirectory, mapping.gitDirectory, branch)
 
         // If git directory in mapping contains /, we need to create root directories must be manually created
         if (mapping.gitDirectory.contains("/") && mapping.gitDirectory != "/") {
@@ -166,7 +203,7 @@ open class GitManager(val historyMgr: HistoryManager,
                 // For root directory, we need to loop for subdirectory
                 val results: List<StatusEnum> = files
                     .map { d: Path ->
-                        mv(workUnit, String.format("%s/%s", mapping.svnDirectory, d.fileName.toString()),
+                        mv(workUnit, "${mapping.svnDirectory}/${d.fileName.toString()}",
                             if (useGitDir) mapping.gitDirectory else d.fileName.toString(),
                             branch, false)
                     }
@@ -232,7 +269,7 @@ open class GitManager(val historyMgr: HistoryManager,
                         if (!Files.exists(gitPath)) {
                             Files.createDirectories(gitPath)
                         }
-                        return@mapToInt Shell.execCommand(workUnit.commandManager, workUnit.directory,
+                        return@mapToInt execCommand(workUnit.commandManager, workUnit.directory,
                             String.format("git mv %s %s \"%s\" \"%s\"",
                                 if (applicationProperties.getFlags().isGitMvFOption()) "-f" else "",
                                 if (applicationProperties.getFlags().isGitMvKOption()) "-k" else "",
@@ -283,7 +320,7 @@ open class GitManager(val historyMgr: HistoryManager,
 
             if (traceStep) history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_MV, historyCommand)
             // git mv
-            val exitCode = Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            val exitCode = execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
             if (ERROR_CODE == exitCode) {
                 if (traceStep) historyMgr.endStep(history, StatusEnum.IGNORED, null)
                 StatusEnum.IGNORED
@@ -307,147 +344,6 @@ open class GitManager(val historyMgr: HistoryManager,
     private fun optionOrEmpty(option: Boolean, flag: String) = if (option) flag else EMPTY
 
     /**
-     * Manage branches extracted from SVN
-     *
-     * @param workUnit
-     * @param remotes
-     */
-    open fun manageBranches(workUnit: WorkUnit, remotes: List<String>) {
-        listBranchesOnly(remotes, workUnit.migration.trunk)?.forEach(Consumer { b: String ->
-            val warn: Boolean = pushBranch(workUnit, b)
-            gitCommandManager.sleepBeforePush(workUnit, warn)
-        })
-    }
-
-    /**
-     * Push a branch
-     *
-     * @param workUnit
-     * @param branch   Branch to migrate
-     */
-    @Throws(RuntimeException::class)
-    open fun pushBranch(workUnit: WorkUnit, branch: String): Boolean {
-        var branchName = branch.replaceFirst("refs/remotes/origin/".toRegex(), "")
-        branchName = branchName.replaceFirst("origin/".toRegex(), "")
-        LOG.debug(String.format("Branch %s", branchName))
-        val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName)
-        var gitCommand = String.format("git checkout -b %s %s", branchName, branch)
-        try {
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-        } catch (iEx: IOException) {
-            LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
-            historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)
-            return false
-        } catch (iEx: InterruptedException) {
-            LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
-            historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)
-            return false
-        }
-        if (workUnit.migration.svnHistory == "all") {
-            try {
-                addRemote(workUnit, true)
-                gitCommand = String.format("%s --set-upstream origin %s", GIT_PUSH, branchName)
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-                historyMgr.endStep(history, StatusEnum.DONE, null)
-            } catch (iEx: IOException) {
-                LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
-                historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)
-                return false
-            } catch (iEx: InterruptedException) {
-                LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
-                historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)
-                return false
-            }
-        } else {
-            removeHistory(workUnit, branchName, false, history)
-        }
-        return applyMapping(workUnit, branch)
-    }
-
-    /**
-     * Manage tags extracted from SVN
-     *
-     * @param workUnit
-     * @param remotes
-     */
-    open fun manageTags(workUnit: WorkUnit, remotes: List<String>) {
-        listTagsOnly(remotes)?.forEach(Consumer { t: String ->
-            val warn: Boolean = pushTag(workUnit, t)
-            gitCommandManager.sleepBeforePush(workUnit, warn)
-        })
-    }
-
-    /**
-     * Push a tag
-     *
-     * @param workUnit Current work unit
-     * @param tag      Tag to migrate
-     */
-    open fun pushTag(workUnit: WorkUnit, tag: String): Boolean {
-        val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, tag)
-        try {
-
-            // derive local tagName from remote tag name
-            val tagName = tag.replaceFirst(ORIGIN_TAGS.toRegex(), "")
-            LOG.debug(String.format("Tag %s", tagName))
-
-            // determine noHistory flag i.e was all selected or not
-            val noHistory = workUnit.migration.svnHistory != "all"
-
-            // checkout a new branch using local tagName and remote tag name
-            var gitCommand = String.format("git checkout -b tmp_tag %s", tag)
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-
-            // If this tag does not contain any files we will ignore it and add warning to logs.
-            if (!isFileInFolder(workUnit.directory)) {
-
-                // Switch over to master
-                gitCommand = "git checkout master"
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-
-                // Now we can delete the branch tmp_tag
-                gitCommand = "git branch -D tmp_tag"
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-                historyMgr.endStep(history, StatusEnum.IGNORED, "Ignoring Tag: $tag : Because there are no files to commit.")
-            } else {
-
-                // creates a temporary orphan branch and renames it to tmp_tag
-                if (noHistory) {
-                    removeHistory(workUnit, "tmp_tag", true, history)
-                }
-
-                // Checkout master.
-                gitCommand = "git checkout master"
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-
-                // create tag from tmp_tag branch.
-                gitCommand = String.format("git tag %s tmp_tag", tagName)
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-
-                // add remote to master
-                addRemote(workUnit, false)
-
-                // push the tag to remote
-                // crashes if branch with same name so prefixing with refs/tags/
-                gitCommand = String.format("git push -u origin refs/tags/%s", tagName)
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-
-                // delete the tmp_tag branch now that the tag has been created.
-                gitCommand = "git branch -D tmp_tag"
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-                historyMgr.endStep(history, StatusEnum.DONE, null)
-            }
-        } catch (gitEx: IOException) {
-            LOG.error(FAILED_TO_PUSH_BRANCH, gitEx)
-            historyMgr.endStep(history, StatusEnum.FAILED, gitEx.message)
-        } catch (gitEx: InterruptedException) {
-            LOG.error(FAILED_TO_PUSH_BRANCH, gitEx)
-            historyMgr.endStep(history, StatusEnum.FAILED, gitEx.message)
-        }
-        return false
-    }
-
-    /**
      * Remove commit history on a given branch
      *
      * @param workUnit Current work unit
@@ -463,23 +359,23 @@ open class GitManager(val historyMgr: HistoryManager,
             // will have no parents and it will be the root of a new history totally disconnected from all the
             // other branches and commits
             var gitCommand = String.format("git checkout --orphan TEMP_BRANCH_%s", branch)
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
 
             // Stage All (new, modified, deleted) files. Equivalent to git add . (in Git Version 2.x)
             gitCommand = "git add -A"
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
             try {
                 // Create a new commit. Runs git add on any file that is 'tracked' and provide a message
                 // for the commit
                 gitCommand = String.format("git commit -am \"Reset history on %s\"", branch)
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
             } catch (ex: RuntimeException) {
                 // Ignored failed step
             }
             try {
                 // Delete (with force) the passed in branch name
                 gitCommand = String.format("git branch -D %s", branch)
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
             } catch (ex: RuntimeException) {
                 if (ex.message.equals("1", ignoreCase = true)) {
                     // Ignored failed step
@@ -491,7 +387,7 @@ open class GitManager(val historyMgr: HistoryManager,
             // Note : This fails with exit code 128 (git branch -m tmp_tag) when only folders in the subversion tag.
             // git commit -am above fails because no files
             gitCommand = String.format("git branch -m %s", branch)
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
 
             // i.e. if it is a branch
             if (!isTag) {
@@ -501,14 +397,12 @@ open class GitManager(val historyMgr: HistoryManager,
 
                 // push to remote
                 gitCommand = String.format("git push -f origin %s", branch)
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 historyMgr.endStep(history, StatusEnum.DONE, String.format("Push %s with no history", branch))
             }
         } catch (gitEx: IOException) {
-            LOG.error(FAILED_TO_PUSH_BRANCH, gitEx)
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.message)
         } catch (gitEx: InterruptedException) {
-            LOG.error(FAILED_TO_PUSH_BRANCH, gitEx)
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.message)
         }
     }
@@ -523,7 +417,7 @@ open class GitManager(val historyMgr: HistoryManager,
         if (workUnit.migration.trunk == null && (trunkOnly || workUnit.migration.branches == null)) {
             try {
                 // Set origin
-                Shell.execCommand(workUnit.commandManager, workUnit.directory,
+                execCommand(workUnit.commandManager, workUnit.directory,
                     gitCommandManager.buildRemoteCommand(workUnit, null, false),
                     gitCommandManager.buildRemoteCommand(workUnit, null, true))
             } catch (rEx: IOException) {

@@ -44,7 +44,7 @@ open class HistoryManager(private val migrationHistoryRepository: MigrationHisto
      * Update history
      * @param history
      */
-    open fun endStep(history: MigrationHistory?, status: StatusEnum?, data: String?) {
+    open fun endStep(history: MigrationHistory?, status: StatusEnum?, data: String? = null) {
         history?.status = status
         if (data != null) history?.data = data
         if (history?.startTime == null) {

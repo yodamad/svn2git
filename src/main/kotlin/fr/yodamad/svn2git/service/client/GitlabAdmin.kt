@@ -47,9 +47,4 @@ open class GitlabAdmin(val applicationProperties: ApplicationProperties) {
     open fun setGitlabApi(api: GitLabApi) {
         gitLabApi = api
     }
-
-    /*init {
-        gitLabApi = GitLabApi(applicationProperties.gitlab.url, applicationProperties.gitlab.token)
-        gitLabApi.ignoreCertificateErrors = true
-    }*/
 }

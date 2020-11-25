@@ -12,10 +12,7 @@ import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository
 import fr.yodamad.svn2git.repository.MigrationRepository
-import fr.yodamad.svn2git.service.util.CommandManager
-import fr.yodamad.svn2git.service.util.GIT_PUSH
-import fr.yodamad.svn2git.service.util.MASTER
-import fr.yodamad.svn2git.service.util.MarkdownGenerator
+import fr.yodamad.svn2git.service.util.*
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.isEmpty
@@ -36,6 +33,8 @@ import kotlin.NoSuchElementException
 @Component
 open class MigrationManager(val cleaner: Cleaner,
                             val gitManager: GitManager,
+                            val gitCommandManager: GitCommandManager,
+                            val gitlabManager: GitlabManager,
                             val historyMgr: HistoryManager,
                             val migrationRepository: MigrationRepository,
                             val migrationHistoryRepository: MigrationHistoryRepository,
@@ -96,7 +95,7 @@ open class MigrationManager(val cleaner: Cleaner,
             migrationRepository.save(migration)
 
             // 1. Create project on gitlab : OK
-            gitManager.createGitlabProject(migration)
+            gitlabManager.createGitlabProject(migration)
 
             // If reexecution we initialise from clean copy.
             initRootDirectoryFromCopy(workUnit)
@@ -108,7 +107,7 @@ open class MigrationManager(val cleaner: Cleaner,
             //     Note: Git GC will be triggered following git svn clone (on large projects) which causes a crash in following steps.
             history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CONFIG_GLOBAL_GC_AUTO_OFF, "Assure Git Garbage Collection doesn't run in background to avoid conflicts.")
             gitCommand = "git config --global gc.auto 0"
-            Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+            execCommand(commandManager, workUnit.directory, gitCommand)
             historyMgr.endStep(history, StatusEnum.DONE, null)
 
             // Log all git config before
@@ -187,9 +186,9 @@ open class MigrationManager(val cleaner: Cleaner,
                         LOG.error("Failed to run git gc --prune=now --aggressive")
                     }
                     gitCommand = "git reset HEAD"
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    execCommand(commandManager, workUnit.directory, gitCommand)
                     gitCommand = "git clean -fd"
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    execCommand(commandManager, workUnit.directory, gitCommand)
                 }
 
                 // 4. Git push master based on SVN trunk
@@ -197,16 +196,16 @@ open class MigrationManager(val cleaner: Cleaner,
                     history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, String.format("SVN %s -> GitLab master", migration.trunk))
 
                     // Set origin
-                    Shell.execCommand(commandManager, workUnit.directory,
-                        gitManager.buildRemoteCommand(workUnit, svn, false),
-                        gitManager.buildRemoteCommand(workUnit, svn, true))
+                    execCommand(commandManager, workUnit.directory,
+                        gitCommandManager.buildRemoteCommand(workUnit, svn, false),
+                        gitCommandManager.buildRemoteCommand(workUnit, svn, true))
                     if (migration.trunk != "trunk") {
                         gitCommand = String.format("git checkout -b %s %s", migration.trunk, "refs/remotes/origin/" + migration.trunk)
-                        Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                        execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                         gitCommand = String.format("git branch -D master")
-                        Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                        execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                         gitCommand = String.format("git branch -m master")
-                        Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                        execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     }
 
                     // if no history option set
@@ -215,13 +214,13 @@ open class MigrationManager(val cleaner: Cleaner,
                     } else {
                         // Push with upstream
                         gitCommand = String.format("%s --set-upstream origin master", GIT_PUSH)
-                        Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                        execCommand(commandManager, workUnit.directory, gitCommand)
                         historyMgr.endStep(history, StatusEnum.DONE, null)
                     }
 
                     // Clean pending file(s) removed by BFG
                     gitCommand = "git reset --hard origin/master"
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    execCommand(commandManager, workUnit.directory, gitCommand)
 
                     // 5. Apply mappings if some
                     val warning = gitManager.applyMapping(workUnit, MASTER)
@@ -253,7 +252,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 try {
                     history = historyMgr.startStep(migration, StepEnum.README_MD, "Generate README.md to summarize migration")
                     gitCommand = "git checkout master"
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    execCommand(commandManager, workUnit.directory, gitCommand)
 
                     // If master not migrated, clean it to add only README.md
                     if (migration.trunk == null) {
@@ -267,17 +266,17 @@ open class MigrationManager(val cleaner: Cleaner,
                                 }
                             }
                         gitCommand = "git commit -am \"Clean master not migrated to add future REAMDE.md\""
-                        Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                        execCommand(commandManager, workUnit.directory, gitCommand)
                     }
                     historyMgr.endStep(history, StatusEnum.DONE, null)
                     historyMgr.forceFlush()
                     markdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.id), cleanedFilesManager, workUnit)
                     gitCommand = "git add README.md"
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    execCommand(commandManager, workUnit.directory, gitCommand)
                     gitCommand = "git commit -m \"📃 Add generated README.md\""
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    execCommand(commandManager, workUnit.directory, gitCommand)
                     gitCommand = String.format("%s --set-upstream origin master", GIT_PUSH)
-                    Shell.execCommand(commandManager, workUnit.directory, gitCommand)
+                    execCommand(commandManager, workUnit.directory, gitCommand)
                     historyMgr.endStep(history, StatusEnum.DONE, null)
                 } catch (exc: Exception) {
                     historyMgr.endStep(history, StatusEnum.FAILED, exc.message)
@@ -363,7 +362,7 @@ open class MigrationManager(val cleaner: Cleaner,
                     // FileUtils.deleteDirectory(new File(folderToDelete));
                     // JBU : Fails on windows not able to delete a large number of files?..
                     val gitCommand = String.format("rd /s /q %s", folderToDelete)
-                    Shell.execCommand(workUnit.commandManager, Shell.formatDirectory(applicationProperties.work.directory), gitCommand)
+                    execCommand(workUnit.commandManager, Shell.formatDirectory(applicationProperties.work.directory), gitCommand)
                 } else {
                     // Seems to work ok on linux. Keeping Java command for the moment
                     FileSystemUtils.deleteRecursively(File(folderToDelete))
@@ -402,7 +401,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 // root has no trailling / e.g. folder_12345
                 String.format("cp -a %s %s_copy", workUnit.root, workUnit.root)
             }
-            Shell.execCommand(workUnit.commandManager, Shell.formatDirectory(applicationProperties.work.directory), gitCommand)
+            execCommand(workUnit.commandManager, Shell.formatDirectory(applicationProperties.work.directory), gitCommand)
         }
         historyMgr.endStep(history, StatusEnum.DONE, null)
     }
@@ -430,12 +429,12 @@ open class MigrationManager(val cleaner: Cleaner,
                 // root has no trailling / e.g. folder_12345
                 String.format("cp -a %s_copy %s", workUnit.root, workUnit.root)
             }
-            Shell.execCommand(workUnit.commandManager, Shell.formatDirectory(applicationProperties.work.directory), gitCommand)
+            execCommand(workUnit.commandManager, Shell.formatDirectory(applicationProperties.work.directory), gitCommand)
 
             // git reset incase a deployment has changed permissions
             // deployment of application seems to change files from 644 to 755 which is not desired.
             gitCommand = "git reset --hard HEAD"
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
             historyMgr.endStep(history, StatusEnum.DONE, null)
         }
     }
@@ -444,7 +443,7 @@ open class MigrationManager(val cleaner: Cleaner,
     open fun logGitConfig(workUnit: WorkUnit) {
         val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_SHOW_CONFIG, "Log Git Config and origin of config.")
         val gitCommand = "git config --list --show-origin"
-        Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+        execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
         historyMgr.endStep(history, StatusEnum.DONE, null)
     }
 
@@ -454,13 +453,13 @@ open class MigrationManager(val cleaner: Cleaner,
         var gitCommand = "git config user.name"
         //String workDir = format("%s/%s", workUnit.directory, workUnit.migration.getSvnProject());
         try {
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
         } catch (rEx: RuntimeException) {
             LOG.info("Git user.email and user.name not set, use default values based on gitlab user set in UI")
             gitCommand = String.format("git config user.email %s@svn2git.fake", workUnit.migration.user)
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
             gitCommand = String.format("git config user.name %s", workUnit.migration.user)
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
         } finally {
             historyMgr.endStep(history, StatusEnum.DONE, null)
         }
@@ -474,7 +473,7 @@ open class MigrationManager(val cleaner: Cleaner,
             val history = historyMgr.startStep(workUnit.migration, StepEnum.ULIMIT, "Show Ulimit -u value.")
             try {
                 val command = "ulimit -u"
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, command)
+                execCommand(workUnit.commandManager, workUnit.directory, command)
             } catch (exc: java.lang.Exception) {
                 // Ignore exception as it's just info displayed
             } finally {
@@ -492,12 +491,12 @@ open class MigrationManager(val cleaner: Cleaner,
                 LOG.info("Setting Git Config")
                 // apply new local config
                 var gitCommand = "git config $dynamicLocalConfig"
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
 
                 //display value after
                 LOG.info("Checking Git Config")
                 gitCommand = "git config " + configParts[0]
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } else {
                 LOG.warn("Problem applying dynamic git local configuration!!!")
@@ -527,7 +526,7 @@ open class MigrationManager(val cleaner: Cleaner,
             } else {
                 mkdir = String.format("mkdir -p %s", workUnit.directory)
             }
-            Shell.execCommand(workUnit.commandManager, applicationProperties.work.directory, mkdir)
+            execCommand(workUnit.commandManager, applicationProperties.work.directory, mkdir)
         }
         return svn
     }

@@ -5,6 +5,8 @@ const val GIT_PUSH = "git push"
 const val COMMIT = "commit"
 const val CONFIG = "config"
 const val RESET = "reset"
+const val BRANCH = "branch"
+const val CHECKOUT = "checkout"
 
 /** Default branch.  */
 const val MASTER = "master"
@@ -12,12 +14,12 @@ const val MASTER = "master"
 private fun gitCommand(command: String, flags: String? = "", target: String? = "") = "git $command $flags $target"
 
 // Branch management
-fun deleteBranch(branch: String) = gitCommand("branch", "-D", branch)
-fun renameBranch(branch: String) = gitCommand("branch", "-D", branch)
+fun deleteBranch(branch: String) = gitCommand(BRANCH, "-D", branch)
+fun renameBranch(branch: String) = gitCommand(BRANCH, "-m", branch)
 
 // Pull management
-fun checkoutFromOrigin(branch: String) = "git checkout -b $branch refs/remotes/origin/$branch"
-fun checkout(branch: String = MASTER) = "git checkout $branch"
+fun checkoutFromOrigin(branch: String) = gitCommand(CHECKOUT, "-b", "$branch refs/remotes/origin/$branch")
+fun checkout(branch: String = MASTER) = gitCommand(CHECKOUT, target = branch)
 
 // Push management
 fun add(element: String) = gitCommand("add", target = element)

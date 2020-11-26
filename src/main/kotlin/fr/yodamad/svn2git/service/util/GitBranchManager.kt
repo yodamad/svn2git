@@ -14,8 +14,9 @@ import java.util.function.Consumer
 
 @Service
 open class GitBranchManager(val gitManager: GitManager,
-    val historyMgr: HistoryManager,
-    val gitCommandManager: GitCommandManager) {
+                            val historyMgr: HistoryManager,
+                            val gitCommandManager: GitCommandManager,
+                            val repoFormatter: GitRepositoryFormatter) {
 
     private val LOG = LoggerFactory.getLogger(GitBranchManager::class.java)
     private val FAILED_TO_PUSH_BRANCH = "Failed to push branch"
@@ -61,7 +62,7 @@ open class GitBranchManager(val gitManager: GitManager,
         } else {
             gitManager.removeHistory(workUnit, branchName, false, history)
         }
-        return gitManager.applyMapping(workUnit, branch)
+        return repoFormatter.applyMapping(workUnit, branch)
     }
 
     /**

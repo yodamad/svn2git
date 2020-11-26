@@ -15,27 +15,21 @@ import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository
 import fr.yodamad.svn2git.repository.MigrationRepository
 import fr.yodamad.svn2git.service.util.*
-import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.StringUtils
-import org.apache.commons.lang3.StringUtils.isBlank
 import org.apache.commons.lang3.StringUtils.isEmpty
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.AsyncResult
 import org.springframework.stereotype.Component
-import org.springframework.util.FileSystemUtils.deleteRecursively
-import java.io.File
 import java.io.IOException
-import java.util.*
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.stream.Collectors.toMap
-import kotlin.NoSuchElementException
 
 @Component
 open class MigrationManager(val cleaner: Cleaner,
                             val gitManager: GitManager,
                             val gitBranchManager: GitBranchManager,
+                            val repoFormatter: GitRepositoryFormatter,
                             val gitTagManager: GitTagManager,
                             val gitCommandManager: GitCommandManager,
                             val gitlabManager: GitlabManager,
@@ -43,7 +37,8 @@ open class MigrationManager(val cleaner: Cleaner,
                             val migrationRepository: MigrationRepository,
                             val migrationHistoryRepository: MigrationHistoryRepository,
                             val applicationProperties: ApplicationProperties,
-                            val markdownGenerator: MarkdownGenerator) {
+                            val summaryManager: SummaryManager,
+                            val ioManager: IOManager) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(MigrationManager::class.java)
@@ -59,7 +54,7 @@ open class MigrationManager(val cleaner: Cleaner,
      */
     @Async
     open fun startMigration(migrationId: Long, retry: Boolean): Future<String>? {
-        var gitCommand: String
+
         val migration = migrationRepository.findById(migrationId).orElseThrow { NoSuchElementException() }
         var history: MigrationHistory? = null
         val rootDir: String
@@ -102,7 +97,7 @@ open class MigrationManager(val cleaner: Cleaner,
             gitlabManager.createGitlabProject(migration)
 
             // If reexecution we initialise from clean copy.
-            initRootDirectoryFromCopy(workUnit)
+            ioManager.initRootDirectoryFromCopy(workUnit)
 
             // 2. Checkout empty repository : OK
             val svn: String = initDirectory(workUnit)
@@ -113,7 +108,7 @@ open class MigrationManager(val cleaner: Cleaner,
             // 2.2. SVN checkout
             gitManager.gitSvnClone(workUnit)
             checkGitConfig(workUnit)
-            copyRootDirectory(workUnit)
+            ioManager.copyRootDirectory(workUnit)
             // Migration is now reexecutable in cases where there is a failure
             commandManager.isReexecutable = true
 
@@ -123,7 +118,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 .collect(toMap({ a: Array<String> -> a[0].trim { it <= ' ' } }, { a: Array<String> -> a[1].trim { it <= ' ' } }))
                 .forEach { (key: String?, value: String?) ->
                     try {
-                        addDynamicLocalConfig(workUnit, key, value)
+                        gitManager.addDynamicLocalConfig(workUnit, key, value)
                     } catch (e: IOException) {
                         LOG.error(e.message, e)
                     } catch (e: InterruptedException) {
@@ -150,12 +145,12 @@ open class MigrationManager(val cleaner: Cleaner,
                 val cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit)
                 val cleanLargeFiles = cleaner.cleanLargeFiles(workUnit)
                 if (cleanExtensions || cleanLargeFiles || cleanFolderWithBFG) {
-                    gitManager.gitClean(commandManager, workUnit)
+                    gitClean(commandManager, workUnit)
                 }
 
                 // 4. Git push master based on SVN trunk
                 if (migration.trunk != null) {
-                    history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, String.format("SVN %s -> GitLab master", migration.trunk))
+                    history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN ${migration.trunk} -> GitLab master")
 
                     // Set origin
                     execCommand(commandManager, workUnit.directory,
@@ -180,7 +175,7 @@ open class MigrationManager(val cleaner: Cleaner,
                     execCommand(commandManager, workUnit.directory, resetHard())
 
                     // 5. Apply mappings if some
-                    val warning = gitManager.applyMapping(workUnit, MASTER)
+                    val warning = repoFormatter.applyMapping(workUnit, MASTER)
                     workUnit.warnings.set(workUnit.warnings.get() || warning)
                 } else {
                     history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, migration.trunk)
@@ -206,33 +201,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 }
 
                 // Generate summary
-                try {
-                    history = historyMgr.startStep(migration, StepEnum.README_MD, "Generate README.md to summarize migration")
-                    execCommand(commandManager, workUnit.directory, checkout(MASTER))
-
-                    // If master not migrated, clean it to add only README.md
-                    if (migration.trunk == null) {
-                        Arrays.stream(File(workUnit.directory).listFiles())
-                            .filter { f: File -> !f.name.equals(".git", ignoreCase = true) }
-                            .forEach { f: File? ->
-                                try {
-                                    FileUtils.forceDelete(f)
-                                } catch (e: IOException) {
-                                    e.printStackTrace()
-                                }
-                            }
-                        execCommand(commandManager, workUnit.directory, commitAll("🧹 Clean master not migrated to add future REAMDE.md"))
-                    }
-                    historyMgr.endStep(history, StatusEnum.DONE)
-                    historyMgr.forceFlush()
-                    markdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.id), cleanedFilesManager, workUnit)
-                    execCommand(commandManager, workUnit.directory, add("README.md"))
-                    execCommand(commandManager, workUnit.directory, commit("📃 Add generated README.md"))
-                    execCommand(commandManager, workUnit.directory, push())
-                    historyMgr.endStep(history, StatusEnum.DONE)
-                } catch (exc: Exception) {
-                    historyMgr.endStep(history, StatusEnum.FAILED, exc.message)
-                }
+                summaryManager.prepareAndGenerate(commandManager,  cleanedFilesManager, workUnit, migration)
             } else {
                 history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "${migration.trunk}, Tags, Branches")
                 historyMgr.endStep(history, StatusEnum.IGNORED, "Skipping Migration : No Files Available. No Push to Gitlab")
@@ -247,7 +216,7 @@ open class MigrationManager(val cleaner: Cleaner,
 
             // migration was successful assure workingDirectory is set to empty so no reexecution is possible
             migration.workingDirectory = ""
-            deleteWorkingRoot(workUnit, true)
+            ioManager.deleteWorkingRoot(workUnit, true)
             migrationRepository.save(migration)
 
             // Log all git config after operations
@@ -262,7 +231,7 @@ open class MigrationManager(val cleaner: Cleaner,
             // A copy has been made and an error thrown. We can reexecute next time.
             if (commandManager.isReexecutable) {
                 migration.workingDirectory = rootDir
-                deleteWorkingRoot(workUnit, false)
+                ioManager.deleteWorkingRoot(workUnit, false)
                 LOG.info("Deleting working directory")
                 LOG.info("REASON:commandManager.isReexecutable() AND ERROR during migration")
             }
@@ -275,7 +244,7 @@ open class MigrationManager(val cleaner: Cleaner,
             LOG.debug("==================================================")
             if (applicationProperties.getFlags().getCleanupWorkDirectory()) {
                 // TODO : handle case where already deleted due to migration failure. See above.
-                deleteWorkingRoot(workUnit, false)
+                ioManager.deleteWorkingRoot(workUnit, false)
             } else {
                 LOG.info("Not cleaning up working directory")
                 LOG.info("REASON:applicationProperties.getFlags().getCleanupWorkDirectory()==True")
@@ -288,100 +257,6 @@ open class MigrationManager(val cleaner: Cleaner,
         return AsyncResult("THE_END")
     }
 
-    /**
-     * Delete working directory.
-     * Can be in context of usual cleanup.
-     * Can be in context of failed migration (in preparation for clean initialisation next time)
-     *
-     * @param workUnit
-     * @param copy boolean indicating whether to delete the copy or not
-     */
-    open fun deleteWorkingRoot(workUnit: WorkUnit, copy: Boolean) {
-
-        // Construct folder name (will be copy or not)
-        val folderToDelete = String.format("%s%s", workUnit.root, if (copy) "_copy" else "")
-
-        // 7. Clean work directory
-        val history = historyMgr.startStep(workUnit.migration,
-            StepEnum.CLEANING, "Remove $folderToDelete")
-
-        // Sanity check
-        if (!isBlank(folderToDelete) && folderToDelete.contains("20") && folderToDelete.contains("_")) {
-            try {
-                if (isWindows) {
-                    // FileUtils.deleteDirectory(new File(folderToDelete));
-                    // Fails occassionally on windows with file lock issue
-                    // Fails on windows not able to delete a large number of files?..
-                    execCommand(workUnit.commandManager, formatDirectory(applicationProperties.work.directory), "rd /s /q $folderToDelete")
-                } else {
-                    // Seems to work ok on linux. Keeping Java command for the moment
-                    deleteRecursively(File(folderToDelete))
-                }
-                historyMgr.endStep(history, StatusEnum.DONE, null)
-            } catch (exc: java.lang.Exception) {
-                LOG.error("Failed deleteDirectory: ", exc)
-                historyMgr.endStep(history, StatusEnum.FAILED, exc.message)
-            }
-        } else {
-            LOG.error("Failed deleteDirectory: Badly formed delete path")
-            historyMgr.endStep(history, StatusEnum.FAILED, "Badly formed delete path")
-        }
-    }
-
-    /**
-     * When Git Svn Clone step is completed (and associated cleanup)
-     * we copy the filesystem so that the migration can be reexecuted from this clean state.
-     * This avoids waiting for lengthy Git svn clone step
-     *
-     * @param workUnit
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    @Throws(IOException::class, InterruptedException::class)
-    open fun copyRootDirectory(workUnit: WorkUnit) {
-        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_COPY_ROOT_FOLDER,
-            (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) +
-                "Copying Root Folder")
-        if (workUnit.commandManager.isFirstAttemptMigration) {
-            val gitCommand: String = if (isWindows) {
-                "$WIN_COPY_DIR ${workUnit.root} ${workUnit.root}_copy"
-            } else {
-                "$COPY_DIR ${workUnit.root} ${workUnit.root}_copy"
-            }
-            execCommand(workUnit.commandManager, formatDirectory(applicationProperties.work.directory), gitCommand)
-        }
-        historyMgr.endStep(history, StatusEnum.DONE, null)
-    }
-
-    /**
-     * In a migration reexectution the first step is to recuperate a clean state.
-     *
-     * @param workUnit
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    @Throws(IOException::class, InterruptedException::class)
-    open fun initRootDirectoryFromCopy(workUnit: WorkUnit) {
-        if (!workUnit.commandManager.isFirstAttemptMigration) {
-            val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_COPY_ROOT_FOLDER,
-                (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) +
-                    "Initialising Root Directory from Copy in context of migration reexecution.")
-
-            // The clean copy folder is used to reinitialise the workUnit.root Folder
-            val gitCommand : String = if (isWindows) {
-                "$WIN_COPY_DIR ${workUnit.root}_copy ${workUnit.root}"
-            } else {
-                "$COPY_DIR ${workUnit.root}_copy ${workUnit.root}"
-            }
-            execCommand(workUnit.commandManager, formatDirectory(applicationProperties.work.directory), gitCommand)
-
-            // git reset incase a deployment has changed permissions
-            // deployment of application seems to change files from 644 to 755 which is not desired.
-            execCommand(workUnit.commandManager, workUnit.directory, resetHead())
-            historyMgr.endStep(history, StatusEnum.DONE)
-        }
-    }
-
     @Throws(IOException::class, InterruptedException::class)
     open fun checkGitConfig(workUnit: WorkUnit) {
         val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_SET_CONFIG, "Log Git Config and origin of config.")
@@ -390,31 +265,9 @@ open class MigrationManager(val cleaner: Cleaner,
         } catch (rEx: RuntimeException) {
             LOG.info("Git user.email and user.name not set, use default values based on gitlab user set in UI")
             execCommand(workUnit.commandManager, workUnit.directory, setConfig("user.email", "${workUnit.migration.user}@svn2git.fake"))
-            execCommand(workUnit.commandManager, workUnit.directory, setConfig("user.name", "${workUnit.migration.user}"))
+            execCommand(workUnit.commandManager, workUnit.directory, setConfig("user.name", workUnit.migration.user))
         } finally {
             historyMgr.endStep(history, StatusEnum.DONE)
-        }
-    }
-
-    @Throws(IOException::class, InterruptedException::class)
-    open fun addDynamicLocalConfig(workUnit: WorkUnit, dynamicLocalConfig: String, dynamicLocalConfigDesc: String) {
-        if (StringUtils.isNotEmpty(dynamicLocalConfig) && StringUtils.isNotEmpty(dynamicLocalConfigDesc)) {
-            val configParts = dynamicLocalConfig.split(" ").toTypedArray()
-            if (configParts.size == 2) {
-                val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_DYNAMIC_LOCAL_CONFIG, dynamicLocalConfigDesc)
-                LOG.info("Setting Git Config")
-                // apply new local config
-                execCommand(workUnit.commandManager, workUnit.directory, setConfig(dynamicLocalConfig))
-
-                //display value after
-                LOG.info("Checking Git Config")
-                execCommand(workUnit.commandManager, workUnit.directory, readConfig(configParts[0]))
-                historyMgr.endStep(history, StatusEnum.DONE, null)
-            } else {
-                LOG.warn("Problem applying dynamic git local configuration!!!")
-            }
-        } else {
-            LOG.warn("Problem applying dynamic git local configuration!!!")
         }
     }
 

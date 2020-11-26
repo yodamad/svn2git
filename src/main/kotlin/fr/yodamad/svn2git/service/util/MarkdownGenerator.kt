@@ -9,7 +9,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
-import fr.yodamad.svn2git.io.BytesConverterUtil
+import fr.yodamad.svn2git.io.BytesConverterUtil.humanReadableByteCount
 import fr.yodamad.svn2git.service.CleanedFilesManager
 import fr.yodamad.svn2git.service.MigrationRemovedFileService
 import net.steppschuh.markdowngenerator.table.Table
@@ -17,14 +17,16 @@ import net.steppschuh.markdowngenerator.text.emphasis.BoldText
 import net.steppschuh.markdowngenerator.text.emphasis.ItalicText
 import net.steppschuh.markdowngenerator.text.heading.Heading
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.isEmpty
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
+import java.lang.Character.isDigit
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ofLocalizedDateTime
 import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -73,34 +75,34 @@ open class MarkdownGenerator(
             migration.mappings.forEach(Consumer { map: Mapping -> mappingTableBuilder.addRow(map.svnDirectory, map.regex, map.gitDirectory, map.isSvnDirectoryDelete) })
             md.append(mappingTableBuilder.build()).append(EMPTY_LINE)
         }
-        if (!StringUtils.isEmpty(migration.forbiddenFileExtensions) ||
-            !StringUtils.isEmpty(migration.maxFileSize) && Character.isDigit(migration.maxFileSize[0])) {
+        if (!isEmpty(migration.forbiddenFileExtensions) ||
+            !isEmpty(migration.maxFileSize) && isDigit(migration.maxFileSize[0])) {
             // Cleaning
             md.append(Heading("Cleaning options", 3)).append(EMPTY_LINE)
             val cleaningTableBuilder = Table.Builder()
                 .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
                 .addRow("Option", "Value")
-            if (!StringUtils.isEmpty(migration.maxFileSize)) {
+            if (!isEmpty(migration.maxFileSize)) {
                 cleaningTableBuilder.addRow("Max file size", migration.maxFileSize)
             }
-            if (!StringUtils.isEmpty(migration.forbiddenFileExtensions) && Character.isDigit(migration.maxFileSize[0])) {
+            if (!isEmpty(migration.forbiddenFileExtensions) && isDigit(migration.maxFileSize[0])) {
                 cleaningTableBuilder.addRow("Files extension(s) removed", migration.forbiddenFileExtensions)
             }
-            if (!StringUtils.isEmpty(migration.svnHistory)) {
+            if (!isEmpty(migration.svnHistory)) {
                 cleaningTableBuilder.addRow("Subversion History", migration.svnHistory)
             }
-            if (!StringUtils.isEmpty(migration.branchesToMigrate)) {
+            if (!isEmpty(migration.branchesToMigrate)) {
                 cleaningTableBuilder.addRow("Branches to migrate", migration.branchesToMigrate)
             }
-            if (!StringUtils.isEmpty(migration.tagsToMigrate)) {
+            if (!isEmpty(migration.tagsToMigrate)) {
                 cleaningTableBuilder.addRow("Tags to migrate", migration.tagsToMigrate)
             }
             md.append(cleaningTableBuilder.build()).append(EMPTY_LINE)
 
             // *********** SVN Location File Size Report ******************
             md.append(Heading(String.format("File Size Totals: SVN (%s), Gitlab (%s)",
-                BytesConverterUtil.humanReadableByteCount(cleanedFilesManager.fileSizeTotalBeforeClean, false),
-                BytesConverterUtil.humanReadableByteCount(cleanedFilesManager.fileSizeTotalAfterClean, false)
+                humanReadableByteCount(cleanedFilesManager.fileSizeTotalBeforeClean, false),
+                humanReadableByteCount(cleanedFilesManager.fileSizeTotalAfterClean, false)
             ), 3))
                 .append(EMPTY_LINE)
             val totalFileSizeTableBuilder = Table.Builder()
@@ -110,9 +112,9 @@ open class MarkdownGenerator(
                 totalFileSizeTableBuilder.addRow(
                     value.svnLocation,
                     value.fileCountBeforeClean,
-                    BytesConverterUtil.humanReadableByteCount(value.fileSizeTotalBeforeClean, false),
+                    humanReadableByteCount(value.fileSizeTotalBeforeClean, false),
                     value.fileCountAfterClean,
-                    BytesConverterUtil.humanReadableByteCount(value.fileSizeTotalAfterClean, false)
+                    humanReadableByteCount(value.fileSizeTotalAfterClean, false)
                 )
             }
             md.append(totalFileSizeTableBuilder.build()).append(EMPTY_LINE)
@@ -167,7 +169,7 @@ open class MarkdownGenerator(
         }
 
         // TIME
-        val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+        val formatter = ofLocalizedDateTime(FormatStyle.SHORT)
             .withLocale(Locale.FRANCE)
             .withZone(ZoneId.systemDefault())
         md.append(Heading(String.format("Migration steps history (duration: %s minutes)", minutesDifference), 3)).append(EMPTY_LINE)
@@ -209,16 +211,16 @@ open class MarkdownGenerator(
             id = migrationRemovedFile.id.toString()
         }
         var path = ""
-        if (!StringUtils.isEmpty(migrationRemovedFile.path)) {
+        if (!isEmpty(migrationRemovedFile.path)) {
             path = migrationRemovedFile.path
         }
         var svnLocation = ""
-        if (!StringUtils.isEmpty(migrationRemovedFile.svnLocation)) {
+        if (!isEmpty(migrationRemovedFile.svnLocation)) {
             svnLocation = migrationRemovedFile.svnLocation
         }
         var fileSize: String? = ""
         if (migrationRemovedFile.fileSize != null) {
-            fileSize = BytesConverterUtil.humanReadableByteCount(migrationRemovedFile.fileSize, false)
+            fileSize = humanReadableByteCount(migrationRemovedFile.fileSize, false)
         }
         if (applicationProperties.artifactory.enabled) {
             // Remove leading slash from artifactory.binariesDirectory

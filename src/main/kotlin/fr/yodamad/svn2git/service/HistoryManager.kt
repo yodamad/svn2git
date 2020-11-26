@@ -36,7 +36,7 @@ open class HistoryManager(private val migrationHistoryRepository: MigrationHisto
         if (data != null) {
             history.data(data)
         }
-        LOG.info(String.format("Start step %s", step))
+        LOG.info("Start step $step")
         return migrationHistoryRepository.save(history)
     }
 
@@ -55,7 +55,7 @@ open class HistoryManager(private val migrationHistoryRepository: MigrationHisto
             history.executionTime = DateFormatter.toNiceFormat(execution)
         }
         migrationHistoryRepository.save(history)
-        LOG.info(String.format("Finish step %s with status %s in %s", history?.step, status, history?.executionTime))
+        LOG.info("Finish step ${history?.step} with status $status in ${history?.executionTime}")
     }
 
     /**

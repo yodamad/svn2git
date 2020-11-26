@@ -9,6 +9,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
+import fr.yodamad.svn2git.functions.EMPTY
 import fr.yodamad.svn2git.io.BytesConverterUtil.humanReadableByteCount
 import fr.yodamad.svn2git.service.CleanedFilesManager
 import fr.yodamad.svn2git.service.MigrationRemovedFileService
@@ -205,20 +206,23 @@ open class MarkdownGenerator(
         }
     }
 
+    /**
+     * Add a row with removed file information
+     */
     open fun addRemovedFileRow(migrationRemovedFileTableBuilder: Table.Builder, migrationRemovedFile: MigrationRemovedFile) {
-        var id = ""
+        var id = EMPTY
         if (migrationRemovedFile.id != null) {
             id = migrationRemovedFile.id.toString()
         }
-        var path = ""
+        var path = EMPTY
         if (!isEmpty(migrationRemovedFile.path)) {
             path = migrationRemovedFile.path
         }
-        var svnLocation = ""
+        var svnLocation = EMPTY
         if (!isEmpty(migrationRemovedFile.svnLocation)) {
             svnLocation = migrationRemovedFile.svnLocation
         }
-        var fileSize: String? = ""
+        var fileSize: String? = EMPTY
         if (migrationRemovedFile.fileSize != null) {
             fileSize = humanReadableByteCount(migrationRemovedFile.fileSize, false)
         }
@@ -231,10 +235,7 @@ open class MarkdownGenerator(
                 svnLocation, if (binInTags) "Yes" else "", fileSize)
         } else {
             migrationRemovedFileTableBuilder.addRow(id,
-                path,
-                svnLocation,
-                "Yes",
-                fileSize)
+                path, svnLocation, "Yes", fileSize)
         }
     }
 

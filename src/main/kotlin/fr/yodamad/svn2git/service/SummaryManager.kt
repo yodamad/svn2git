@@ -4,7 +4,6 @@ import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.Migration
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
-import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.service.util.*
 import org.apache.commons.io.FileUtils
@@ -17,6 +16,9 @@ import java.util.*
 open class SummaryManager(val historyMgr: HistoryManager,
                           val markdownGenerator: MarkdownGenerator) {
 
+    /**
+     * Prepare and generate the summary file store in README.md
+     */
     open fun prepareAndGenerate(commandManager: CommandManager, cleanedFilesManager: CleanedFilesManager, workUnit: WorkUnit, migration: Migration) {
         val history = historyMgr.startStep(migration, StepEnum.README_MD, "Generate README.md to summarize migration")
         try {

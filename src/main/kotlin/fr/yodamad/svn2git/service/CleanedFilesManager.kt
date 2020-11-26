@@ -4,13 +4,7 @@ import fr.yodamad.svn2git.data.CleanedFiles
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import java.util.concurrent.atomic.AtomicLong
 
-open class CleanedFilesManager(
-    /**
-     * Gets cleanedReportMap
-     *
-     * @return value of cleanedReportMap
-     */
-    val cleanedReportMap: Map<String, CleanedFiles>) {
+open class CleanedFilesManager(val cleanedReportMap: Map<String, CleanedFiles>) {
 
     /**
      *

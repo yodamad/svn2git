@@ -31,11 +31,9 @@ fun commitAll(message: String) = gitCommand(COMMIT, "-am", "\"$message\"")
 fun push(branch: String = MASTER) = "$GIT_PUSH --set-upstream origin $branch"
 
 // Maintenance management
+fun gc() = gitCommand("gc")
 fun resetHard(branch: String = MASTER) = gitCommand(RESET, "--hard", "origin/$branch")
 fun resetHead() = gitCommand(RESET, "--hard", "HEAD")
-/**
- * Git clean
- */
 fun gitClean(commandManager: CommandManager, workUnit: WorkUnit) {
     try {
         execCommand(commandManager, workUnit.directory, gitCommand("reflog expire", "--expire=now --all"))

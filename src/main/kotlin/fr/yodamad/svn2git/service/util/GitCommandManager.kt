@@ -55,10 +55,16 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         return cloneCommand.replace("\\s{2,}".toRegex(), " ").trim { it <= ' ' }
     }
 
+    /**
+     * Set trunk information
+     */
     private fun setTrunk(workUnit: WorkUnit) =
         if ((workUnit.migration.trunk == null || workUnit.migration.trunk != "trunk") && !workUnit.migration.flat) EMPTY
         else buildTrunk(workUnit)
 
+    /**
+     * Set element (branch or tag)
+     */
     private fun setSvnElement(elementName: String, element: String?, workUnit: WorkUnit) =
         if (element == null) EMPTY else "--$elementName=${workUnit.migration.svnProject}/$elementName"
 

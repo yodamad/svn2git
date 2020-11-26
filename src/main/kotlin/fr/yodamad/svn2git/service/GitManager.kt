@@ -3,6 +3,7 @@ package fr.yodamad.svn2git.service
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.config.Constants
 import fr.yodamad.svn2git.data.WorkUnit
+import fr.yodamad.svn2git.domain.Migration
 import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
@@ -46,6 +47,9 @@ open class GitManager(val historyMgr: HistoryManager,
         LOG.info("Charset.defaultCharset().displayName(): ${defaultCharset().displayName()}")
     }
 
+    /**
+     * Set configuration for GIT local workspace based on application.yml`
+     */
     @Throws(IOException::class, InterruptedException::class)
     open fun addDynamicLocalConfig(workUnit: WorkUnit, dynamicLocalConfig: String, dynamicLocalConfigDesc: String) {
         if (StringUtils.isNotEmpty(dynamicLocalConfig) && StringUtils.isNotEmpty(dynamicLocalConfigDesc)) {
@@ -53,18 +57,16 @@ open class GitManager(val historyMgr: HistoryManager,
             if (configParts.size == 2) {
                 val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_DYNAMIC_LOCAL_CONFIG, dynamicLocalConfigDesc)
                 LOG.info("Setting Git Config")
-                // apply new local config
                 execCommand(workUnit.commandManager, workUnit.directory, setConfig(dynamicLocalConfig))
 
-                //display value after
                 LOG.info("Checking Git Config")
                 execCommand(workUnit.commandManager, workUnit.directory, readConfig(configParts[0]))
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } else {
-                LOG.warn("Problem applying dynamic git local configuration!!!")
+                LOG.warn("Problem applying dynamic git local configuration")
             }
         } else {
-            LOG.warn("Problem applying dynamic git local configuration!!!")
+            LOG.warn("Problem applying dynamic git local configuration")
         }
     }
 
@@ -101,6 +103,39 @@ open class GitManager(val historyMgr: HistoryManager,
     }
 
     /**
+     * Manage trunk and link it to origin
+     */
+    open fun manageMaster(commandManager: CommandManager, workUnit: WorkUnit, migration: Migration, svn: String) {
+        val history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN ${migration.trunk} -> GitLab master")
+
+        // Set origin
+        execCommand(commandManager, workUnit.directory,
+            gitCommandManager.buildRemoteCommand(workUnit, svn, false),
+            gitCommandManager.buildRemoteCommand(workUnit, svn, true))
+        if (migration.trunk != "trunk") {
+            execCommand(workUnit.commandManager, workUnit.directory, checkoutFromOrigin(migration.trunk))
+            execCommand(workUnit.commandManager, workUnit.directory, deleteBranch(MASTER))
+            execCommand(workUnit.commandManager, workUnit.directory, renameBranch(MASTER))
+        }
+
+        // if no history option set
+        if (migration.svnHistory == "nothing") {
+            removeHistory(workUnit, MASTER, false, history)
+        } else {
+            // Push with upstream
+            execCommand(commandManager, workUnit.directory, "$GIT_PUSH --set-upstream origin master")
+            historyMgr.endStep(history, StatusEnum.DONE)
+        }
+
+        // Clean pending file(s) removed by BFG
+        execCommand(commandManager, workUnit.directory, resetHard())
+
+        // 5. Apply mappings if some
+        val warning = repoFormatter.applyMapping(workUnit, MASTER)
+        workUnit.warnings.set(workUnit.warnings.get() || warning)
+    }
+
+    /**
      * Remove commit history on a given branch
      *
      * @param workUnit Current work unit
@@ -110,29 +145,26 @@ open class GitManager(val historyMgr: HistoryManager,
      */
     open fun removeHistory(workUnit: WorkUnit, branch: String?, isTag: Boolean, history: MigrationHistory?) {
         try {
-            LOG.debug(String.format("Remove history on %s", branch))
+            LOG.debug("Remove history on $branch")
 
             // Create new orphan branch and switch to it. The first commit made on this new branch
             // will have no parents and it will be the root of a new history totally disconnected from all the
             // other branches and commits
-            var gitCommand = String.format("git checkout --orphan TEMP_BRANCH_%s", branch)
-            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory,
+                gitCommand(CHECKOUT, "--orphan", "TEMP_BRANCH_$branch"))
 
             // Stage All (new, modified, deleted) files. Equivalent to git add . (in Git Version 2.x)
-            gitCommand = "git add -A"
-            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gitCommand("add", flags = "-A"))
             try {
                 // Create a new commit. Runs git add on any file that is 'tracked' and provide a message
                 // for the commit
-                gitCommand = String.format("git commit -am \"Reset history on %s\"", branch)
-                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, commitAll("Reset history on $branch"))
             } catch (ex: RuntimeException) {
                 // Ignored failed step
             }
             try {
                 // Delete (with force) the passed in branch name
-                gitCommand = String.format("git branch -D %s", branch)
-                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                execCommand(workUnit.commandManager, workUnit.directory, deleteBranch(branch!!))
             } catch (ex: RuntimeException) {
                 if (ex.message.equals("1", ignoreCase = true)) {
                     // Ignored failed step
@@ -143,19 +175,15 @@ open class GitManager(val historyMgr: HistoryManager,
             // (i.e. rename the orphan branch - without history - to the passed in branch name)
             // Note : This fails with exit code 128 (git branch -m tmp_tag) when only folders in the subversion tag.
             // git commit -am above fails because no files
-            gitCommand = String.format("git branch -m %s", branch)
-            execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, renameBranch(branch!!))
 
             // i.e. if it is a branch
             if (!isTag) {
-
                 // create the remote
                 addRemote(workUnit, true)
-
                 // push to remote
-                gitCommand = String.format("git push -f origin %s", branch)
-                execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-                historyMgr.endStep(history, StatusEnum.DONE, String.format("Push %s with no history", branch))
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand("push", "-f", "origin $branch"))
+                historyMgr.endStep(history, StatusEnum.DONE, "Push $branch with no history")
             }
         } catch (gitEx: IOException) {
             historyMgr.endStep(history, StatusEnum.FAILED, gitEx.message)

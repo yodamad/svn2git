@@ -96,15 +96,14 @@ open class GitlabManager(val historyMgr: HistoryManager,
                     gitlabAdmin.projectApi().createProject(groupId, structure[structure.size - 1])
                     historyMgr.endStep(history, StatusEnum.DONE, null)
                 } else {
-                    throw GitLabApiException("Please remove the destination project '" + group.name + "/" + structure[structure.size - 1])
+                    throw GitLabApiException("Please remove the destination project '${group.name}/${structure[structure.size - 1]}'")
                 }
             }
         } catch (exc: GitLabApiException) {
             val message: String? = exc.message?.replace(applicationProperties.gitlab.token, STARS)
-            LOG.error("Gitlab errors are " + exc.validationErrors)
+            LOG.error("Gitlab errors are ${exc.validationErrors}")
             historyMgr.endStep(history, StatusEnum.FAILED, message)
             throw exc
         }
     }
-
 }

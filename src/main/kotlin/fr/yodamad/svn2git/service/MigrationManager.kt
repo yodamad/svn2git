@@ -29,7 +29,6 @@ import java.util.stream.Collectors.toMap
 open class MigrationManager(val cleaner: Cleaner,
                             val gitManager: GitManager,
                             val gitBranchManager: GitBranchManager,
-                            val repoFormatter: GitRepositoryFormatter,
                             val gitTagManager: GitTagManager,
                             val gitCommandManager: GitCommandManager,
                             val gitlabManager: GitlabManager,
@@ -150,33 +149,7 @@ open class MigrationManager(val cleaner: Cleaner,
 
                 // 4. Git push master based on SVN trunk
                 if (migration.trunk != null) {
-                    history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, "SVN ${migration.trunk} -> GitLab master")
-
-                    // Set origin
-                    execCommand(commandManager, workUnit.directory,
-                        gitCommandManager.buildRemoteCommand(workUnit, svn, false),
-                        gitCommandManager.buildRemoteCommand(workUnit, svn, true))
-                    if (migration.trunk != "trunk") {
-                        execCommand(workUnit.commandManager, workUnit.directory, checkoutFromOrigin(migration.trunk))
-                        execCommand(workUnit.commandManager, workUnit.directory, deleteBranch(MASTER))
-                        execCommand(workUnit.commandManager, workUnit.directory, renameBranch(MASTER))
-                    }
-
-                    // if no history option set
-                    if (migration.svnHistory == "nothing") {
-                        gitManager.removeHistory(workUnit, MASTER, false, history)
-                    } else {
-                        // Push with upstream
-                        execCommand(commandManager, workUnit.directory, "$GIT_PUSH --set-upstream origin master")
-                        historyMgr.endStep(history, StatusEnum.DONE)
-                    }
-
-                    // Clean pending file(s) removed by BFG
-                    execCommand(commandManager, workUnit.directory, resetHard())
-
-                    // 5. Apply mappings if some
-                    val warning = repoFormatter.applyMapping(workUnit, MASTER)
-                    workUnit.warnings.set(workUnit.warnings.get() || warning)
+                    gitManager.manageMaster(commandManager, workUnit, migration, svn)
                 } else {
                     history = historyMgr.startStep(migration, StepEnum.GIT_PUSH, migration.trunk)
                     historyMgr.endStep(history, StatusEnum.IGNORED, "Skip ${migration.trunk}")

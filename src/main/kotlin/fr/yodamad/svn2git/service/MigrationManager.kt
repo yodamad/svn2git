@@ -78,17 +78,17 @@ open class MigrationManager(val cleaner: Cleaner,
             historyMgr.endStep(history, StatusEnum.FAILED, String.format(FAILED_DIR, ex.message))
             migration.status = StatusEnum.FAILED
             migrationRepository.save(migration)
-            return AsyncResult("KO")
+            return AsyncResult(StatusEnum.KO.name)
         } catch (ex: InterruptedException) {
             historyMgr.endStep(history, StatusEnum.FAILED, String.format(FAILED_DIR, ex.message))
             migration.status = StatusEnum.FAILED
             migrationRepository.save(migration)
-            return AsyncResult("KO")
+            return AsyncResult(StatusEnum.KO.name)
         } catch (ex: RuntimeException) {
             historyMgr.endStep(history, StatusEnum.FAILED, String.format(FAILED_DIR, ex.message))
             migration.status = StatusEnum.FAILED
             migrationRepository.save(migration)
-            return AsyncResult("KO")
+            return AsyncResult(StatusEnum.KO.name)
         }
         val workUnit = WorkUnit(migration, formatDirectory(rootDir),
             Shell.gitWorkingDir(rootDir, migration.svnGroup), AtomicBoolean(false), commandManager)
@@ -162,10 +162,9 @@ open class MigrationManager(val cleaner: Cleaner,
                         gitCommandManager.buildRemoteCommand(workUnit, svn, false),
                         gitCommandManager.buildRemoteCommand(workUnit, svn, true))
                     if (migration.trunk != "trunk") {
-                        gitCommand = "git checkout -b ${migration.trunk} refs/remotes/origin/${migration.trunk}"
-                        execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
-                        execCommand(workUnit.commandManager, workUnit.directory, "git branch -D master")
-                        execCommand(workUnit.commandManager, workUnit.directory, "git branch -m master")
+                        execCommand(workUnit.commandManager, workUnit.directory, checkoutFromOrigin(migration.trunk))
+                        execCommand(workUnit.commandManager, workUnit.directory, deleteBranch(MASTER))
+                        execCommand(workUnit.commandManager, workUnit.directory, renameBranch(MASTER))
                     }
 
                     // if no history option set
@@ -178,7 +177,7 @@ open class MigrationManager(val cleaner: Cleaner,
                     }
 
                     // Clean pending file(s) removed by BFG
-                    execCommand(commandManager, workUnit.directory, "git reset --hard origin/master")
+                    execCommand(commandManager, workUnit.directory, resetHard())
 
                     // 5. Apply mappings if some
                     val warning = gitManager.applyMapping(workUnit, MASTER)
@@ -209,7 +208,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 // Generate summary
                 try {
                     history = historyMgr.startStep(migration, StepEnum.README_MD, "Generate README.md to summarize migration")
-                    execCommand(commandManager, workUnit.directory, "git checkout master")
+                    execCommand(commandManager, workUnit.directory, checkout(MASTER))
 
                     // If master not migrated, clean it to add only README.md
                     if (migration.trunk == null) {
@@ -222,15 +221,14 @@ open class MigrationManager(val cleaner: Cleaner,
                                     e.printStackTrace()
                                 }
                             }
-                        gitCommand = "git commit -am \"Clean master not migrated to add future REAMDE.md\""
-                        execCommand(commandManager, workUnit.directory, gitCommand)
+                        execCommand(commandManager, workUnit.directory, commitAll("🧹 Clean master not migrated to add future REAMDE.md"))
                     }
                     historyMgr.endStep(history, StatusEnum.DONE)
                     historyMgr.forceFlush()
                     markdownGenerator.generateSummaryReadme(historyMgr.loadMigration(workUnit.migration.id), cleanedFilesManager, workUnit)
-                    execCommand(commandManager, workUnit.directory, "git add README.md")
-                    execCommand(commandManager, workUnit.directory, "git commit -m \"📃 Add generated README.md\"")
-                    execCommand(commandManager, workUnit.directory, "$GIT_PUSH --set-upstream origin master")
+                    execCommand(commandManager, workUnit.directory, add("README.md"))
+                    execCommand(commandManager, workUnit.directory, commit("📃 Add generated README.md"))
+                    execCommand(commandManager, workUnit.directory, push())
                     historyMgr.endStep(history, StatusEnum.DONE)
                 } catch (exc: Exception) {
                     historyMgr.endStep(history, StatusEnum.FAILED, exc.message)
@@ -346,11 +344,9 @@ open class MigrationManager(val cleaner: Cleaner,
                 "Copying Root Folder")
         if (workUnit.commandManager.isFirstAttemptMigration) {
             val gitCommand: String = if (isWindows) {
-                "Xcopy /E /I /H /Q ${workUnit.root} ${workUnit.root}_copy"
+                "$WIN_COPY_DIR ${workUnit.root} ${workUnit.root}_copy"
             } else {
-                // cp -a /source/. /dest/ ("-a" is recursive "." means files and folders including hidden)
-                // root has no trailling / e.g. folder_12345
-                "cp -a ${workUnit.root} ${workUnit.root}_copy"
+                "$COPY_DIR ${workUnit.root} ${workUnit.root}_copy"
             }
             execCommand(workUnit.commandManager, formatDirectory(applicationProperties.work.directory), gitCommand)
         }
@@ -373,18 +369,15 @@ open class MigrationManager(val cleaner: Cleaner,
 
             // The clean copy folder is used to reinitialise the workUnit.root Folder
             val gitCommand : String = if (isWindows) {
-                // /J Copy using unbuffered I/O. Recommended for very large files.
-                "Xcopy /E /I /H /Q ${workUnit.root}_copy ${workUnit.root}"
+                "$WIN_COPY_DIR ${workUnit.root}_copy ${workUnit.root}"
             } else {
-                // cp -a /source/. /dest/ ("-a" is recursive "." means files and folders including hidden)
-                // root has no trailling / e.g. folder_12345
-                "cp -a ${workUnit.root}_copy ${workUnit.root}"
+                "$COPY_DIR ${workUnit.root}_copy ${workUnit.root}"
             }
             execCommand(workUnit.commandManager, formatDirectory(applicationProperties.work.directory), gitCommand)
 
             // git reset incase a deployment has changed permissions
             // deployment of application seems to change files from 644 to 755 which is not desired.
-            execCommand(workUnit.commandManager, workUnit.directory, "git reset --hard HEAD")
+            execCommand(workUnit.commandManager, workUnit.directory, resetHead())
             historyMgr.endStep(history, StatusEnum.DONE)
         }
     }
@@ -393,11 +386,11 @@ open class MigrationManager(val cleaner: Cleaner,
     open fun checkGitConfig(workUnit: WorkUnit) {
         val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_SET_CONFIG, "Log Git Config and origin of config.")
         try {
-            execCommand(workUnit.commandManager, workUnit.directory, "git config user.name")
+            execCommand(workUnit.commandManager, workUnit.directory, readConfig("user.name"))
         } catch (rEx: RuntimeException) {
             LOG.info("Git user.email and user.name not set, use default values based on gitlab user set in UI")
-            execCommand(workUnit.commandManager, workUnit.directory, "git config user.email ${workUnit.migration.user}@svn2git.fake")
-            execCommand(workUnit.commandManager, workUnit.directory, "git config user.name ${workUnit.migration.user}")
+            execCommand(workUnit.commandManager, workUnit.directory, setConfig("user.email", "${workUnit.migration.user}@svn2git.fake"))
+            execCommand(workUnit.commandManager, workUnit.directory, setConfig("user.name", "${workUnit.migration.user}"))
         } finally {
             historyMgr.endStep(history, StatusEnum.DONE)
         }
@@ -411,11 +404,11 @@ open class MigrationManager(val cleaner: Cleaner,
                 val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_DYNAMIC_LOCAL_CONFIG, dynamicLocalConfigDesc)
                 LOG.info("Setting Git Config")
                 // apply new local config
-                execCommand(workUnit.commandManager, workUnit.directory, "git config $dynamicLocalConfig")
+                execCommand(workUnit.commandManager, workUnit.directory, setConfig(dynamicLocalConfig))
 
                 //display value after
                 LOG.info("Checking Git Config")
-                execCommand(workUnit.commandManager, workUnit.directory, "git config ${configParts[0]}")
+                execCommand(workUnit.commandManager, workUnit.directory, readConfig(configParts[0]))
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } else {
                 LOG.warn("Problem applying dynamic git local configuration!!!")
@@ -439,7 +432,10 @@ open class MigrationManager(val cleaner: Cleaner,
         if (workUnit.commandManager.isFirstAttemptMigration) {
             val mkdir: String
             if (isWindows) {
-                var path = if (workUnit.directory.startsWith("/")) String.format("%s%s", System.getenv("SystemDrive"), workUnit.directory) else workUnit.directory
+                var path = if (workUnit.directory.startsWith("/"))
+                    String.format("%s%s", System.getenv("SystemDrive"), workUnit.directory)
+                else workUnit.directory
+
                 path = path.replace("/".toRegex(), "\\\\")
                 mkdir = "mkdir $path"
             } else {

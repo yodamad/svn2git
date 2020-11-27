@@ -1,8 +1,10 @@
 package fr.yodamad.svn2git.e2e;
 
 import fr.yodamad.svn2git.Svn2GitApp;
+import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.domain.Migration;
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
+import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.repository.MigrationRepository;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.utils.Checks;
@@ -15,22 +17,27 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static fr.yodamad.svn2git.data.Repository.Branches.*;
+import static fr.yodamad.svn2git.data.Repository.Dirs.DIRECTORY;
+import static fr.yodamad.svn2git.data.Repository.Dirs.FOLDER;
 import static fr.yodamad.svn2git.data.Repository.Tags.V1_1;
 import static fr.yodamad.svn2git.data.Repository.simple;
 import static fr.yodamad.svn2git.utils.Checks.*;
 import static fr.yodamad.svn2git.utils.MigrationUtils.GITLAB_API;
 import static fr.yodamad.svn2git.utils.MigrationUtils.initSimpleMigration;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Svn2GitApp.class)
@@ -40,6 +47,8 @@ public class SimpleRepoTests {
     private MigrationManager migrationManager;
     @Autowired
     private MigrationRepository migrationRepository;
+    @MockBean
+    private MappingRepository mappingRepository;
 
     @Before
     public void checkGitlab() throws GitLabApiException, InterruptedException {
@@ -295,6 +304,41 @@ public class SimpleRepoTests {
         // Check tags
         List<Tag> tags = checkTags(project);
         tags.forEach(t -> hasHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_migration_with_mappings() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initSimpleMigration();
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setBranches(null);
+        migration.setTags(null);
+
+        Mapping mapping = new Mapping();
+        mapping.setSvnDirectory(FOLDER);
+        mapping.setRegex("*");
+        mapping.setGitDirectory(DIRECTORY);
+        mapping.setSvnDirectoryDelete(false);
+        mapping.setMigration(migration.getId());
+        List<Mapping> mappings = new ArrayList<>();
+        mappings.add(mapping);
+
+        when(mappingRepository.findByMigrationAndSvnDirectoryDelete(any(), anyBoolean())).thenReturn(mappings);
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFilesWithMapping(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 1);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        checkTags(project, 0);
     }
 
     private void startAndCheck(Migration migration) throws ExecutionException, InterruptedException {

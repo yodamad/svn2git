@@ -8,6 +8,7 @@ import org.gitlab4j.api.models.*;
 import java.util.List;
 import java.util.Optional;
 
+import static fr.yodamad.svn2git.data.Repository.Dirs.FOLDER;
 import static fr.yodamad.svn2git.data.Repository.Files.*;
 import static fr.yodamad.svn2git.utils.MigrationUtils.GITLAB_API;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,6 +82,15 @@ public class Checks {
         isPresent(project.get(), ANOTHER_BIN, false);
         isPresent(project.get(), JAVA, false);
         isPresent(project.get(), DEEP, false);
+    }
+
+    public static void checkAllFilesWithMapping(Optional<Project> project) {
+        isPresent(project.get(), REVISION, true);
+        isPresent(project.get(), FILE_BIN, false);
+        isPresent(project.get(), MAPPED_ANOTHER_BIN, false);
+        isPresent(project.get(), MAPPED_JAVA, false);
+        isPresent(project.get(), MAPPED_DEEP, false);
+        isMissing(project.get(), FOLDER);
     }
 
     public static void checkOnlyNotBinFiles(Optional<Project> project) {

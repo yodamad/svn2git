@@ -55,11 +55,15 @@ public class Repository {
         public static final String DEEP_FILE = "deep.file";
         public static final String FLAT_FILE = "flat.file";
         public static final String ANOTHER_BIN = Dirs.FOLDER + "another.bin";
+        public static final String MAPPED_ANOTHER_BIN = Dirs.DIRECTORY + "another.bin";
         public static final String JAVA = Dirs.FOLDER + "App.java";
+        public static final String MAPPED_JAVA = Dirs.DIRECTORY + "App.java";
         public static final String DEEP = Dirs.FOLDER + Dirs.SUBFOLDER + DEEP_FILE;
+        public static final String MAPPED_DEEP = Dirs.DIRECTORY + Dirs.SUBFOLDER + DEEP_FILE;
     }
 
     public class Dirs {
+        public static final String DIRECTORY = "directory/";
         public static final String FOLDER = "folder/";
         public static final String SUBFOLDER = "subfolder/";
     }

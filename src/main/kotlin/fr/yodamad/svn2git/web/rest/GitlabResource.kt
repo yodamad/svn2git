@@ -18,12 +18,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.stream.IntStream
-import javax.swing.text.html.Option
 
 /**
  * Controller to use Gitlab API
@@ -83,9 +81,8 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
         val group = gitlab.groupApi.getOptionalGroup(groupName)
 
         // User that will be used to create a project
-        val user: Optional<User>?
         // if token is blank / emtpy, we use the default gitlab user
-        user = if (StringUtils.isBlank(gitlabInfo.token)) {
+        val user: Optional<User>? = if (StringUtils.isBlank(gitlabInfo.token)) {
             gitlab.userApi.getOptionalUser(applicationProperties.gitlab.account)
         } else {
             // Username is the username that is checked in first step of wizard
@@ -106,7 +103,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                             .findAny()
                         if (subgroup.isPresent) {
                             if (cycle == depth - 1) {
-                                return checkUserForProject(user, group, gitlab)
+                                return checkUserForProject(user!!, group, gitlab)
                             }
                             cycle++
                             groupId = subgroup.get().id
@@ -118,7 +115,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                     return ResponseEntity.notFound().build();
                 }
             } else {
-                return checkUserForProject(user, group, gitlab)
+                return checkUserForProject(user!!, group, gitlab)
             }
         } else {
             return ResponseEntity.notFound().build()

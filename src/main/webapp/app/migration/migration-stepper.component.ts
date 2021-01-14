@@ -888,4 +888,12 @@ export class MigrationStepperComponent implements OnInit {
                 (this.svnDirectories.modules.length > 0 && this.svnSelection.selected.length === this.flatRepos))
         );
     }
+
+    /**
+     * Choose file size unit
+     * @param value
+     */
+    fileSizeUnit(value) {
+        this.fileUnit = value.value;
+    }
 }

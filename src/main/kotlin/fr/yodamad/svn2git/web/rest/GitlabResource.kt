@@ -99,7 +99,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                         val finalSubParts = subParts
                         val finalCycle: Int = cycle
                         val subgroup = subGroups.stream()
-                            .filter { sg: Group -> sg.name.equals(finalSubParts[finalCycle], ignoreCase = true) }
+                            .filter { sg: Group -> sg.path.equals(finalSubParts[finalCycle], ignoreCase = true) }
                             .findAny()
                         if (subgroup.isPresent) {
                             if (cycle == depth - 1) {

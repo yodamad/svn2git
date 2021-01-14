@@ -440,7 +440,14 @@
                             <span jhiTranslate="migration-process.file.size">Max size authorized for a file</span>
                         </div>
                         <div class="col-md-10 pt-3 pl-3">
-                            {{ cleaningFormGroup.value['fileMaxSize'] }} {{ fileUnit }}
+                            <mat-form-field style="max-width: 60px;">
+                                <input matInput type="number" formControlName="fileMaxSize" min="1" />
+                            </mat-form-field>
+                            <mat-select (selectionChange)="fileSizeUnit($event)" style="max-width: 35px" value="M">
+                                <mat-option value="K">K</mat-option>
+                                <mat-option value="M">M</mat-option>
+                                <mat-option value="G">G</mat-option>
+                            </mat-select>
                         </div>
                     </div>
                 </div>

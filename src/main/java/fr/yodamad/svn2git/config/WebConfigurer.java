@@ -198,9 +198,4 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
         log.debug("Initialize H2 console");
         H2ConfigurationHelper.initH2Console(servletContext);
     }
-
-    @Autowired(required = false)
-    public void setMetricRegistry(MetricRegistry metricRegistry) {
-        this.metricRegistry = metricRegistry;
-    }
 }

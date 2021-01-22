@@ -88,17 +88,6 @@ jhipster:
         #max-age: 1800
     mail:
         from: svn2git@localhost
-    swagger:
-        default-include-pattern: /api/.*
-        title: svn2git API
-        description: svn2git API documentation
-        version: 1.18
-        terms-of-service-url:
-        contact-name:
-        contact-url:
-        contact-email:
-        license:
-        license-url:
 
 logging:
     file: target/svn2git.log

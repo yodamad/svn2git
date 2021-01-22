@@ -64,8 +64,6 @@ public class WebConfigurerTest {
         props = new JHipsterProperties();
 
         webConfigurer = new WebConfigurer(env, props);
-        metricRegistry = new MetricRegistry();
-        webConfigurer.setMetricRegistry(metricRegistry);
     }
 
     @Test
@@ -76,7 +74,6 @@ public class WebConfigurerTest {
         assertThat(servletContext.getAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE)).isEqualTo(metricRegistry);
         assertThat(servletContext.getAttribute(MetricsServlet.METRICS_REGISTRY)).isEqualTo(metricRegistry);
         verify(servletContext).addFilter(eq("webappMetricsFilter"), any(InstrumentedFilter.class));
-        verify(servletContext).addServlet(eq("metricsServlet"), any(MetricsServlet.class));
         verify(servletContext).addFilter(eq("cachingHttpHeadersFilter"), any(CachingHttpHeadersFilter.class));
         verify(servletContext, never()).addServlet(eq("H2Console"), any(WebServlet.class));
     }
@@ -89,7 +86,6 @@ public class WebConfigurerTest {
         assertThat(servletContext.getAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE)).isEqualTo(metricRegistry);
         assertThat(servletContext.getAttribute(MetricsServlet.METRICS_REGISTRY)).isEqualTo(metricRegistry);
         verify(servletContext).addFilter(eq("webappMetricsFilter"), any(InstrumentedFilter.class));
-        verify(servletContext).addServlet(eq("metricsServlet"), any(MetricsServlet.class));
         verify(servletContext, never()).addFilter(eq("cachingHttpHeadersFilter"), any(CachingHttpHeadersFilter.class));
         verify(servletContext).addServlet(eq("H2Console"), any(WebServlet.class));
     }

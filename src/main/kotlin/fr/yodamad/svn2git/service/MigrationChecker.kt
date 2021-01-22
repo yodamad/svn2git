@@ -8,7 +8,6 @@ import org.springframework.context.annotation.DependsOn
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.lang.Boolean
 import java.util.function.Consumer
 import javax.annotation.PostConstruct
 
@@ -33,7 +32,7 @@ open class MigrationChecker(
         try {
             // Start waiting migrations
             repository.findAllByStatusOrderByDateDesc(StatusEnum.WAITING).forEach(
-                Consumer { mig: Migration -> manager.startMigration(mig.id, Boolean.FALSE) })
+                Consumer { mig: Migration -> manager.startMigration(mig.id, false) })
             // Fail running migrations
             repository.findAllByStatusOrderByDateDesc(StatusEnum.RUNNING).forEach(
                 Consumer { mig: Migration ->

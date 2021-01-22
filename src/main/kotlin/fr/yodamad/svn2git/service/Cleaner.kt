@@ -3,23 +3,28 @@ package fr.yodamad.svn2git.service
 import com.madgag.git.bfg.cli.Main
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.CleanedFiles
+import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
-import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import fr.yodamad.svn2git.functions.*
+import fr.yodamad.svn2git.io.Shell
+import fr.yodamad.svn2git.io.Shell.execCommand
+import fr.yodamad.svn2git.io.ZipUtil
 import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository
 import fr.yodamad.svn2git.service.client.ArtifactoryAdmin
-import fr.yodamad.svn2git.io.Shell
-import fr.yodamad.svn2git.io.ZipUtil
+import fr.yodamad.svn2git.service.util.checkout
+import fr.yodamad.svn2git.service.util.deleteBranch
+import fr.yodamad.svn2git.service.util.gc
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.data.util.Pair
 import org.springframework.stereotype.Service
 import java.io.IOException
+import java.lang.Long.valueOf
 import java.nio.file.DirectoryStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,7 +33,6 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import java.util.stream.Collectors
-
 
 /**
  * Cleaning operations
@@ -67,24 +71,22 @@ open class Cleaner(val historyMgr: HistoryManager,
                     // get branchName
                     var branchName = b.replaceFirst("refs/remotes/origin/".toRegex(), "")
                     branchName = branchName.replaceFirst("origin/".toRegex(), "")
-                    LOG.debug(String.format("Branch %s", branchName))
+                    LOG.debug("Branch $branchName", branchName)
                     // checkout new branchName from existing remote branch
                     var gitCommand = String.format("git checkout -b %s %s", branchName, b)
-                    Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                    execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
                     val cleanedFilesBranch: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, b.replace("origin", "branches"), SvnLayout.BRANCH)
                     cleanedFilesMap[b.replace("origin", "branches")] = cleanedFilesBranch
                     // back to master
-                    gitCommand = "git checkout master"
-                    Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                    execCommand(workUnit.commandManager, workUnit.directory, checkout())
                     // delete the temporary branch
-                    gitCommand = String.format("git branch -D %s", branchName)
-                    Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                    execCommand(workUnit.commandManager, workUnit.directory, deleteBranch(branchName))
                 } catch (ioEx: IOException) {
-                    LOG.warn(String.format("Failed to list removed files on %s", b))
+                    LOG.warn("Failed to list removed files on $b")
                     warnings.set(true)
                 } catch (ioEx: InterruptedException) {
-                    LOG.warn(String.format("Failed to list removed files on %s", b))
+                    LOG.warn("Failed to list removed files on $b")
                     warnings.set(true)
                 }
             }
@@ -94,16 +96,14 @@ open class Cleaner(val historyMgr: HistoryManager,
                 try {
                     // checkout new branch 'tmp_tag' from existing tag
                     var gitCommand = String.format("git checkout -b tmp_tag %s", t)
-                    Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                    execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
                     val cleanedFilesTag: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, t.replace("origin", "tags"), SvnLayout.TAG)
                     cleanedFilesMap[t.replace("origin", "tags")] = cleanedFilesTag
                     // back to master
-                    gitCommand = "git checkout master"
-                    Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                    execCommand(workUnit.commandManager, workUnit.directory, checkout())
                     // delete the temporary branch
-                    gitCommand = "git branch -D tmp_tag"
-                    Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+                    execCommand(workUnit.commandManager, workUnit.directory, deleteBranch("tmp_tag"))
                 } catch (ioEx: IOException) {
                     LOG.warn(String.format("Failed to list removed files on %s", t))
                     warnings.set(true)
@@ -115,13 +115,12 @@ open class Cleaner(val historyMgr: HistoryManager,
         )
 
         // back to master
-        val gitCommand = "git checkout master"
-        Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+        execCommand(workUnit.commandManager, workUnit.directory, checkout())
 
         // get list of files that will in principle be removed
         val migrationRemovedFiles: List<MigrationRemovedFile> = mrfRepo.findAllByMigration_Id(workUnit.migration.id)
         val sMigrationRemovedFiles = migrationRemovedFiles.stream()
-            .map { element: MigrationRemovedFile -> String.format("(%s)/%s", element.svnLocation, element.path) }
+            .map { element: MigrationRemovedFile -> "($element.svnLocation)/$element.path" }
             .collect(Collectors.joining(", "))
         if (warnings.get()) {
             historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, sMigrationRemovedFiles)
@@ -213,9 +212,8 @@ open class Cleaner(val historyMgr: HistoryManager,
                         Paths.get(zipPath).toFile(),
                         workUnit.migration.svnGroup,
                         workUnit.migration.svnProject,
-                        svnLocation.replace(TAGS, ""))
-                    historyMgr.endStep(history, StatusEnum.DONE,
-                        String.format("Uploading Zip file to Artifactory : %s : %s", zipPath, artifactPath))
+                        svnLocation.replace(TAGS, EMPTY))
+                    historyMgr.endStep(history, StatusEnum.DONE, "Uploading Zip file to Artifactory : $zipPath : $artifactPath")
                 } finally {
                     if (zipPath != null) {
                         // Remove file after uploading to avoid git commit
@@ -233,7 +231,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                             workUnit.migration.svnProject,
                             svnLocation.replace(TAGS, ""))
                         val pathForHistoryMgr = String.format("%s/%s", applicationProperties.artifactory.binariesDirectory, p.fileName)
-                        artifactInfo.append(String.format("%s : %s,", pathForHistoryMgr, artifactPath))
+                        artifactInfo.append("$pathForHistoryMgr : $artifactPath,")
                     }
                     historyMgr.endStep(history, StatusEnum.DONE,
                         if (StringUtils.isEmpty(artifactInfo.toString())) "No Files Uploaded to Artifactory"
@@ -267,7 +265,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         return if (!file.exists() || !file.isFile) {
             -1L
         } else {
-            java.lang.Long.valueOf(file.length())
+            valueOf(file.length())
         }
     }
 
@@ -283,14 +281,13 @@ open class Cleaner(val historyMgr: HistoryManager,
         if (!StringUtils.isEmpty(workUnit.migration.forbiddenFileExtensions)) {
 
             // needed?
-            val gitCommand = "git gc"
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gc())
 
             // 3.1 Clean files based on their extensions
             Arrays.stream(workUnit.migration.forbiddenFileExtensions.split(",").toTypedArray())
                 .forEach { s: String ->
                     val innerHistory = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLEANING,
-                        String.format("Remove files with extension : %s and %s", s.toLowerCase(), s.toUpperCase()))
+                        "Remove files with extension : ${s.toLowerCase()} and ${s.toUpperCase()}")
                     try {
                         Main.main(arrayOf("--delete-files", s.toLowerCase(), "--no-blob-protection", workUnit.directory))
                         Main.main(arrayOf("--delete-files", s.toUpperCase(), "--no-blob-protection", workUnit.directory))
@@ -319,16 +316,15 @@ open class Cleaner(val historyMgr: HistoryManager,
         if (!StringUtils.isEmpty(workUnit.migration.maxFileSize) && Character.isDigit(workUnit.migration.maxFileSize[0])) {
             // 3.2 Clean files based on size
             val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_CLEANING,
-                String.format("Remove files bigger than %s", workUnit.migration.maxFileSize))
+                "Remove files bigger than ${workUnit.migration.maxFileSize}")
 
             // This is necessary for BFG to work
-            val gitCommand = "git gc"
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gc())
             Main.main(arrayOf(
                 "--strip-blobs-bigger-than", workUnit.migration.maxFileSize,
                 "--no-blob-protection", workUnit.directory))
             clean = true
-            historyMgr.endStep(history, StatusEnum.DONE, null)
+            historyMgr.endStep(history, StatusEnum.DONE)
         }
         return clean
     }
@@ -349,18 +345,37 @@ open class Cleaner(val historyMgr: HistoryManager,
         if (applicationProperties.artifactory.enabled && StringUtils.isNotEmpty(applicationProperties.artifactory.deleteFolderWithBFG)) {
             // Delete folders based on a folder name
             val history = historyMgr.startStep(workUnit.migration, StepEnum.ARTIFACTORY_FOLDER_CLEANING,
-                String.format("Remove Folders called %s", applicationProperties.artifactory.deleteFolderWithBFG))
+                "Remove Folders called ${applicationProperties.artifactory.deleteFolderWithBFG}")
 
-            // needed?
-            val gitCommand = "git gc"
-            Shell.execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, gc())
             Main.main(arrayOf(
                 "--delete-folders", "{" + applicationProperties.artifactory.deleteFolderWithBFG + "}",
                 "--no-blob-protection", workUnit.directory))
             clean = true
-            historyMgr.endStep(history, StatusEnum.DONE, null)
+            historyMgr.endStep(history, StatusEnum.DONE)
         }
         return clean
+    }
+
+    /**
+     * Clean elements removed in svn but clone in git svn
+     * @param tags Flag to know if tags or branches target
+     */
+    open fun cleanElementsOn(workUnit: WorkUnit, tags: Boolean) {
+
+        val elements = if (tags) Pair(workUnit.migration.tags, "tags")
+                        else Pair(workUnit.migration.branches, "branches")
+
+        if (elements.first != null) {
+            val history = historyMgr.startStep(workUnit.migration, StepEnum.BRANCH_CLEAN, "Clean removed SVN ${elements.second}")
+            val pairInfo = cleanRemovedElements(workUnit, tags)
+            if (pairInfo!!.first.get()) {
+                //  Some branches have failed
+                historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, "Failed to remove ${elements.second} %s ${pairInfo.second}")
+            } else {
+                historyMgr.endStep(history, StatusEnum.DONE)
+            }
+        }
     }
 
     /**
@@ -385,7 +400,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         //    However the ignore-refs configuration fails for certain project(s) - non identified issue.
         // Also if no branch or tag filter was indicated you may have 'deleted' branches or tags.
         val gitBranchList = String.format("git branch -r > %s", GIT_LIST)
-        Shell.execCommand(workUnit.commandManager, workUnit.directory, gitBranchList)
+        execCommand(workUnit.commandManager, workUnit.directory, gitBranchList)
         val gitElementsToDelete: MutableList<String>
         gitElementsToDelete = if (isTags) {
             Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
@@ -432,7 +447,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 "--username=" + workUnit.migration.svnUser, "--password=" + workUnit.migration.svnPassword,
                 SVN_LIST)
         }
-        Shell.execCommand(workUnit.commandManager, workUnit.directory, svnBranchList)
+        execCommand(workUnit.commandManager, workUnit.directory, svnBranchList)
         var elementsToKeep = Files.readAllLines(Paths.get(workUnit.directory, SVN_LIST))
             .stream()
             .map { l: String -> l.trim { it <= ' ' }.replace("/", "") }
@@ -454,19 +469,19 @@ open class Cleaner(val historyMgr: HistoryManager,
         gitElementsToDelete.forEach(Consumer { line: String ->
             try {
                 var cleanCmd = String.format("git branch -d -r origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
+                execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
                 cleanCmd = if (Shell.isWindows) {
                     String.format("rd /s /q .git\\svn\\refs\\remotes\\origin\\%s", String.format("%s%s", if (isTags) "tags\\" else "", line))
                 } else {
                     String.format("rm -rf .git/svn/refs/remotes/origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
                 }
-                Shell.execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
+                execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
             } catch (ex: IOException) {
-                LOG.error(String.format("Cannot remove : %s", line))
+                LOG.error("Cannot remove : $line")
                 withWarning.set(true)
                 failedBranches.add(line)
             } catch (ex: InterruptedException) {
-                LOG.error(String.format("Cannot remove : %s", line))
+                LOG.error("Cannot remove : $line")
                 withWarning.set(true)
                 failedBranches.add(line)
             }

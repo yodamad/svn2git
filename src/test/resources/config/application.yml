@@ -92,7 +92,6 @@ jhipster:
                 # Token is valid 24 hours
                 token-validity-in-seconds: 86400
     metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
-        jmx.enabled: true
         logs: # Reports Dropwizard metrics in the logs
             enabled: true
             report-frequency: 60 # in seconds

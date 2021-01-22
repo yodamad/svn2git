@@ -4,6 +4,10 @@ object DateFormatter {
     private const val MS = "ms"
     private const val SEC = "s"
     private const val MIN = "min"
+
+    /**
+     * Ms to readable format
+     */
     fun toNiceFormat(milliseconds: Long): String {
         if (milliseconds < 1000) return String.format("%s%s", milliseconds, MS)
         var seconds = milliseconds / 1000

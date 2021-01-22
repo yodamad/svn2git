@@ -31,8 +31,10 @@ class CommandManager(val migration: Migration) {
         commandLog[commandLog.size.toString() + "_" + directory] = securedCommandToPrint
     }
 
+    /**
+     * Add failed command to trace
+     */
     fun addFailedCommand(directory: String, securedCommandToPrint: String, stderr: String) {
-
         // commandError not persisted for the moment
         commandError.directory = directory
         commandError.command = securedCommandToPrint

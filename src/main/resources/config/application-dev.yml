@@ -23,7 +23,6 @@ spring:
     profiles:
         active: dev
         include:
-            - swagger
             # Uncomment to activate TLS for the dev profile
             #- tls
     devtools:
@@ -97,8 +96,6 @@ jhipster:
         from: svn2git@localhost
         base-url: http://127.0.0.1:8080
     metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
-        jmx:
-            enabled: true
         logs: # Reports Dropwizard metrics in the logs
             enabled: false
             report-frequency: 60 # in seconds

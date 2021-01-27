@@ -1,6 +1,6 @@
 package fr.yodamad.svn2git.init
 
-import com.google.common.io.Files.*
+import com.google.common.io.Files.createTempDir
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.io.File
@@ -12,8 +12,7 @@ import kotlin.system.exitProcess
 
 @Component
 class CheckUp {
-    private val GIT_VERSION = "git version 2.2"
-    private val GIT_ERROR = "⛔️ svn2git requires Git v2.2x or newer"
+    private val GIT_ERROR = "⛔️ svn2git requires Git v2.20+ or newer"
 
     private val GIT_SVN_VERSION = "git-svn version 2"
     private val GIT_SVN_ERROR = "⛔️ svn2git requires 'git svn' extension in v2+"
@@ -25,7 +24,7 @@ class CheckUp {
 
     @PostConstruct
     fun atStartup() {
-        var allGood = checkCommand("git --version", GIT_VERSION, GIT_ERROR)
+        var allGood = checkGitSvnClone()
         allGood = allGood && checkCommand("git svn --version", GIT_SVN_VERSION, GIT_SVN_ERROR)
         allGood = allGood && checkCommand("svn --version", SVN_VERSION, SVN_ERROR)
         if (!allGood) exitProcess(1)
@@ -69,6 +68,16 @@ class CheckUp {
             throw CheckUpException()
         }
         return sbf.toString()
+    }
+
+    private fun checkGitSvnClone(): Boolean {
+        val result = execCommand("git --version")
+        val regex = "git version 2\\.[2-3][0-9]\\.[0-9]".toRegex()
+        return if (regex.matches(result)) true
+        else {
+            LOG.error(GIT_ERROR)
+            false
+        }
     }
 
     private fun checkCommand(command: String, version: String, error: String): Boolean {

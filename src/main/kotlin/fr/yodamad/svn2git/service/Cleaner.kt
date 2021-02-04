@@ -468,7 +468,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 var cleanCmd = String.format("git branch -d -r origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
                 cleanCmd = if (Shell.isWindows) {
-                    String.format("rd /s /q .git\\svn\\refs\\remotes\\origin\\%s", String.format("%s%s", if (isTags) "tags\\" else "", line))
+                    String.format("rd /s /q \".git\\svn\\refs\\remotes\\origin\\%s\\\"", String.format("%s%s", if (isTags) "tags\\" else "", line))
                 } else {
                     String.format("rm -rf .git/svn/refs/remotes/origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
                 }

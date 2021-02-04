@@ -1,41 +1,36 @@
 package fr.yodamad.svn2git.utils;
 
+import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.data.Repository;
 import fr.yodamad.svn2git.domain.Migration;
-import org.gitlab4j.api.GitLabApi;
 
 import static fr.yodamad.svn2git.data.Repository.*;
 import static java.lang.String.format;
 
 public abstract class MigrationUtils {
 
-    private static final String GITLAB = "https://tanuki.yodamad.fr";
-    private static final String TOKEN = "QkejCHCSikhJqJa357tk";
-
-    public static final GitLabApi GITLAB_API = new GitLabApi(GITLAB, TOKEN);
-
-    public static Migration initSimpleMigration() {
-        return initMigration(simple());
+    public static Migration initSimpleMigration(ApplicationProperties props) {
+        return initMigration(simple(), props);
     }
 
-    public static Migration initFlatMigration() {
-        Migration mig = initMigration(flat());
+    public static Migration initFlatMigration(ApplicationProperties props) {
+        Migration mig = initMigration(flat(), props);
         mig.setFlat(true);
         return mig;
     }
 
-    public static Migration initComplexMigration() {
-        Migration mig = initMigration(complex());
+    public static Migration initComplexMigration(ApplicationProperties props) {
+        Migration mig = initMigration(complex(), props);
         String name = format("/%s", complex().name);
         mig.setSvnProject(name);
         mig.setGitlabProject(name);
         return mig;
     }
 
-    private static Migration initMigration(Repository repository) {
+    private static Migration initMigration(Repository repository, ApplicationProperties props) {
         Migration migration = new Migration();
-        migration.setGitlabToken(TOKEN);
-        migration.setGitlabUrl(GITLAB);
+        migration.setGitlabToken(props.gitlab.token);
+        migration.setGitlabUrl(props.gitlab.url);
         migration.setGitlabGroup(repository.namespace);
         migration.setGitlabProject("");
         migration.setUser("gitlab");

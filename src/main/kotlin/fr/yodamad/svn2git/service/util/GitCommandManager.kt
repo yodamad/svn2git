@@ -66,7 +66,8 @@ open class GitCommandManager(val historyMgr: HistoryManager,
      * Set element (branch or tag)
      */
     private fun setSvnElement(elementName: String, element: String?, workUnit: WorkUnit) =
-        if (element == null) EMPTY else "--$elementName=${workUnit.migration.svnProject}/$elementName"
+        if (element == null) EMPTY
+        else "--$elementName=${workUnit.migration.svnProject}/$elementName"
 
     /**
      * Build command to add remote

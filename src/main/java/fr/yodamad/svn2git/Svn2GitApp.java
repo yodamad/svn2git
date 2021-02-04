@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.config.DefaultProfileUtil;
 
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 @SpringBootApplication
+@EnableEncryptableProperties
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
 public class Svn2GitApp {
 

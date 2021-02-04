@@ -133,9 +133,9 @@ application:
         deleteFolderWithBFG:
         uploadPauseMilliSeconds: 5000
     gitlab:
-        url: http://localhost/
-        account: root
-        token: 1uCYVVdwB32yCy4sB-2w
+        url: ENC(on6yHVi8RG5HKiUFarLLvA34r8SkzD9Y+gm+/FdxJNgtqXy06Yn2ySyHUURyrD+HDqSOsJg8CA9DU5W8h/nrrg==)
+        account: ENC(ywL1moCcWg2BWSuEZMghzeHrxvKjTdAaTGHHiu/ykZoBdvI9b+/TxSBVQjp/3K60)
+        token: ENC(eZca3MfczZ/gZs3+5WnDYjDeedkzKPAx4ETjRYrwkukrfMw/729CoprK/SQe9qWSCuSk6F0/f6MuDg7uYMPIbw==)
         credentials: optional
         waitSeconds: 15
         dynamic-local-config[0]: pack.deltaCacheSize 256m,Limiting deltaCacheSize to 256m (default)
@@ -147,12 +147,16 @@ application:
         gitPushPauseMilliSeconds: 500
         gitMvPauseMilliSeconds: 500
     svn:
-        url: svn://localhost/
-        user:
-        password:
+        url: ENC(SF16uNMiFtw5iGVKeQh9DrrkgriJkHaXJ+BwOGze9bCqfl599KaFGpzEHrVIuQmuCOYEMLFfYTmxb5KxOj9D5A==)
+        user: ENC(NCCvax0umvRUhKRJv91NYNzNao04KDprAgsLRWOBIQOCh1zDfZ6BekY3kBfQag87)
+        password: ENC(NCCvax0umvRUhKRJv91NYNzNao04KDprAgsLRWOBIQOCh1zDfZ6BekY3kBfQag87)
         credentials: required
         svnUrlModifiable: true
     override:
         extensions: false
         mappings: false
+
+jasypt:
+    encryptor:
+        password: svn2git_test
 

@@ -48,7 +48,6 @@ open class Cleaner(val historyMgr: HistoryManager,
     private val SVN_LIST = "svn-list"
     private val TAGS = "tags/"
 
-
     /**
      * List files that are going to be cleaned by BFG
      *
@@ -73,7 +72,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                     branchName = branchName.replaceFirst("origin/".toRegex(), "")
                     LOG.debug("Branch $branchName", branchName)
                     // checkout new branchName from existing remote branch
-                    var gitCommand = String.format("git checkout -b %s %s", branchName, b)
+                    val gitCommand = String.format("git checkout -b %s %s", branchName, b)
                     execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
                     val cleanedFilesBranch: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, b.replace("origin", "branches"), SvnLayout.BRANCH)
@@ -95,7 +94,7 @@ open class Cleaner(val historyMgr: HistoryManager,
             Consumer { t: String ->
                 try {
                     // checkout new branch 'tmp_tag' from existing tag
-                    var gitCommand = String.format("git checkout -b tmp_tag %s", t)
+                    val gitCommand = String.format("git checkout -b tmp_tag %s", t)
                     execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
                     val cleanedFilesTag: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, t.replace("origin", "tags"), SvnLayout.TAG)
@@ -401,8 +400,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         // Also if no branch or tag filter was indicated you may have 'deleted' branches or tags.
         val gitBranchList = String.format("git branch -r > %s", GIT_LIST)
         execCommand(workUnit.commandManager, workUnit.directory, gitBranchList)
-        val gitElementsToDelete: MutableList<String>
-        gitElementsToDelete = if (isTags) {
+        val gitElementsToDelete: MutableList<String> = if (isTags) {
             Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
                 .stream()
                 .map { l: String -> l.trim { it <= ' ' }.replace("origin/", "") }
@@ -435,8 +433,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         // The result of this svn ls command is a list of all branches or tags that are real (i.e. not deleted)
         // i) So if we remove these from gitElementsToDelete we should just have deleted branches or tags
         val svnUrl = if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else String.format("%s/", workUnit.migration.svnUrl)
-        val svnBranchList: String
-        svnBranchList = if (StringUtils.isEmpty(workUnit.migration.svnPassword)) {
+        val svnBranchList: String = if (StringUtils.isEmpty(workUnit.migration.svnPassword)) {
             String.format("svn ls %s%s%s/%s > %s", svnUrl, workUnit.migration.svnGroup, workUnit.migration.svnProject,
                 if (isTags) "tags" else "branches", SVN_LIST)
         } else {
@@ -471,7 +468,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 var cleanCmd = String.format("git branch -d -r origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
                 cleanCmd = if (Shell.isWindows) {
-                    String.format("rd /s /q .git\\svn\\refs\\remotes\\origin\\%s", String.format("%s%s", if (isTags) "tags\\" else "", line))
+                    String.format("rd /s /q \".git\\svn\\refs\\remotes\\origin\\%s\\\"", String.format("%s%s", if (isTags) "tags\\" else "", line))
                 } else {
                     String.format("rm -rf .git/svn/refs/remotes/origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
                 }
@@ -481,6 +478,10 @@ open class Cleaner(val historyMgr: HistoryManager,
                 withWarning.set(true)
                 failedBranches.add(line)
             } catch (ex: InterruptedException) {
+                LOG.error("Cannot remove : $line")
+                withWarning.set(true)
+                failedBranches.add(line)
+            } catch (ex: java.lang.RuntimeException) {
                 LOG.error("Cannot remove : $line")
                 withWarning.set(true)
                 failedBranches.add(line)

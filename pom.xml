@@ -97,9 +97,9 @@
         <!-- Rule https://sonarcloud.io/coding_rules?open=squid%3AS4684&rule_key=squid%3AS4684 -->
         <sonar.issue.ignore.multicriteria.S4684.resourceKey>src/main/java/**/*</sonar.issue.ignore.multicriteria.S4684.resourceKey>
         <sonar.issue.ignore.multicriteria.S4684.ruleKey>squid:S4684</sonar.issue.ignore.multicriteria.S4684.ruleKey>
-        <sonar.jacoco.reportPaths>${project.testresult.directory}/coverage/jacoco/jacoco.exec</sonar.jacoco.reportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.testresult.directory}/coverage/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.java.codeCoveragePlugin>jacoco</sonar.java.codeCoveragePlugin>
-        <sonar.testExecutionReportPaths>${project.testresult.directory}/jest/TESTS-results-sonar.xml</sonar.testExecutionReportPaths>
+        <!-- <sonar.testExecutionReportPaths>${project.testresult.directory}/jest/TESTS-results-sonar.xml</sonar.testExecutionReportPaths> -->
         <sonar.typescript.lcov.reportPaths>${project.testresult.directory}/lcov.info</sonar.typescript.lcov.reportPaths>
         <sonar.sources>${project.basedir}/src/main/</sonar.sources>
         <sonar.surefire.reportsPath>${project.testresult.directory}/surefire-reports</sonar.surefire.reportsPath>

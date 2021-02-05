@@ -33,8 +33,8 @@ jobs:
         with:
             context: ./
             file: ./Dockerfile
-              push: true
-              tags: yodamad/svn2git:latest
+            push: true
+            tags: yodamad/svn2git:latest
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

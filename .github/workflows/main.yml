@@ -27,7 +27,7 @@ jobs:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
               run: |
                   if [ -n $SONAR_TOKEN ]; then
-                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack
                   else
                       echo No SONAR_TOKEN, skipping...
                   fi

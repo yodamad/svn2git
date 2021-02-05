@@ -12,6 +12,7 @@ import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Project;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import static fr.yodamad.svn2git.utils.Checks.*;
 import static fr.yodamad.svn2git.utils.MigrationUtils.initFlatMigration;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class FlatRepoTests {

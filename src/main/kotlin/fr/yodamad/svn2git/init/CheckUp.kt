@@ -2,6 +2,7 @@ package fr.yodamad.svn2git.init
 
 import com.google.common.io.Files.createTempDir
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.io.File
 import java.io.IOException
@@ -11,6 +12,7 @@ import javax.annotation.PostConstruct
 import kotlin.system.exitProcess
 
 @Component
+@Profile("dev")
 class CheckUp {
     private val GIT_ERROR = "⛔️ svn2git requires Git v2.20+ or newer"
 

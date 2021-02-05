@@ -28,7 +28,7 @@ jobs:
                   JASYPT_PWD: ${{ secrets.JASYPT_PWD }}
               run: |
                   if [ -n $SONAR_TOKEN ]; then
-                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack -Djasypt.encrypt.password=$JASYPT_PWD
+                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack -Djasypt.encryptor.password=$JASYPT_PWD
                   else
                       echo No SONAR_TOKEN, skipping...
                   fi

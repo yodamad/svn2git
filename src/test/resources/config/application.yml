@@ -155,8 +155,3 @@ application:
     override:
         extensions: false
         mappings: false
-
-jasypt:
-    encryptor:
-        password: svn2git_test
-

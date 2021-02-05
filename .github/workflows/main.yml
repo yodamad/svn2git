@@ -25,9 +25,10 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                  JASYPT_PWD: ${{ secrets.JASYPT_PWD }}
               run: |
                   if [ -n $SONAR_TOKEN ]; then
-                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack
+                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack -Djasypt.encrypt.password=$JASYPT_PWD
                   else
                       echo No SONAR_TOKEN, skipping...
                   fi

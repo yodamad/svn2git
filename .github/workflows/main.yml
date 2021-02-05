@@ -13,7 +13,7 @@ jobs:
           java-version: 1.11
 
       - name: Build with 🪶 Maven
-        run: ./mvnw test -Pprod -Djasypt.encrypt.password=${{ secrets.JASYPT_PWD }}
+        run: ./mvnw package -DskipTests -Pprod -Djasypt.encrypt.password=${{ secrets.JASYPT_PWD }}
         env:
             JASYPT_PWD: ${{ secrets.JASYPT_PWD }}
 

@@ -1,4 +1,3 @@
-
 {
     "svn2GitApp": {
         "migration" : {
@@ -6,6 +5,20 @@
                 "title": "Migrations",
                 "createLabel": "Créer un nouveau Migration",
                 "createOrEditLabel": "Créer ou éditer un Migration"
+            },
+            "init" : {
+                "title": "Etapes pour la migration",
+                "gitlab": "Gitlab",
+                "gitlab.details": "(accès, groupe, utilisateur)",
+                "svn": "Subversion",
+                "svn.details": "(url, login, mdp, repos)",
+                "history": "Historique",
+                "history.details": "(choix trunk/branches/tags, révision, branche principale)",
+                "mapping": "Restructuration des répertoires",
+                "mapping.details": "(restructuration des répertoires)",
+                "cleaning": "Nettoyage",
+                "cleaning.details": "(taille des fichiers, extensions)",
+                "ready": "Prêt"
             },
             "created": "Un nouveau Migration a été créé avec l'identifiant {{ param }}",
             "updated": "Le Migration avec l'identifiant {{ param }} a été mis à jour",

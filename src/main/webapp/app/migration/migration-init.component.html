@@ -1,0 +1,57 @@
+<div class="row">
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-12">
+                <mat-card>
+                    <mat-card-title><i class="material-icons">settings</i><span jhiTranslate="svn2GitApp.migration.init.title" class="pl-3 pb-3"></span></mat-card-title>
+                    <mat-divider></mat-divider>
+                    <mat-card-content>
+                        <div class="pl-3 pt-2"><div class="row">
+                            <mat-checkbox [checked]="gitlabEnabled" disabled="true">
+                                <span jhiTranslate="svn2GitApp.migration.init.gitlab" class="font-weight-bold"></span>
+                                <span jhiTranslate="svn2GitApp.migration.init.gitlab.details" class="font-italic"></span>
+                            </mat-checkbox>
+                        </div></div>
+                        <div class="pl-3"><div class="row">
+                            <mat-checkbox [checked]="svnEnabled" disabled="true">
+                                <span jhiTranslate="svn2GitApp.migration.init.svn" class="font-weight-bold"></span>
+                                <span jhiTranslate="svn2GitApp.migration.init.svn.details" class="font-italic"></span>
+                            </mat-checkbox>
+                        </div></div>
+                        <div class="pl-3"><div class="row">
+                            <mat-checkbox [checked]="historyEnabled" disabled="true">
+                                <span jhiTranslate="svn2GitApp.migration.init.history" class="font-weight-bold"></span>
+                                <span jhiTranslate="svn2GitApp.migration.init.history.details" class="font-italic"></span>
+                            </mat-checkbox>
+                        </div></div>
+                        <div class="pl-3"><div class="row">
+                            <mat-checkbox [checked]="mappingEnabled" (change)="setMapping($event.checked)">
+                                <span jhiTranslate="svn2GitApp.migration.init.mapping" class="font-weight-bold"></span>
+                                <span jhiTranslate="svn2GitApp.migration.init.mapping.details" class="font-italic"></span>
+                            </mat-checkbox>
+                        </div></div>
+                        <div class="pl-3"><div class="row">
+                            <mat-checkbox [checked]="cleaningEnabled" (change)="setCleaning($event.checked)">
+                                <span jhiTranslate="svn2GitApp.migration.init.cleaning" class="font-weight-bold"></span>
+                                <span jhiTranslate="svn2GitApp.migration.init.cleaning.details" class="font-italic"></span>
+                            </mat-checkbox>
+                        </div></div>
+                        <mat-divider></mat-divider>
+                        <div class=""row>
+                            <div class="pl-3 pt-2">
+                                <div class="row">
+                                    <div class="pr-2"><button mat-stroked-button (click)="start()" style="background: #4caf50">
+                                        <i class="material-icons">power_settings_new</i><span jhiTranslate="svn2GitApp.migration.init.ready" class="pl-2">Ready</span>
+                                    </button></div>
+                                    <button mat-stroked-button (click)="goHome()">
+                                        <i class="material-icons">home</i><span jhiTranslate="migration-process.home" class="pl-2">Home</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </div>
+</div>

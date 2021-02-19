@@ -16,7 +16,7 @@ import { Extension } from 'app/shared/model/static-extension.model';
 import { StaticExtensionService } from 'app/entities/static-extension';
 import { ConfigurationService } from 'app/shared/service/configuration-service';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 export const REQUIRED = 'required';
 
@@ -103,6 +103,13 @@ export class MigrationStepperComponent implements OnInit {
     // Flag : Allow application to automatically make non existing Group
     isGitlabGroupCreation = false;
 
+    // Steps enablement
+    stepGitlab;
+    stepSvn;
+    stepHistory;
+    stepCleaning;
+    stepMapping;
+
     constructor(
         private _formBuilder: FormBuilder,
         private _migrationProcessService: MigrationProcessService,
@@ -114,13 +121,21 @@ export class MigrationStepperComponent implements OnInit {
         private _translationService: TranslateService,
         private _extensionsService: StaticExtensionService,
         private _configurationService: ConfigurationService,
-        private _router: Router
+        private _router: Router,
+        private _route: ActivatedRoute
     ) {
         // Init snack bar configuration
         this.snackBarConfig.panelClass = ['errorPanel'];
         this.snackBarConfig.duration = 5000;
         this.snackBarConfig.verticalPosition = 'top';
         this.snackBarConfig.horizontalPosition = 'center';
+        this._route.queryParams.subscribe(qp => {
+            this.stepGitlab = Boolean(JSON.parse(qp['gitlabEnabled']));
+            this.stepSvn = Boolean(JSON.parse(qp['svnEnabled']));
+            this.stepHistory = Boolean(JSON.parse(qp['historyEnabled']));
+            this.stepMapping = Boolean(JSON.parse(qp['mappingEnabled']));
+            this.stepCleaning = Boolean(JSON.parse(qp['cleaningEnabled']));
+        });
     }
 
     ngOnInit() {
@@ -407,7 +422,11 @@ export class MigrationStepperComponent implements OnInit {
      * Create migration information from steps
      * @param project
      */
-    initMigration(project: string): IMigration {
+    initMigration(project: string, lastStep = true): IMigration {
+        if (!lastStep && this.stepCleaning) {
+            return;
+        }
+
         if (project === null) {
             if (this.useSvnRootFolder || (this.svnDirectories && this.svnDirectories.root)) {
                 project = this.svnFormGroup.controls['svnRepository'].value;

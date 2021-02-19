@@ -97,7 +97,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     startStepper() {
-        this.router.navigate(['/migration-process']);
+        this.router.navigate(['/migration-init']);
     }
 
     checkMigration() {

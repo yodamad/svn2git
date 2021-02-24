@@ -5,7 +5,7 @@
         "check" : "Check",
         "checking" : "Checking",
         "cleaning" : {
-            "options" : "Cleaning options",
+            "options" : "🧹 Cleaning options",
             "preserve-empty-dirs" : "Yes",
             "not-preserve-empty-dirs" : "No",
             "empty-folder-config" : "Empty folders migrated",
@@ -33,7 +33,7 @@
             "available": "Namespace is available",
             "configuration": "Gitlab configuration",
             "check" : {
-                "account" : "Check your Gitlab account",
+                "account" : "🦊 Check your Gitlab account",
                 "group" : "Check your Gitlab group",
                 "running": "Checking namespace"
             },
@@ -65,7 +65,7 @@
             "trunk-only" : "Trunk only",
             "no" : "Nothing",
             "option" : "History option",
-            "options" : "History options",
+            "options" : "🦕 History options",
             "branch-for-master": "Master branch (optional)",
             "branch-for-master-placeholder": "Branch",
             "branch-for-master-help": "Branch to use for master if not trunk",
@@ -81,7 +81,7 @@
         "home" : "Home",
         "info" : "Info",
         "no-events" : "Loading, please wait...",
-        "mapping": "Mapping",
+        "mapping": "🔀 Directories Mapping",
         "mapping-help": "Mappings are applied ONLY if there are no conflicts. When the migration is complete, please check that mappings have been applied and resolve conflicts where necessary. e.g. 2 files with same name in one folder.",
         "migration" : {
             "planned" : "Migration planned",
@@ -93,7 +93,7 @@
         "only" : "only",
         "pattern" : "Pattern",
         "projects": "Projects to migrate",
-        "ready": "Ready?",
+        "ready": "🏁 Ready?",
         "regex" : "Regex",
         "summary" : "Migration summary",
         "details" : "Migration details",
@@ -102,7 +102,7 @@
         "summary-mapping" : "Configured mapping",
         "svn" : {
             "check" : {
-                "repository" : "Check your SVN repository"
+                "repository" : "🚇 Check your SVN repository"
             },
             "configuration": "Subversion configuration",
             "contains-flat": "* The flat repositories you selected will contain only a master branch, not concerned by all options",

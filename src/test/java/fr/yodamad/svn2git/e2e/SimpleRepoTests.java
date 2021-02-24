@@ -44,7 +44,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
-@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class SimpleRepoTests {

@@ -21,6 +21,8 @@ jobs:
                   java-version: '11.x'
             - name: 🪦 Install node.js packages
               run: npm install
+            - name: Install git-svn
+              run: sudo apt-get install git-svn
             - name: 🔍 Analyze code with SonarQube
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

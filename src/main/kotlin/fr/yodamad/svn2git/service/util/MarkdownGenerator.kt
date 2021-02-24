@@ -54,32 +54,26 @@ open class MarkdownGenerator(
         val md = StringBuilder()
         // Overview
         md.append(Heading(migration.gitlabProject.toUpperCase().replace("/".toRegex(), ""), 1))
-            .append(EMPTY_LINE)
-            .append(String.format(" migrated from %s%s%s to %s%s",
-                migration.svnUrl, migration.svnGroup, migration.svnProject,
-                migration.gitlabUrl, migration.gitlabGroup))
-            .append(EMPTY_LINE)
-            .append(String.format(" gitlab user %s on %s",
-                BoldText(ItalicText(if (migration.gitlabToken == null) applicationProperties.gitlab.account.toUpperCase() else migration.user.toUpperCase())),
-                migration.date))
-            .append(EMPTY_LINE)
-            .append(String.format(" subversion user %s on %s",
-                BoldText(ItalicText(migration.svnUser.toUpperCase())),
-                migration.date))
-            .append(EMPTY_LINE)
+            .emptyLine()
+            .append(" migrated from ${migration.svnUrl}${migration.svnGroup}${migration.svnProject} to ${migration.gitlabUrl}${migration.gitlabGroup}")
+            .emptyLine()
+            .append(" gitlab user ${BoldText(ItalicText(if (migration.gitlabToken == null) applicationProperties.gitlab.account.toUpperCase() else migration.user.toUpperCase()))} on ${migration.date}")
+            .emptyLine()
+            .append(" subversion user ${BoldText(ItalicText(migration.svnUser.toUpperCase()))} on ${migration.date}")
+            .emptyLine()
         if (migration.mappings.isNotEmpty()) {
             // Mapping
-            md.append(Heading("Mappings applied", 3)).append(EMPTY_LINE)
+            md.append(Heading("Mappings applied", 3)).emptyLine()
             val mappingTableBuilder = Table.Builder()
                 .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_CENTER, Table.ALIGN_LEFT)
                 .addRow("SVN directory", "Regex", "GIT directory", "Not Migrated from SVN")
             migration.mappings.forEach(Consumer { map: Mapping -> mappingTableBuilder.addRow(map.svnDirectory, map.regex, map.gitDirectory, map.isSvnDirectoryDelete) })
-            md.append(mappingTableBuilder.build()).append(EMPTY_LINE)
+            md.append(mappingTableBuilder.build()).emptyLine()
         }
         if (!isEmpty(migration.forbiddenFileExtensions) ||
             !isEmpty(migration.maxFileSize) && isDigit(migration.maxFileSize[0])) {
             // Cleaning
-            md.append(Heading("Cleaning options", 3)).append(EMPTY_LINE)
+            md.append(Heading("Cleaning options", 3)).emptyLine()
             val cleaningTableBuilder = Table.Builder()
                 .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
                 .addRow("Option", "Value")
@@ -98,14 +92,14 @@ open class MarkdownGenerator(
             if (!isEmpty(migration.tagsToMigrate)) {
                 cleaningTableBuilder.addRow("Tags to migrate", migration.tagsToMigrate)
             }
-            md.append(cleaningTableBuilder.build()).append(EMPTY_LINE)
+            md.append(cleaningTableBuilder.build()).emptyLine()
 
             // *********** SVN Location File Size Report ******************
-            md.append(Heading(String.format("File Size Totals: SVN (%s), Gitlab (%s)",
-                humanReadableByteCount(cleanedFilesManager.fileSizeTotalBeforeClean, false),
-                humanReadableByteCount(cleanedFilesManager.fileSizeTotalAfterClean, false)
-            ), 3))
-                .append(EMPTY_LINE)
+            md.append(Heading(
+                "File Size Totals: SVN (${
+                    humanReadableByteCount(cleanedFilesManager.fileSizeTotalBeforeClean, false)
+                }), Gitlab (${humanReadableByteCount(cleanedFilesManager.fileSizeTotalAfterClean, false)})", 3))
+                .emptyLine()
             val totalFileSizeTableBuilder = Table.Builder()
                 .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_RIGHT, Table.ALIGN_RIGHT, Table.ALIGN_RIGHT, Table.ALIGN_RIGHT)
                 .addRow("SVN Location", "Number of Files SVN", "Total File Size SVN", "Number of Files Gitlab", "Total File Size Gitlab")
@@ -118,34 +112,34 @@ open class MarkdownGenerator(
                     humanReadableByteCount(value.fileSizeTotalAfterClean, false)
                 )
             }
-            md.append(totalFileSizeTableBuilder.build()).append(EMPTY_LINE)
+            md.append(totalFileSizeTableBuilder.build()).emptyLine()
 
             // *********** Files Removed ******************
 
             // Get MigrationRemovedFiles : Extension Reason
             val migrationRemovedFilesReasonExtension = migrationRemovedFileService.findAllForMigrationAndReason(migration.id, Reason.EXTENSION)
-            log.debug(String.format("0:migrationRemovedFilesReasonExtension.size():%s", migrationRemovedFilesReasonExtension.size))
+            log.debug("0:migrationRemovedFilesReasonExtension.size():${migrationRemovedFilesReasonExtension.size}")
             if (migrationRemovedFilesReasonExtension.isNotEmpty()) {
-                md.append(Heading("Migration Removed Files : Reason EXTENSION", 3)).append(EMPTY_LINE)
+                md.append(Heading("Migration Removed Files : Reason EXTENSION", 3)).emptyLine()
                 val migrationRemovedFileReasonExtensionTableBuilder = Table.Builder()
                     .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
                     .addRow("Id", "Path", "SvnLocation", "Artifactory", "fileSize")
                 migrationRemovedFilesReasonExtension.forEach(Consumer { migrationRemovedFile: MigrationRemovedFile -> addRemovedFileRow(migrationRemovedFileReasonExtensionTableBuilder, migrationRemovedFile) })
-                md.append(migrationRemovedFileReasonExtensionTableBuilder.build()).append(EMPTY_LINE)
+                md.append(migrationRemovedFileReasonExtensionTableBuilder.build()).emptyLine()
             }
 
             // *********** Files Removed ******************
 
             // Get MigrationRemovedFiles : SIZE Reason
             val migrationRemovedFilesReasonSize = migrationRemovedFileService.findAllForMigrationAndReason(migration.id, Reason.SIZE)
-            log.debug(String.format("1:migrationRemovedFilesReasonSize.size():%s", migrationRemovedFilesReasonSize.size))
+            log.debug("1:migrationRemovedFilesReasonSize.size():${migrationRemovedFilesReasonSize.size}")
             if (migrationRemovedFilesReasonSize.isNotEmpty()) {
-                md.append(Heading("Migration Removed Files : Reason SIZE", 3)).append(EMPTY_LINE)
+                md.append(Heading("Migration Removed Files : Reason SIZE", 3)).emptyLine()
                 val migrationRemovedFileReasonSizeTableBuilder = Table.Builder()
                     .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_LEFT)
                     .addRow("Id", "Path", "SvnLocation", "Artifactory", "fileSize")
                 migrationRemovedFilesReasonSize.forEach(Consumer { migrationRemovedFile: MigrationRemovedFile -> addRemovedFileRow(migrationRemovedFileReasonSizeTableBuilder, migrationRemovedFile) })
-                md.append(migrationRemovedFileReasonSizeTableBuilder.build()).append(EMPTY_LINE)
+                md.append(migrationRemovedFileReasonSizeTableBuilder.build()).emptyLine()
             }
         }
 
@@ -173,7 +167,7 @@ open class MarkdownGenerator(
         val formatter = ofLocalizedDateTime(FormatStyle.SHORT)
             .withLocale(Locale.FRANCE)
             .withZone(ZoneId.systemDefault())
-        md.append(Heading(String.format("Migration steps history (duration: %s minutes)", minutesDifference), 3)).append(EMPTY_LINE)
+        md.append(Heading("Migration steps history (duration: $minutesDifference minutes)", 3)).emptyLine()
         val historyTableBuilder = Table.Builder()
             .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_CENTER, Table.ALIGN_CENTER, Table.ALIGN_LEFT)
             .addRow("Step", "Status", "Time (dd/MM/yy)", "Details", "Execution Time")
@@ -200,9 +194,7 @@ open class MarkdownGenerator(
             StringUtils.isNotEmpty(migHistory.data) -> {
                 migHistory.data.replace("|", "&#124;")
             }
-            else -> {
-                ""
-            }
+            else -> { "" }
         }
     }
 
@@ -228,8 +220,8 @@ open class MarkdownGenerator(
         }
         if (applicationProperties.artifactory.enabled) {
             // Remove leading slash from artifactory.binariesDirectory
-            val binariresDirectory = applicationProperties.artifactory.binariesDirectory.substring(1)
-            val binInTags = path.startsWith(binariresDirectory) && svnLocation.startsWith("tags")
+            val binariesDirectory = applicationProperties.artifactory.binariesDirectory.substring(1)
+            val binInTags = path.startsWith(binariesDirectory) && svnLocation.startsWith("tags")
             migrationRemovedFileTableBuilder.addRow(id,
                 if (binInTags) path else BoldText(ItalicText(path)),
                 svnLocation, if (binInTags) "Yes" else "", fileSize)
@@ -238,8 +230,6 @@ open class MarkdownGenerator(
                 path, svnLocation, "Yes", fileSize)
         }
     }
-
-    companion object {
-        private const val EMPTY_LINE = "\n\n"
-    }
 }
+
+fun StringBuilder.emptyLine(): java.lang.StringBuilder = this.append("\n\n")

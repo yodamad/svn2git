@@ -28,19 +28,14 @@ open class ArtifactoryAdmin(applicationProperties: ApplicationProperties) {
      * @return artifactPath used to upload the artifact
      */
     open fun uploadArtifact(artifact: File, groupId: String?, artifactId: String?, version: String?): String {
-        LOG.info(String.format("Upload file %s to artifactory", artifact.name))
-        val artifactPath = String.format("%s/%s%s/%s/%s",
-            groupIdPrefix.replace(".", "/"),
-            groupId,
-            artifactId,
-            version,
-            artifact.name)
+        LOG.info("Upload file ${artifact.name} to artifactory")
+        val artifactPath = "${groupIdPrefix.replace(".", "/")}/$groupId$artifactId/$version/${artifact.name}"
         artifactory!!.repository(defaultRepository).upload(artifactPath, artifact).doUpload()
 
         // To avoid overloading Artifactory
         if (uploadPauseMilliSeconds > 0) {
             try {
-                LOG.info(String.format("Waiting uploadPauseMilliSeconds:%s", uploadPauseMilliSeconds))
+                LOG.info("Waiting uploadPauseMilliSeconds:$uploadPauseMilliSeconds")
                 Thread.sleep(uploadPauseMilliSeconds)
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()

@@ -25,5 +25,6 @@
     <include file="config/liquibase/changelog/2020021612000000_AddColExecutionTime.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2020071721000000_added_Migration_svnRevision_column.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2020101217150000_added_Migration_flat_column.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2021022821550000_added_Migration_gitlab_project_id.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

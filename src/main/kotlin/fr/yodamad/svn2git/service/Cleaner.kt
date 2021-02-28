@@ -41,7 +41,7 @@ import java.util.stream.Collectors
 open class Cleaner(val historyMgr: HistoryManager,
                    val mrfRepo: MigrationRemovedFileRepository,
                    val applicationProperties: ApplicationProperties,
-                   val artifactoryAdmin: ArtifactoryAdmin) {
+                   private val artifactoryAdmin: ArtifactoryAdmin) {
 
     private val LOG = LoggerFactory.getLogger(Cleaner::class.java)
     private val GIT_LIST = "git-list"
@@ -249,6 +249,17 @@ open class Cleaner(val historyMgr: HistoryManager,
                     .reason(reason)
                     .fileSize(fileSize)
                 this.mrfRepo.save(mrf)
+                if (svnLocation.startsWith(TAGS) && applicationProperties.gitlab.uploadToRegistry) {
+                    val status = uploadFile(workUnit.migration.gitlabUrl,
+                        if (workUnit.migration.gitlabToken != null) workUnit.migration.gitlabToken else applicationProperties.gitlab.token,
+                        workUnit.migration.gitlabProjectId,
+                        if (workUnit.migration.gitlabProject.isEmpty()) workUnit.migration.svnGroup else workUnit.migration.gitlabProject.split("/").last(),
+                        extractVersion(svnLocation),
+                        p.fileName.toString(),
+                        p.toString()
+                    )
+                    println("Upload of $p is $status")
+                }
             }
         }
     }

@@ -39,9 +39,10 @@ open class GitlabManager(val historyMgr: HistoryManager,
      * @throws GitLabApiException
      */
     @Throws(GitLabApiException::class)
-    open fun createGitlabProject(migration: Migration) {
+    open fun createGitlabProject(migration: Migration) : Int {
         val history: MigrationHistory = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.gitlabUrl + migration.gitlabGroup)
         var gitlabAdmin = getGitlabAdminPrototype()
+        var gitlabProjectId : Int
 
         // If gitlabInfo.token is empty assure using values found in application.yml.
         // i.e. those in default GitlabAdmin object
@@ -63,7 +64,7 @@ open class GitlabManager(val historyMgr: HistoryManager,
 
             // If no svn project specified, use svn group instead
             if (isEmpty(migration.svnProject) && isEmpty(migration.gitlabProject)) {
-                gitlabAdmin.projectApi().createProject(group.id, migration.svnGroup)
+                gitlabProjectId = gitlabAdmin.projectApi().createProject(group.id, migration.svnGroup).id
                 historyMgr.endStep(history, StatusEnum.DONE, null)
             } else {
                 // split svn structure to create gitlab elements (group(s), project)
@@ -93,12 +94,13 @@ open class GitlabManager(val historyMgr: HistoryManager,
                     .filter { p: Project -> p.name.equals(structure[structure.size - 1], ignoreCase = true) }
                     .findFirst()
                 if (!project.isPresent) {
-                    gitlabAdmin.projectApi().createProject(groupId, structure[structure.size - 1])
+                    gitlabProjectId = gitlabAdmin.projectApi().createProject(groupId, structure[structure.size - 1]).id
                     historyMgr.endStep(history, StatusEnum.DONE, null)
                 } else {
                     throw GitLabApiException("Please remove the destination project '${group.name}/${structure[structure.size - 1]}'")
                 }
             }
+            return gitlabProjectId
         } catch (exc: GitLabApiException) {
             val message: String? = exc.message?.replace(applicationProperties.gitlab.token, STARS)
             LOG.error("Gitlab errors are ${exc.validationErrors}")

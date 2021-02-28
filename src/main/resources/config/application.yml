@@ -142,6 +142,7 @@ application:
         #        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
         gitPushPauseMilliSeconds: 5000
         gitMvPauseMilliSeconds: 500
+        uploadToRegistry: false
     svn:
         url: svn://localhost/
         user:

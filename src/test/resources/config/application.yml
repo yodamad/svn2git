@@ -146,6 +146,7 @@ application:
         #        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
         gitPushPauseMilliSeconds: 500
         gitMvPauseMilliSeconds: 500
+        uploadToRegistry: false
     svn:
         url: ENC(SF16uNMiFtw5iGVKeQh9DrrkgriJkHaXJ+BwOGze9bCqfl599KaFGpzEHrVIuQmuCOYEMLFfYTmxb5KxOj9D5A==)
         user: ENC(NCCvax0umvRUhKRJv91NYNzNao04KDprAgsLRWOBIQOCh1zDfZ6BekY3kBfQag87)

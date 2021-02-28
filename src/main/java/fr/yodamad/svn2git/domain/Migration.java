@@ -65,6 +65,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private String gitlabProject;
 
+    @Column(name = "gitlab_project_id")
+    @JsonView(View.Public.class)
+    private Integer gitlabProjectId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     @JsonView(View.Public.class)
@@ -229,6 +233,19 @@ public class Migration implements Serializable {
 
     public void setGitlabProject(String gitlabProject) {
         this.gitlabProject = gitlabProject;
+    }
+
+    public Integer getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public Migration gitlabProjectId(Integer gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+        return this;
+    }
+
+    public void setGitlabProjectId(Integer gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 
     public StatusEnum getStatus() {

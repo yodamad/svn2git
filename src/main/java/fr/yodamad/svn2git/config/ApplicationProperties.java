@@ -189,11 +189,14 @@ public class ApplicationProperties {
          * Dynamic Local Config
          */
         public List<String> dynamicLocalConfig;
-
         /**
          * Pause between push to gitlab
          */
         public long gitPushPauseMilliSeconds;
+        /**
+         * Enable package registry
+         */
+        public Boolean uploadToRegistry = false;
 
         public long getGitMvPauseMilliSeconds() {
             return gitMvPauseMilliSeconds;
@@ -256,9 +259,11 @@ public class ApplicationProperties {
             return dynamicLocalConfig;
         }
 
-        public void setDynamicLocalConfig(List<String> dynamicLocalConfig) {
-            this.dynamicLocalConfig = dynamicLocalConfig;
-        }
+        public void setDynamicLocalConfig(List<String> dynamicLocalConfig) { this.dynamicLocalConfig = dynamicLocalConfig; }
+
+        public Boolean getUploadToRegistry() { return uploadToRegistry; }
+
+        public void setUploadToRegistry(Boolean uploadToRegistry) { this.uploadToRegistry = uploadToRegistry; }
     }
 
     public static class Artifactory {

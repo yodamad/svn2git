@@ -93,7 +93,9 @@ open class MigrationManager(val cleaner: Cleaner,
             migrationRepository.save(migration)
 
             // 1. Create project on gitlab : OK
-            gitlabManager.createGitlabProject(migration)
+            val projectId = gitlabManager.createGitlabProject(migration)
+            migration.gitlabProjectId(projectId)
+            migrationRepository.save(migration)
 
             // If reexecution we initialise from clean copy.
             ioManager.initRootDirectoryFromCopy(workUnit)

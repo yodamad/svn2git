@@ -218,17 +218,8 @@ open class MarkdownGenerator(
         if (migrationRemovedFile.fileSize != null) {
             fileSize = humanReadableByteCount(migrationRemovedFile.fileSize, false)
         }
-        if (applicationProperties.artifactory.enabled) {
-            // Remove leading slash from artifactory.binariesDirectory
-            val binariesDirectory = applicationProperties.artifactory.binariesDirectory.substring(1)
-            val binInTags = path.startsWith(binariesDirectory) && svnLocation.startsWith("tags")
-            migrationRemovedFileTableBuilder.addRow(id,
-                if (binInTags) path else BoldText(ItalicText(path)),
-                svnLocation, if (binInTags) "Yes" else "", fileSize)
-        } else {
-            migrationRemovedFileTableBuilder.addRow(id,
-                path, svnLocation, "Yes", fileSize)
-        }
+        migrationRemovedFileTableBuilder.addRow(id,
+            path, svnLocation, "Yes", fileSize)
     }
 }
 

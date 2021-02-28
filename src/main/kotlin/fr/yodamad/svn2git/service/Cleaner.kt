@@ -8,12 +8,15 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum.DONE
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum.DONE_WITH_WARNINGS
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
+import fr.yodamad.svn2git.domain.enumeration.StepEnum.UPLOAD_TO_ARTIFACTORY
+import fr.yodamad.svn2git.domain.enumeration.StepEnum.UPLOAD_TO_GITLAB
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.io.Shell.execCommand
-import fr.yodamad.svn2git.io.ZipUtil
 import fr.yodamad.svn2git.repository.MigrationRemovedFileRepository
 import fr.yodamad.svn2git.service.client.ArtifactoryAdmin
 import fr.yodamad.svn2git.service.util.checkout
@@ -23,6 +26,7 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.data.util.Pair
 import org.springframework.stereotype.Service
+import java.io.File
 import java.io.IOException
 import java.lang.Long.valueOf
 import java.nio.file.DirectoryStream
@@ -124,7 +128,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         if (warnings.get()) {
             historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, sMigrationRemovedFiles)
         } else {
-            historyMgr.endStep(history, StatusEnum.DONE, sMigrationRemovedFiles)
+            historyMgr.endStep(history, DONE, sMigrationRemovedFiles)
         }
         return CleanedFilesManager(cleanedFilesMap)
     }
@@ -185,59 +189,6 @@ open class Cleaner(val historyMgr: HistoryManager,
             }
         }
 
-        // If binaries directory, push binary to artifactory
-        val completePath = workingPath.toFile().canonicalPath
-        if (applicationProperties.artifactory.isEnabled // Only tags for the moment
-            // TODO : externalize to allow branches, trunk open configuration
-            && svnLocation.startsWith("tags")
-            && completePath.endsWith(workUnit.migration.svnGroup + applicationProperties.artifactory.binariesDirectory)
-            && workingPath.toFile().isDirectory) {
-            val history = historyMgr.startStep(workUnit.migration, StepEnum.UPLOAD_TO_ARTIFACTORY, "")
-            var containsSubDir = false
-            Files.newDirectoryStream(workingPath).use { stream ->
-                for (p in stream) {
-                    if (p.toFile().isDirectory) {
-                        containsSubDir = true
-                        break
-                    }
-                }
-            }
-            if (containsSubDir) {
-                var zipPath: String? = null
-                try {
-                    // Zip before uploading
-                    zipPath = ZipUtil.zipDirectory(workUnit, workingPath, svnLocation.replace(TAGS, ""))
-                    val artifactPath = artifactoryAdmin.uploadArtifact(
-                        Paths.get(zipPath).toFile(),
-                        workUnit.migration.svnGroup,
-                        workUnit.migration.svnProject,
-                        svnLocation.replace(TAGS, EMPTY))
-                    historyMgr.endStep(history, StatusEnum.DONE, "Uploading Zip file to Artifactory : $zipPath : $artifactPath")
-                } finally {
-                    if (zipPath != null) {
-                        // Remove file after uploading to avoid git commit
-                        Files.deleteIfExists(Paths.get(zipPath))
-                    }
-                }
-            } else {
-                // Else upload all files to artifactory
-                Files.newDirectoryStream(workingPath).use { stream ->
-                    val artifactInfo = StringBuilder()
-                    for (p in stream) {
-                        val artifactPath = artifactoryAdmin.uploadArtifact(
-                            p.toFile(),
-                            workUnit.migration.svnGroup,
-                            workUnit.migration.svnProject,
-                            svnLocation.replace(TAGS, ""))
-                        val pathForHistoryMgr = String.format("%s/%s", applicationProperties.artifactory.binariesDirectory, p.fileName)
-                        artifactInfo.append("$pathForHistoryMgr : $artifactPath,")
-                    }
-                    historyMgr.endStep(history, StatusEnum.DONE,
-                        if (StringUtils.isEmpty(artifactInfo.toString())) "No Files Uploaded to Artifactory"
-                        else "Uploading file(s) to Artifactory, $artifactInfo")
-                }
-            }
-        }
         Files.newDirectoryStream(workingPath, pathFilter).use { dirStream ->
             for (p in dirStream) {
                 val reason = if (isForbiddenExtension(workUnit, p)) Reason.EXTENSION else Reason.SIZE
@@ -249,17 +200,46 @@ open class Cleaner(val historyMgr: HistoryManager,
                     .reason(reason)
                     .fileSize(fileSize)
                 this.mrfRepo.save(mrf)
-                if (svnLocation.startsWith(TAGS) && applicationProperties.gitlab.uploadToRegistry) {
-                    val status = uploadFile(workUnit.migration.gitlabUrl,
-                        if (workUnit.migration.gitlabToken != null) workUnit.migration.gitlabToken else applicationProperties.gitlab.token,
-                        workUnit.migration.gitlabProjectId,
-                        if (workUnit.migration.gitlabProject.isEmpty()) workUnit.migration.svnGroup else workUnit.migration.gitlabProject.split("/").last(),
-                        extractVersion(svnLocation),
-                        p.fileName.toString(),
-                        p.toString()
-                    )
-                    println("Upload of $p is $status")
+            }
+        }
+
+        // Upload files from tags
+        if (svnLocation.startsWith(TAGS)) {
+            // Upload to Gitlab
+            if (applicationProperties.gitlab.uploadToRegistry) {
+                val history = historyMgr.startStep(workUnit.migration, UPLOAD_TO_GITLAB, null)
+                var globalStatus = true
+                Files.newDirectoryStream(workingPath, pathFilter).use { dirStream ->
+                    for (p in dirStream) {
+                        val status = uploadFile(
+                            workUnit.migration.gitlabUrl,
+                            if (workUnit.migration.gitlabToken != null) workUnit.migration.gitlabToken else applicationProperties.gitlab.token,
+                            workUnit.migration.gitlabProjectId,
+                            if (workUnit.migration.gitlabProject.isEmpty()) workUnit.migration.svnGroup else workUnit.migration.gitlabProject.split(
+                                "/"
+                            ).last(),
+                            extractVersion(svnLocation),
+                            p.fileName.toString(),
+                            p.toString()
+                        )
+                        println("Upload of $p is $status")
+                        globalStatus = globalStatus && (status == 201)
+                    }
                 }
+                historyMgr.endStep(history, if (globalStatus) DONE else DONE_WITH_WARNINGS)
+            }
+            if (applicationProperties.artifactory.enabled) {
+                val history = historyMgr.startStep(workUnit.migration, UPLOAD_TO_ARTIFACTORY, null)
+                Files.newDirectoryStream(workingPath, pathFilter).use { dirStream ->
+                    for (p in dirStream) {
+                        artifactoryAdmin.uploadArtifact(
+                            File(p.toString()),
+                            workUnit.migration.gitlabGroup,
+                            if (workUnit.migration.gitlabProject.isEmpty()) workUnit.migration.svnGroup else workUnit.migration.gitlabProject,
+                            extractVersion(svnLocation))
+                    }
+                }
+                historyMgr.endStep(history, DONE)
             }
         }
     }
@@ -301,7 +281,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                     try {
                         Main.main(arrayOf("--delete-files", s.toLowerCase(), "--no-blob-protection", workUnit.directory))
                         Main.main(arrayOf("--delete-files", s.toUpperCase(), "--no-blob-protection", workUnit.directory))
-                        historyMgr.endStep(innerHistory, StatusEnum.DONE, null)
+                        historyMgr.endStep(innerHistory, DONE, null)
                     } catch (exc: Throwable) {
                         historyMgr.endStep(innerHistory, StatusEnum.FAILED, exc.message)
                         workUnit.warnings.set(true)
@@ -334,7 +314,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 "--strip-blobs-bigger-than", workUnit.migration.maxFileSize,
                 "--no-blob-protection", workUnit.directory))
             clean = true
-            historyMgr.endStep(history, StatusEnum.DONE)
+            historyMgr.endStep(history, DONE)
         }
         return clean
     }
@@ -362,7 +342,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 "--delete-folders", "{" + applicationProperties.artifactory.deleteFolderWithBFG + "}",
                 "--no-blob-protection", workUnit.directory))
             clean = true
-            historyMgr.endStep(history, StatusEnum.DONE)
+            historyMgr.endStep(history, DONE)
         }
         return clean
     }
@@ -383,7 +363,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 //  Some branches have failed
                 historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, "Failed to remove ${elements.second} %s ${pairInfo.second}")
             } else {
-                historyMgr.endStep(history, StatusEnum.DONE)
+                historyMgr.endStep(history, DONE)
             }
         }
     }

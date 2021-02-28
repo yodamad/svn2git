@@ -29,7 +29,7 @@ open class ArtifactoryAdmin(applicationProperties: ApplicationProperties) {
      */
     open fun uploadArtifact(artifact: File, groupId: String?, artifactId: String?, version: String?): String {
         LOG.info("Upload file ${artifact.name} to artifactory")
-        val artifactPath = "${groupIdPrefix.replace(".", "/")}/$groupId$artifactId/$version/${artifact.name}"
+        val artifactPath = "$groupId/$artifactId/$version/${artifact.name}"
         artifactory!!.repository(defaultRepository).upload(artifactPath, artifact).doUpload()
 
         // To avoid overloading Artifactory

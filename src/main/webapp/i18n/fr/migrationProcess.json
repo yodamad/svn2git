@@ -1,5 +1,8 @@
 {
     "migration-process" : {
+        "artifactory": {
+            "upload" : "🐸 Upload fichiers"
+        },
         "back" : " Retour",
         "blocked": "Certains namespaces ne sont pas disponibles. Corriger pour continuer",
         "check" : "Vérifier",
@@ -53,6 +56,7 @@
             "url-custom": "Personnalisé",
             "credentials": "Identifiants",
             "rename": "Nouveau nom du projet dans Gitlab",
+            "upload": "🦊 Upload fichiers",
             "use" : {
                 "default" : "URL par défaut et utilisateur"
             },
@@ -79,6 +83,9 @@
             "no-migrate-individual-commits" : "L'historique des commits n'est pas migré"
         },
         "home" : "Accueil",
+        "import": {
+            "info": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> dans un <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">Generic Registry</a> au sein du project créé"
+        },
         "info" : "Infos",
         "no-events" : "Chargement, merci de patienter...",
         "mapping": "🔀 Mapping des répertoires",

@@ -8,6 +8,8 @@ const val SVN = "/svn"
 
 const val GITLAB = "/gitlab"
 
+const val ARTIFACTORY = "/artifactory"
+
 const val OVERRIDE = "/override"
 
 const val FLAGS = "/flags"

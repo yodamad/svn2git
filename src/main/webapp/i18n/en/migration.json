@@ -7,9 +7,11 @@
                 "createOrEditLabel": "Create or edit a Migration"
             },
             "init" : {
+                "artifactory.registry": "🐸 Artifactory Generic registry",
                 "title": "Migration steps",
                 "gitlab": "🦊 Gitlab",
                 "gitlab.details": "(access, group, user)",
+                "gitlab.registry": "🦊 Gitlab Generic registry",
                 "svn": "🚇 Subversion",
                 "svn.details": "(url, credz, repos)",
                 "history": "🦕 History",
@@ -18,7 +20,9 @@
                 "mapping.details": "(apply folders restructuration)",
                 "cleaning": "🧹 Cleaning",
                 "cleaning.details": "(file size, extensions)",
-                "ready": "Ready"
+                "ready": "Ready",
+                "upload": "🔌 Upload files to an external registry : ",
+                "pick": "Pick a registry"
             },
             "created": "A new Migration is created with identifier {{ param }}",
             "updated": "A Migration is updated with identifier {{ param }}",

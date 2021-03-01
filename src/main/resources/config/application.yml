@@ -127,7 +127,7 @@ application:
         # Attention any folder called this will be deleted wherever it is. Leave blank if not used. Done before Mappings (unfortunately)
         # Can be comma separated list
         deleteFolderWithBFG:
-        uploadPauseMilliSeconds: 5000
+        uploadPauseMilliSeconds: 1000
     gitlab:
         url: http://localhost/
         account: root

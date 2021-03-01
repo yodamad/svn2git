@@ -6,7 +6,7 @@ import { IMigration, Migration, MigrationRenaming } from 'app/shared/model/migra
 import { IMapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
-import { GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
+import { ARTIFACTORY_URL, GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
 import { MatCheckboxChange, MatDialog, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
@@ -69,6 +69,7 @@ export class MigrationStepperComponent implements OnInit {
     gitlabUrl: string;
     gitlabCredsOption: string;
     renamings: MigrationRenaming[] = [];
+    artifactoryUrl: string;
 
     // Cleaning Section
     preserveEmptyDirs = false;
@@ -109,6 +110,7 @@ export class MigrationStepperComponent implements OnInit {
     stepHistory;
     stepCleaning;
     stepMapping;
+    stepUpload;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -135,6 +137,9 @@ export class MigrationStepperComponent implements OnInit {
             this.stepHistory = Boolean(JSON.parse(qp['historyEnabled']));
             this.stepMapping = Boolean(JSON.parse(qp['mappingEnabled']));
             this.stepCleaning = Boolean(JSON.parse(qp['cleaningEnabled']));
+            if (Boolean(JSON.parse(qp['uploadEnabled']))) {
+                this.stepUpload = qp['registry'];
+            }
         });
     }
 
@@ -159,6 +164,7 @@ export class MigrationStepperComponent implements OnInit {
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
         this.svnDepth = Number(localStorage.getItem(SVN_DEPTH));
+        this.artifactoryUrl = localStorage.getItem(ARTIFACTORY_URL);
 
         this.gitlabFormGroup = this._formBuilder.group({
             gitlabUser: ['', Validators.required],
@@ -423,7 +429,7 @@ export class MigrationStepperComponent implements OnInit {
      * @param project
      */
     initMigration(project: string, lastStep = true): IMigration {
-        if (!lastStep && this.stepCleaning) {
+        if (!lastStep && this.stepUpload) {
             return;
         }
 
@@ -574,6 +580,9 @@ export class MigrationStepperComponent implements OnInit {
             this.extensionSelection.selected.forEach(ext => values.push(ext.value));
             this.mig.forbiddenFileExtensions = values.toString();
         }
+
+        // Upload
+        this.mig.uploadType = this.stepUpload;
 
         return this.mig;
     }
@@ -807,8 +816,16 @@ export class MigrationStepperComponent implements OnInit {
      * @param extension
      */
     extensionToggle(event: MatCheckboxChange, extension: Extension) {
-        if (event) {
-            return this.extensionSelection.toggle(extension);
+        if (event.checked) {
+            const copy = this.extensionSelection.selected;
+            this.extensionSelection.clear();
+            this.extensionSelection.select(extension);
+            copy.forEach(m => this.extensionSelection.select(m));
+        }
+        if (!event.checked) {
+            const copy = this.extensionSelection.selected;
+            this.extensionSelection.clear();
+            copy.filter(e => e !== extension).forEach(m => this.extensionSelection.select(m));
         }
         return null;
     }
@@ -827,6 +844,9 @@ export class MigrationStepperComponent implements OnInit {
                 isStatic: false
             };
             this.staticExtensions = this.staticExtensions.concat([newExtension]);
+            const copy = this.extensionSelection.selected.concat([newExtension]);
+            /*this.extensionSelection.clear();
+            copy.forEach(m => this.extensionSelection.select(m));*/
             this.extensionSelection.select(newExtension);
         }
         this.addExtentionFormControl.reset();

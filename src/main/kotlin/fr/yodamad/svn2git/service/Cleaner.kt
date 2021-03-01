@@ -206,7 +206,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         // Upload files from tags
         if (svnLocation.startsWith(TAGS)) {
             // Upload to Gitlab
-            if (applicationProperties.gitlab.uploadToRegistry) {
+            if (applicationProperties.gitlab.uploadToRegistry && workUnit.migration.uploadType == "gitlab") {
                 val history = historyMgr.startStep(workUnit.migration, UPLOAD_TO_GITLAB, svnLocation)
                 var globalStatus = true
                 Files.newDirectoryStream(workingPath, pathFilter).use { dirStream ->
@@ -229,7 +229,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 historyMgr.endStep(history, if (globalStatus) DONE else DONE_WITH_WARNINGS)
             }
             // Upload to Artifactory
-            if (applicationProperties.artifactory.enabled) {
+            if (applicationProperties.artifactory.enabled && workUnit.migration.uploadType == "artifactory") {
                 val history = historyMgr.startStep(workUnit.migration, UPLOAD_TO_ARTIFACTORY, svnLocation)
                 Files.newDirectoryStream(workingPath, pathFilter).use { dirStream ->
                     for (p in dirStream) {

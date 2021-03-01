@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { MatSelectChange } from '@angular/material/select';
 
 @Component({
     selector: 'jhi-migration-init.component',
@@ -11,6 +12,8 @@ export class MigrationInitComponent {
     historyEnabled = true;
     mappingEnabled = false;
     cleaningEnabled = true;
+    uploadEnabled = false;
+    registryName = '';
 
     constructor(private _router: Router) {}
 
@@ -25,7 +28,9 @@ export class MigrationInitComponent {
                 svnEnabled: this.svnEnabled,
                 historyEnabled: this.historyEnabled,
                 mappingEnabled: this.mappingEnabled,
-                cleaningEnabled: this.cleaningEnabled
+                cleaningEnabled: this.cleaningEnabled,
+                uploadEnabled: this.uploadEnabled,
+                registry: this.registryName
             }
         });
     }
@@ -35,5 +40,12 @@ export class MigrationInitComponent {
     }
     setMapping(checked: boolean) {
         this.mappingEnabled = checked;
+    }
+    setUpload(upload: boolean) {
+        this.uploadEnabled = upload;
+    }
+
+    uploadTo(registry: MatSelectChange) {
+        this.registryName = registry.value;
     }
 }

@@ -98,4 +98,14 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
     open fun getGitlabGroupCreationOption(): ResponseEntity<Boolean?>? = ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(applicationProperties.flags.gitlabGroupCreationOption)
+
+    /**
+     * @return Configured Artifactory URL
+     */
+    @Timed
+    @GetMapping(ARTIFACTORY)
+    open fun getArtifactoryUrl(): ResponseEntity<String?>? = ResponseEntity.ok()
+        .contentType(MediaType.TEXT_PLAIN)
+        .body(applicationProperties.artifactory.url)
+
 }

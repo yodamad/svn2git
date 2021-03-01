@@ -1,5 +1,8 @@
 {
     "migration-process" : {
+        "artifactory": {
+            "upload" : "🐸 Upload artefacts"
+        },
         "back" : " Back",
         "blocked": "Some namespaces aren't available. Fix before starting migration",
         "check" : "Check",
@@ -53,6 +56,7 @@
             "url-custom": "Custom",
             "credentials": "Credentials",
             "rename": "New name for project in Gitlab",
+            "upload": "🦊 Upload artefacts",
             "use" : {
                 "default" : "Use default URL and user"
             },
@@ -79,6 +83,17 @@
             "no-migrate-individual-commits" : "All commits are not migrated"
         },
         "home" : "Home",
+        "import": {
+            "artifactory": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://www.jfrog.com/confluence/display/JFROG/Repository+Management#RepositoryManagement-GenericRepositories\" target=\"_blank\">🔗 Generic Registry</a>, within created project",
+            "gitlab": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">🔗 Generic Registry</a>, within created project",
+            "from": "🗺 From SVN locations :",
+            "branches": "🤷 Branches <i>(not supported yet)</i>",
+            "tags": "👌 Tags",
+            "trunk": "🤷 Trunk <i>(not supported yet)</i>",
+            "files": "🗂 Extensions that will be imported :",
+            "version": "To be able to import artefact in registry, a version is needed. It will be extracted from tag's name if possible otherwise will be <i><b>0.0.0</b></i> by default",
+            "version.sample": "For instance : <i><b>Release_1.0.3</b></i> will be <i><b>1.0.3</b></i>. Or <i><b>v1.2_20210229</b></i> will be <i><b>1.2.0</b></i>"
+        },
         "info" : "Info",
         "no-events" : "Loading, please wait...",
         "mapping": "🔀 Directories Mapping",

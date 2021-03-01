@@ -142,6 +142,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private String workingDirectory;
 
+    @Column(name = "upload_type")
+    @JsonView(View.Public.class)
+    private String uploadType;
+
     @OneToMany(mappedBy = "migration")
     @OrderBy("id ASC")
     private Set<MigrationHistory> histories = new HashSet<>();
@@ -521,6 +525,11 @@ public class Migration implements Serializable {
     public void setFlat(Boolean flat) {
         this.flat = flat;
     }
+
+    public String getUploadType() { return uploadType; }
+
+    public void setUploadType(String uploadType) { this.uploadType = uploadType; }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
     @Override

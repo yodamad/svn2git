@@ -13,7 +13,7 @@
     <changeSet id="gitlabProjectId" author="mvt">
 
         <addColumn tableName="migration">
-            <column name="gitlab_project_id" type="bigint">
+            <column name="gitlab_project_id" type="integer">
                 <constraints nullable="true" />
             </column>
         </addColumn>

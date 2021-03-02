@@ -466,12 +466,8 @@
                                     <div class="col-8">
                                         {{ extension.description !== null ? extension.description : extension.value }}
                                     </div>
-                                    <div class="col-4">
-                                        <mat-checkbox (click)="$event.stopPropagation()"
-                                                      (change)="extensionToggle($event, extension)"
-                                                      [checked]="extensionSelection.isSelected(extension)"
-                                                      [disabled]="extension.isStatic && !overrideStaticExtensions" >
-                                        </mat-checkbox>
+                                    <div class="col-4" *ngIf="!extension.isStatic">
+                                        <fa-icon icon="trash-alt" (click)="removeExtension(extension)">
                                     </div>
                                 </div>
                             </td>
@@ -528,7 +524,7 @@
             <div class="row">
                 <span jhiTranslate="migration-process.import.files">🗂</span>
             </div>
-            <div class="row" *ngFor="let extension of extensionSelection.selected">
+            <div class="row" *ngFor="let extension of staticExtensions">
                 <mat-checkbox [disabled]="true" [checked]="true" class="pl-2">
                     <span>{{extension.value}}</span>
                 </mat-checkbox>
@@ -569,7 +565,7 @@
             <div class="row">
                 <span jhiTranslate="migration-process.import.files">🗂</span>
             </div>
-            <div class="row" *ngFor="let extension of extensionSelection.selected">
+            <div class="row" *ngFor="let extension of staticExtensions">
                 <mat-checkbox [disabled]="true" [checked]="true" class="pl-2">
                     <span>{{extension.value}}</span>
                 </mat-checkbox>

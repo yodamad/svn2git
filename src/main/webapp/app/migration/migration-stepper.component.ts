@@ -575,9 +575,9 @@ export class MigrationStepperComponent implements OnInit {
         } else {
             this.mig.preserveEmptyDirs = false;
         }
-        if (this.extensionSelection !== undefined && !this.extensionSelection.isEmpty()) {
+        if (this.staticExtensions !== undefined && this.staticExtensions.length > 0) {
             const values: string[] = [];
-            this.extensionSelection.selected.forEach(ext => values.push(ext.value));
+            this.staticExtensions.forEach(ext => values.push(ext.value));
             this.mig.forbiddenFileExtensions = values.toString();
         }
 
@@ -810,29 +810,15 @@ export class MigrationStepperComponent implements OnInit {
         event.checked && !this.svnDirectories.root ? (this.flatRepos = 1) : (this.flatRepos = 0);
     }
 
-    /**
-     * Toggle extension directory selection change
-     * @param event
-     * @param extension
-     */
-    extensionToggle(event: MatCheckboxChange, extension: Extension) {
-        if (event.checked) {
-            const copy = this.extensionSelection.selected;
-            this.extensionSelection.clear();
-            this.extensionSelection.select(extension);
-            copy.forEach(m => this.extensionSelection.select(m));
-        }
-        if (!event.checked) {
-            const copy = this.extensionSelection.selected;
-            this.extensionSelection.clear();
-            copy.filter(e => e !== extension).forEach(m => this.extensionSelection.select(m));
-        }
-        return null;
-    }
-
     /** If loaded extensions are the default ones **/
     isDefaultExtensions(): boolean {
         return !this.staticExtensions.filter((extension: Extension) => extension.name === this.svnFormGroup.value['svnRepository']).length;
+    }
+
+    removeExtension(extension: Extension) {
+        const copy = this.staticExtensions;
+        this.staticExtensions = [];
+        copy.filter(e => e.value !== extension.value).forEach(e => this.staticExtensions.push(e));
     }
 
     /** Add a custom extension. */
@@ -844,10 +830,7 @@ export class MigrationStepperComponent implements OnInit {
                 isStatic: false
             };
             this.staticExtensions = this.staticExtensions.concat([newExtension]);
-            const copy = this.extensionSelection.selected.concat([newExtension]);
-            /*this.extensionSelection.clear();
-            copy.forEach(m => this.extensionSelection.select(m));*/
-            this.extensionSelection.select(newExtension);
+            // this.extensionSelection.toggle(newExtension);
         }
         this.addExtentionFormControl.reset();
     }

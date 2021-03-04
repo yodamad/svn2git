@@ -18,6 +18,7 @@
                 "history.details": "(trunk/branches/tags choice, revision, master branch)",
                 "mapping": "🔀 Directories rework",
                 "mapping.details": "(apply folders restructuration)",
+                "nexus.registry": "📦 Nexus Raw repository",
                 "cleaning": "🧹 Cleaning",
                 "cleaning.details": "(file size, extensions)",
                 "ready": "Ready",

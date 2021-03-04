@@ -86,6 +86,7 @@
         "import": {
             "artifactory": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://www.jfrog.com/confluence/display/JFROG/Repository+Management#RepositoryManagement-GenericRepositories\" target=\"_blank\">🔗 Generic Registry</a>, within created project",
             "gitlab": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">🔗 Generic Registry</a>, within created project",
+            "nexus": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://help.sonatype.com/repomanager3/formats/raw-repositories\" target=\"_blank\">🔗 Raw Repository</a>, within created project",
             "from": "🗺 From SVN locations :",
             "branches": "🤷 Branches <i>(not supported yet)</i>",
             "tags": "👌 Tags",
@@ -95,6 +96,9 @@
             "version.sample": "For instance : <i><b>Release_1.0.3</b></i> will be <i><b>1.0.3</b></i>. Or <i><b>v1.2_20210229</b></i> will be <i><b>1.2.0</b></i>"
         },
         "info" : "Info",
+        "nexus": {
+            "upload" : "📦 Upload artefacts"
+        },
         "no-events" : "Loading, please wait...",
         "mapping": "🔀 Directories Mapping",
         "mapping-help": "Mappings are applied ONLY if there are no conflicts. When the migration is complete, please check that mappings have been applied and resolve conflicts where necessary. e.g. 2 files with same name in one folder.",

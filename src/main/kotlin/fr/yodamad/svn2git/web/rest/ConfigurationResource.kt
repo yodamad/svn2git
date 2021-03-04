@@ -108,4 +108,12 @@ open class ConfigurationResource(val applicationProperties: ApplicationPropertie
         .contentType(MediaType.TEXT_PLAIN)
         .body(applicationProperties.artifactory.url)
 
+    /**
+     * @return Configured Nexus URL
+     */
+    @Timed
+    @GetMapping(NEXUS)
+    open fun getNexusUrl(): ResponseEntity<String?>? = ResponseEntity.ok()
+        .contentType(MediaType.TEXT_PLAIN)
+        .body(applicationProperties.nexus.url)
 }

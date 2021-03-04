@@ -132,6 +132,12 @@ application:
         # Can be comma separated list
         deleteFolderWithBFG:
         uploadPauseMilliSeconds: 5000
+    nexus:
+        enabled: false
+        url: http://localhost:8081/nexus
+        repository: raw-repo
+        user: admin
+        password: TO_REPLACE
     gitlab:
         url: ENC(on6yHVi8RG5HKiUFarLLvA34r8SkzD9Y+gm+/FdxJNgtqXy06Yn2ySyHUURyrD+HDqSOsJg8CA9DU5W8h/nrrg==)
         account: ENC(ywL1moCcWg2BWSuEZMghzeHrxvKjTdAaTGHHiu/ykZoBdvI9b+/TxSBVQjp/3K60)

@@ -84,9 +84,21 @@
         },
         "home" : "Accueil",
         "import": {
-            "info": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> dans un <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">Generic Registry</a> au sein du project créé"
+            "artifactory": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> in a <a href=\"https://www.jfrog.com/confluence/display/JFROG/Repository+Management#RepositoryManagement-GenericRepositories\" target=\"_blank\">🔗 Generic Registry</a> au sein du project créé",
+            "gitlab": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> dans un <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">Generic Registry</a> au sein du project créé",
+            "nexus": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> in a <a href=\"https://help.sonatype.com/repomanager3/formats/raw-repositories\" target=\"_blank\">🔗 Raw Repository</a> au sein du project créé",
+            "from": "🗺 From SVN locations :",
+            "branches": "🤷 Branches <i>(not supported yet)</i>",
+            "tags": "👌 Tags",
+            "trunk": "🤷 Trunk <i>(not supported yet)</i>",
+            "files": "🗂 Extensions that will be imported :",
+            "version": "To be able to import artefact in registry, a version is needed. It will be extracted from tag's name if possible otherwise will be <i><b>0.0.0</b></i> by default",
+            "version.sample": "For instance : <i><b>Release_1.0.3</b></i> will be <i><b>1.0.3</b></i>. Or <i><b>v1.2_20210229</b></i> will be <i><b>1.2.0</b></i>"
         },
         "info" : "Infos",
+        "nexus": {
+            "upload" : "📦 Upload fichiers"
+        },
         "no-events" : "Chargement, merci de patienter...",
         "mapping": "🔀 Mapping des répertoires",
         "migration" : {

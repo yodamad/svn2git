@@ -6,7 +6,7 @@ import { IMigration, Migration, MigrationRenaming } from 'app/shared/model/migra
 import { IMapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
-import { ARTIFACTORY_URL, GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
+import { ARTIFACTORY_URL, GITLAB_URL, NEXUS_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
 import { MatCheckboxChange, MatDialog, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
@@ -70,6 +70,7 @@ export class MigrationStepperComponent implements OnInit {
     gitlabCredsOption: string;
     renamings: MigrationRenaming[] = [];
     artifactoryUrl: string;
+    nexusUrl: string;
 
     // Cleaning Section
     preserveEmptyDirs = false;
@@ -165,6 +166,7 @@ export class MigrationStepperComponent implements OnInit {
         this.svnUrl = localStorage.getItem(SVN_URL);
         this.svnDepth = Number(localStorage.getItem(SVN_DEPTH));
         this.artifactoryUrl = localStorage.getItem(ARTIFACTORY_URL);
+        this.nexusUrl = localStorage.getItem(NEXUS_URL);
 
         this.gitlabFormGroup = this._formBuilder.group({
             gitlabUser: ['', Validators.required],

@@ -11,8 +11,7 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum.DONE
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum.DONE_WITH_WARNINGS
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
-import fr.yodamad.svn2git.domain.enumeration.StepEnum.UPLOAD_TO_ARTIFACTORY
-import fr.yodamad.svn2git.domain.enumeration.StepEnum.UPLOAD_TO_GITLAB
+import fr.yodamad.svn2git.domain.enumeration.StepEnum.*
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
 import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.io.Shell
@@ -211,7 +210,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 var globalStatus = true
                 Files.newDirectoryStream(workingPath, pathFilter).use { dirStream ->
                     for (p in dirStream) {
-                        val status = uploadFile(
+                        val status = uploadFileToGitlab(
                             workUnit.migration.gitlabUrl,
                             if (workUnit.migration.gitlabToken != null) workUnit.migration.gitlabToken else applicationProperties.gitlab.token,
                             workUnit.migration.gitlabProjectId,
@@ -241,6 +240,30 @@ open class Cleaner(val historyMgr: HistoryManager,
                     }
                 }
                 historyMgr.endStep(history, DONE)
+            }
+
+            // Upload to Nexus
+            if (applicationProperties.nexus.enabled && workUnit.migration.uploadType == "nexus") {
+                val history = historyMgr.startStep(workUnit.migration, UPLOAD_TO_NEXUS, svnLocation)
+                var globalStatus = true
+                Files.newDirectoryStream(workingPath, pathFilter).use { dirStream ->
+                    for (p in dirStream) {
+                        val status = uploadFileToNexus(
+                            applicationProperties.nexus.url,
+                            applicationProperties.nexus.repository,
+                            applicationProperties.nexus.user,
+                            applicationProperties.nexus.password,
+                            workUnit.migration.gitlabGroup,
+                            if (workUnit.migration.gitlabProject.isEmpty()) workUnit.migration.svnGroup else workUnit.migration.gitlabProject,
+                            extractVersion(svnLocation),
+                            p.fileName.toString(),
+                            p.toString()
+                        )
+                        println("Upload of $p is $status")
+                        globalStatus = globalStatus && (status == 201)
+                    }
+                }
+                historyMgr.endStep(history, if (globalStatus) DONE else DONE_WITH_WARNINGS)
             }
         }
     }

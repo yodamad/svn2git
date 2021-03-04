@@ -17,6 +17,7 @@ public class ApplicationProperties {
     public Svn svn = new Svn();
     public Gitlab gitlab = new Gitlab();
     public Artifactory artifactory = new Artifactory();
+    public Nexus nexus = new Nexus();
     public Password password = new Password();
     public Override override = new Override();
     public Flags flags = new Flags();
@@ -44,6 +45,10 @@ public class ApplicationProperties {
     public void setArtifactory(Artifactory artifactory) {
         this.artifactory = artifactory;
     }
+
+    public Nexus getNexus() { return nexus; }
+
+    public void setNexus(Nexus nexus) { this.nexus = nexus; }
 
     public Gitlab getGitlab() {
         return gitlab;
@@ -380,6 +385,34 @@ public class ApplicationProperties {
         public String getAccessToken() {return accessToken;}
 
         public void setAccessToken(String accessToken) {this.accessToken = accessToken;}
+    }
+
+    public static class Nexus {
+        private String url;
+        private String user;
+        private String password;
+        private String repository;
+        private Boolean enabled;
+
+        public String getUrl() { return url; }
+
+        public void setUrl(String url) { this.url = url; }
+
+        public String getUser() { return user; }
+
+        public void setUser(String user) { this.user = user; }
+
+        public String getPassword() { return password; }
+
+        public void setPassword(String password) { this.password = password; }
+
+        public String getRepository() { return repository; }
+
+        public void setRepository(String repository) { this.repository = repository; }
+
+        public Boolean getEnabled() { return enabled; }
+
+        public void setEnabled(Boolean enabled) { this.enabled = enabled; }
     }
 
     public static class Password {

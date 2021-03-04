@@ -87,6 +87,10 @@
             "artifactory": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> in a <a href=\"https://www.jfrog.com/confluence/display/JFROG/Repository+Management#RepositoryManagement-GenericRepositories\" target=\"_blank\">🔗 Generic Registry</a> au sein du project créé",
             "gitlab": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> dans un <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">Generic Registry</a> au sein du project créé",
             "nexus": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> in a <a href=\"https://help.sonatype.com/repomanager3/formats/raw-repositories\" target=\"_blank\">🔗 Raw Repository</a> au sein du project créé",
+            "nothing": {
+                "extension": "⚠️ Aucune extension définie à nettoyer, rien à uploader ⚠️",
+                "tag": "⚠️ Aucun tag sélectionné, rien à uploader ⚠️"
+            },
             "from": "🗺 From SVN locations :",
             "branches": "🤷 Branches <i>(not supported yet)</i>",
             "tags": "👌 Tags",

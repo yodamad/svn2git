@@ -920,4 +920,16 @@ export class MigrationStepperComponent implements OnInit {
     fileSizeUnit(value) {
         this.fileUnit = value.value;
     }
+
+    warningUploadTag() {
+        return (
+            (this.historyFormGroup.controls['tagsToMigrate'] === undefined ||
+                this.historyFormGroup.controls['tagsToMigrate'].value === '') &&
+            !this.historySelection.selected.includes('tags')
+        );
+    }
+
+    warningUploadExtension() {
+        return this.staticExtensions.length == 0;
+    }
 }

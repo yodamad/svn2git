@@ -540,6 +540,14 @@
         </div>
         <mat-divider style="margin-bottom: 10px; margin-top: 10px"></mat-divider>
         <div>
+            <div class="row pl-5" *ngIf="historyFormGroup.controls['tagsToMigrate'] === undefined || historyFormGroup.controls['tagsToMigrate'].value === ''">
+                <span jhiTranslate="migration-process.import.nothing.tag"></span>
+            </div>
+            <div class="row pl-5" *ngIf="staticExtensions.length == 0">
+                <span jhiTranslate="migration-process.import.nothing.extension"></span>
+            </div>
+        </div>
+        <div>
             <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
             <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
         </div>
@@ -581,6 +589,14 @@
         </div>
         <mat-divider style="margin-bottom: 10px; margin-top: 10px"></mat-divider>
         <div>
+            <div class="row pl-5" *ngIf="historyFormGroup.controls['tagsToMigrate'] === undefined || historyFormGroup.controls['tagsToMigrate'].value === ''">
+                <span jhiTranslate="migration-process.import.nothing.tag"></span>
+            </div>
+            <div class="row pl-5" *ngIf="staticExtensions.length == 0">
+                <span jhiTranslate="migration-process.import.nothing.extension"></span>
+            </div>
+        </div>
+        <div>
             <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
             <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
         </div>
@@ -621,6 +637,15 @@
             </div>
         </div>
         <mat-divider style="margin-bottom: 10px; margin-top: 10px"></mat-divider>
+        <div>
+            <div class="row pl-5" *ngIf="warningUploadTag()">
+                <span jhiTranslate="migration-process.import.nothing.tag"></span>
+            </div>
+            <div class="row pl-5" *ngIf="warningUploadExtension()">
+                <span jhiTranslate="migration-process.import.nothing.extension"></span>
+            </div>
+        </div>
+        <mat-divider style="margin-bottom: 10px; margin-top: 10px" *ngIf="warningUploadTag() || warningUploadExtension()"></mat-divider>
         <div>
             <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
             <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>

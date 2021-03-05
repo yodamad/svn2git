@@ -65,6 +65,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private String gitlabProject;
 
+    @Column(name = "gitlab_project_id")
+    @JsonView(View.Public.class)
+    private Integer gitlabProjectId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     @JsonView(View.Public.class)
@@ -137,6 +141,10 @@ public class Migration implements Serializable {
     @Column(name = "working_directory")
     @JsonView(View.Public.class)
     private String workingDirectory;
+
+    @Column(name = "upload_type")
+    @JsonView(View.Public.class)
+    private String uploadType;
 
     @OneToMany(mappedBy = "migration")
     @OrderBy("id ASC")
@@ -229,6 +237,19 @@ public class Migration implements Serializable {
 
     public void setGitlabProject(String gitlabProject) {
         this.gitlabProject = gitlabProject;
+    }
+
+    public Integer getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public Migration gitlabProjectId(Integer gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+        return this;
+    }
+
+    public void setGitlabProjectId(Integer gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 
     public StatusEnum getStatus() {
@@ -504,6 +525,11 @@ public class Migration implements Serializable {
     public void setFlat(Boolean flat) {
         this.flat = flat;
     }
+
+    public String getUploadType() { return uploadType; }
+
+    public void setUploadType(String uploadType) { this.uploadType = uploadType; }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
     @Override

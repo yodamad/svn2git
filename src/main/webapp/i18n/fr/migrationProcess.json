@@ -1,11 +1,14 @@
 {
     "migration-process" : {
+        "artifactory": {
+            "upload" : "🐸 Upload fichiers"
+        },
         "back" : " Retour",
         "blocked": "Certains namespaces ne sont pas disponibles. Corriger pour continuer",
         "check" : "Vérifier",
         "checking" : "En cours",
         "cleaning" : {
-            "options" : "Nettoyage",
+            "options" : "🧹 Nettoyage",
             "preserve-empty-dirs" : "Oui",
             "not-preserve-empty-dirs" : "Non",
             "empty-folder-config" : "Repertoires vides migrés",
@@ -33,7 +36,7 @@
             "available": "Namespace disponible",
             "configuration": "Configuration de Gitlab",
             "check" : {
-                "account" : "Vérifier votre compte Gitlab",
+                "account" : "🦊 Vérifier votre compte Gitlab",
                 "group" : "Vérifier votre groupe Gitlab",
                 "running": "Vérification du namespace"
             },
@@ -53,6 +56,7 @@
             "url-custom": "Personnalisé",
             "credentials": "Identifiants",
             "rename": "Nouveau nom du projet dans Gitlab",
+            "upload": "🦊 Upload fichiers",
             "use" : {
                 "default" : "URL par défaut et utilisateur"
             },
@@ -65,7 +69,7 @@
             "trunk-only" : "Trunk seulement",
             "no" : "Rien",
             "option" : "Choix de conservation de l'historique",
-            "options" : "Options d'historique",
+            "options" : "🦕 Options d'historique",
             "branch-for-master": "Branche master (optionnel)",
             "branch-for-master-placeholder": "Branche",
             "branch-for-master-help": "Branche à utiliser comme master si différente de trunk",
@@ -79,9 +83,28 @@
             "no-migrate-individual-commits" : "L'historique des commits n'est pas migré"
         },
         "home" : "Accueil",
+        "import": {
+            "artifactory": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> in a <a href=\"https://www.jfrog.com/confluence/display/JFROG/Repository+Management#RepositoryManagement-GenericRepositories\" target=\"_blank\">🔗 Generic Registry</a> au sein du project créé",
+            "gitlab": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> dans un <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">Generic Registry</a> au sein du project créé",
+            "nexus": "Les fichiers identifiés seront uploadés sur <b>{{url}}</b> in a <a href=\"https://help.sonatype.com/repomanager3/formats/raw-repositories\" target=\"_blank\">🔗 Raw Repository</a> au sein du project créé",
+            "nothing": {
+                "extension": "⚠️ Aucune extension définie à nettoyer, rien à uploader ⚠️",
+                "tag": "⚠️ Aucun tag sélectionné, rien à uploader ⚠️"
+            },
+            "from": "🗺 From SVN locations :",
+            "branches": "🤷 Branches <i>(not supported yet)</i>",
+            "tags": "👌 Tags",
+            "trunk": "🤷 Trunk <i>(not supported yet)</i>",
+            "files": "🗂 Extensions that will be imported :",
+            "version": "To be able to import artefact in registry, a version is needed. It will be extracted from tag's name if possible otherwise will be <i><b>0.0.0</b></i> by default",
+            "version.sample": "For instance : <i><b>Release_1.0.3</b></i> will be <i><b>1.0.3</b></i>. Or <i><b>v1.2_20210229</b></i> will be <i><b>1.2.0</b></i>"
+        },
         "info" : "Infos",
+        "nexus": {
+            "upload" : "📦 Upload fichiers"
+        },
         "no-events" : "Chargement, merci de patienter...",
-        "mapping": "Mapping",
+        "mapping": "🔀 Mapping des répertoires",
         "migration" : {
             "planned" : "Migration planifiée",
             "start" : "Démarrer la migration",
@@ -92,7 +115,7 @@
         "only" : "Seulement",
         "pattern" : "Pattern",
         "projects": "Projets à migrer",
-        "ready": "Prêt ?",
+        "ready": "🏁 Prêt ?",
         "regex" : "Regex",
         "summary" : "Résumé de la migration",
         "details" : "Détails de la migration",
@@ -102,7 +125,7 @@
         "mapping-help": "Mappings are applied ONLY if there are no conflicts. When the migration is complete, please check that mappings have been applied and resolve conflicts where necessary. e.g. 2 files with same name in one folder.",
         "svn" : {
             "check" : {
-                "repository" : "Vérifier votre repo SVN"
+                "repository" : "🚇 Vérifier votre repo SVN"
             },
             "configuration": "Configuration de subversion",
             "contains-flat": "* Les répertoires sans trunk ne contiendront qu'une branche master, pas concernés par certaines options",

@@ -127,7 +127,13 @@ application:
         # Attention any folder called this will be deleted wherever it is. Leave blank if not used. Done before Mappings (unfortunately)
         # Can be comma separated list
         deleteFolderWithBFG:
-        uploadPauseMilliSeconds: 5000
+        uploadPauseMilliSeconds: 1000
+    nexus:
+        enabled: false
+        url: http://localhost:8081/nexus
+        repository: raw-repo
+        user: admin
+        password: TO_REPLACE
     gitlab:
         url: http://localhost/
         account: root
@@ -142,6 +148,7 @@ application:
         #        dynamic-local-config[5]: core.packedGitWindowSize 128m,Limiting packedGitWindowSize to 128m
         gitPushPauseMilliSeconds: 5000
         gitMvPauseMilliSeconds: 500
+        uploadToRegistry: false
     svn:
         url: svn://localhost/
         user:

@@ -6,7 +6,7 @@ import { IMigration, Migration, MigrationRenaming } from 'app/shared/model/migra
 import { IMapping } from 'app/shared/model/mapping.model';
 import { SelectionModel } from '@angular/cdk/collections';
 import { StaticMappingService } from 'app/entities/static-mapping';
-import { GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
+import { ARTIFACTORY_URL, GITLAB_URL, NEXUS_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
 import { MatCheckboxChange, MatDialog, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { JhiAddMappingModalComponent } from 'app/migration/add-mapping.component';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
@@ -16,7 +16,7 @@ import { Extension } from 'app/shared/model/static-extension.model';
 import { StaticExtensionService } from 'app/entities/static-extension';
 import { ConfigurationService } from 'app/shared/service/configuration-service';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 export const REQUIRED = 'required';
 
@@ -69,6 +69,8 @@ export class MigrationStepperComponent implements OnInit {
     gitlabUrl: string;
     gitlabCredsOption: string;
     renamings: MigrationRenaming[] = [];
+    artifactoryUrl: string;
+    nexusUrl: string;
 
     // Cleaning Section
     preserveEmptyDirs = false;
@@ -103,6 +105,14 @@ export class MigrationStepperComponent implements OnInit {
     // Flag : Allow application to automatically make non existing Group
     isGitlabGroupCreation = false;
 
+    // Steps enablement
+    stepGitlab;
+    stepSvn;
+    stepHistory;
+    stepCleaning;
+    stepMapping;
+    stepUpload;
+
     constructor(
         private _formBuilder: FormBuilder,
         private _migrationProcessService: MigrationProcessService,
@@ -114,13 +124,24 @@ export class MigrationStepperComponent implements OnInit {
         private _translationService: TranslateService,
         private _extensionsService: StaticExtensionService,
         private _configurationService: ConfigurationService,
-        private _router: Router
+        private _router: Router,
+        private _route: ActivatedRoute
     ) {
         // Init snack bar configuration
         this.snackBarConfig.panelClass = ['errorPanel'];
         this.snackBarConfig.duration = 5000;
         this.snackBarConfig.verticalPosition = 'top';
         this.snackBarConfig.horizontalPosition = 'center';
+        this._route.queryParams.subscribe(qp => {
+            this.stepGitlab = Boolean(JSON.parse(qp['gitlabEnabled']));
+            this.stepSvn = Boolean(JSON.parse(qp['svnEnabled']));
+            this.stepHistory = Boolean(JSON.parse(qp['historyEnabled']));
+            this.stepMapping = Boolean(JSON.parse(qp['mappingEnabled']));
+            this.stepCleaning = Boolean(JSON.parse(qp['cleaningEnabled']));
+            if (Boolean(JSON.parse(qp['uploadEnabled']))) {
+                this.stepUpload = qp['registry'];
+            }
+        });
     }
 
     ngOnInit() {
@@ -144,6 +165,8 @@ export class MigrationStepperComponent implements OnInit {
         this.gitlabUrl = localStorage.getItem(GITLAB_URL);
         this.svnUrl = localStorage.getItem(SVN_URL);
         this.svnDepth = Number(localStorage.getItem(SVN_DEPTH));
+        this.artifactoryUrl = localStorage.getItem(ARTIFACTORY_URL);
+        this.nexusUrl = localStorage.getItem(NEXUS_URL);
 
         this.gitlabFormGroup = this._formBuilder.group({
             gitlabUser: ['', Validators.required],
@@ -407,7 +430,11 @@ export class MigrationStepperComponent implements OnInit {
      * Create migration information from steps
      * @param project
      */
-    initMigration(project: string): IMigration {
+    initMigration(project: string, lastStep = true): IMigration {
+        if (!lastStep && this.stepUpload) {
+            return;
+        }
+
         if (project === null) {
             if (this.useSvnRootFolder || (this.svnDirectories && this.svnDirectories.root)) {
                 project = this.svnFormGroup.controls['svnRepository'].value;
@@ -550,11 +577,14 @@ export class MigrationStepperComponent implements OnInit {
         } else {
             this.mig.preserveEmptyDirs = false;
         }
-        if (this.extensionSelection !== undefined && !this.extensionSelection.isEmpty()) {
+        if (this.staticExtensions !== undefined && this.staticExtensions.length > 0) {
             const values: string[] = [];
-            this.extensionSelection.selected.forEach(ext => values.push(ext.value));
+            this.staticExtensions.forEach(ext => values.push(ext.value));
             this.mig.forbiddenFileExtensions = values.toString();
         }
+
+        // Upload
+        this.mig.uploadType = this.stepUpload;
 
         return this.mig;
     }
@@ -782,21 +812,15 @@ export class MigrationStepperComponent implements OnInit {
         event.checked && !this.svnDirectories.root ? (this.flatRepos = 1) : (this.flatRepos = 0);
     }
 
-    /**
-     * Toggle extension directory selection change
-     * @param event
-     * @param extension
-     */
-    extensionToggle(event: MatCheckboxChange, extension: Extension) {
-        if (event) {
-            return this.extensionSelection.toggle(extension);
-        }
-        return null;
-    }
-
     /** If loaded extensions are the default ones **/
     isDefaultExtensions(): boolean {
         return !this.staticExtensions.filter((extension: Extension) => extension.name === this.svnFormGroup.value['svnRepository']).length;
+    }
+
+    removeExtension(extension: Extension) {
+        const copy = this.staticExtensions;
+        this.staticExtensions = [];
+        copy.filter(e => e.value !== extension.value).forEach(e => this.staticExtensions.push(e));
     }
 
     /** Add a custom extension. */
@@ -808,7 +832,7 @@ export class MigrationStepperComponent implements OnInit {
                 isStatic: false
             };
             this.staticExtensions = this.staticExtensions.concat([newExtension]);
-            this.extensionSelection.select(newExtension);
+            // this.extensionSelection.toggle(newExtension);
         }
         this.addExtentionFormControl.reset();
     }
@@ -895,5 +919,17 @@ export class MigrationStepperComponent implements OnInit {
      */
     fileSizeUnit(value) {
         this.fileUnit = value.value;
+    }
+
+    warningUploadTag() {
+        return (
+            (this.historyFormGroup.controls['tagsToMigrate'] === undefined ||
+                this.historyFormGroup.controls['tagsToMigrate'].value === '') &&
+            !this.historySelection.selected.includes('tags')
+        );
+    }
+
+    warningUploadExtension() {
+        return this.staticExtensions.length == 0;
     }
 }

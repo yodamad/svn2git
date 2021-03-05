@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { SERVER_API_URL } from 'app/app.constants';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GITLAB_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
+import { ARTIFACTORY_URL, GITLAB_URL, NEXUS_URL, SVN_DEPTH, SVN_URL } from 'app/shared/constants/config.constants';
 
 /**
  * Retrieve some configuration elements from backend
@@ -21,6 +21,8 @@ export class ConfigurationService {
     private extensionsUrl = this.overrideUrl + 'extensions';
     private mappingsUrl = this.overrideUrl + 'mappings';
     private flagsUrl = this.resourceUrl + 'flags';
+    private artifactoryUrl = this.resourceUrl + 'artifactory';
+    private nexusUrl = this.resourceUrl + 'nexus';
 
     constructor(private http: HttpClient) {}
 
@@ -89,11 +91,27 @@ export class ConfigurationService {
     }
 
     /**
+     * @return configured artifactory url
+     */
+    artifactory(): Observable<string> {
+        return this.http.get(`${this.artifactoryUrl}`, { responseType: 'text' }).pipe(map(res => res));
+    }
+
+    /**
+     * @return configured nexus url
+     */
+    nexus(): Observable<string> {
+        return this.http.get(`${this.nexusUrl}`, { responseType: 'text' }).pipe(map(res => res));
+    }
+
+    /**
      * Init static configuration
      */
     init() {
         this.gitlab().subscribe(res => localStorage.setItem(GITLAB_URL, res));
         this.svn().subscribe(res => localStorage.setItem(SVN_URL, res));
         this.svnDepthOption().subscribe(res => localStorage.setItem(SVN_DEPTH, res));
+        this.artifactory().subscribe(res => localStorage.setItem(ARTIFACTORY_URL, res));
+        this.nexus().subscribe(res => localStorage.setItem(NEXUS_URL, res));
     }
 }

@@ -1,6 +1,6 @@
 <mat-horizontal-stepper [linear]="true" #stepper>
     <!-- Check Gitlab account step -->
-    <mat-step [stepControl]="gitlabFormGroup">
+    <mat-step [stepControl]="gitlabFormGroup" *ngIf="stepGitlab">
         <form [formGroup]="gitlabFormGroup">
             <ng-template matStepLabel matStepperIcon="edit"><span jhiTranslate="migration-process.gitlab.check.account">Check your Gitlab account</span></ng-template>
             <div class="row">
@@ -119,7 +119,7 @@
     </mat-step>
 
     <!-- Check svn repository step -->
-    <mat-step [stepControl]="svnFormGroup">
+    <mat-step [stepControl]="svnFormGroup" *ngIf="stepSvn">
         <form [formGroup]="svnFormGroup">
             <ng-template matStepLabel><span jhiTranslate="migration-process.svn.check.repository">Check your SVN repository</span></ng-template>
                 <div class="row">
@@ -273,7 +273,7 @@
     </mat-step>
 
     <!-- History step -->
-    <mat-step [stepControl]="historyFormGroup">
+    <mat-step [stepControl]="historyFormGroup" *ngIf="stepHistory">
         <ng-template matStepLabel><span jhiTranslate="migration-process.history.options">History options</span></ng-template>
         <div class="row">
             <div class="offset-md-1 col-md-11 p-4">
@@ -367,14 +367,14 @@
             <button mat-stroked-button matStepperPrevious>
                 <i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span>
             </button>
-            <button mat-stroked-button matStepperNext [disabled]="getSvnRepoKo()">
+            <button mat-stroked-button matStepperNext [disabled]="getSvnRepoKo()" (click)="initMigration(null, false)">
                 <i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span>
             </button>
         </div>
     </mat-step>
 
     <!-- Mapping options step -->
-    <mat-step [stepControl]="mappingFormGroup">
+    <mat-step [stepControl]="mappingFormGroup" *ngIf="stepMapping">
         <ng-template matStepLabel><span jhiTranslate="migration-process.mapping">Mapping</span></ng-template>
         <form [formGroup]="mappingFormGroup">
             <div class="row">
@@ -398,14 +398,14 @@
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext (click)="initMigration(null, false)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
                 <fa-icon icon="info-circle" class="pl-2" matTooltip="{{'migration-process.mapping-help' | translate}}"></fa-icon>
             </div>
         </form>
     </mat-step>
 
     <!-- Cleaning options step -->
-    <mat-step [stepControl]="cleaningFormGroup">
+    <mat-step [stepControl]="cleaningFormGroup" *ngIf="stepCleaning">
         <ng-template matStepLabel><span jhiTranslate="migration-process.cleaning.options">Cleaning options</span></ng-template>
 
         <form [formGroup]="cleaningFormGroup">
@@ -466,12 +466,8 @@
                                     <div class="col-8">
                                         {{ extension.description !== null ? extension.description : extension.value }}
                                     </div>
-                                    <div class="col-4">
-                                        <mat-checkbox (click)="$event.stopPropagation()"
-                                                      (change)="extensionToggle($event, extension)"
-                                                      [checked]="extensionSelection.isSelected(extension)"
-                                                      [disabled]="extension.isStatic && !overrideStaticExtensions" >
-                                        </mat-checkbox>
+                                    <div class="col-4" *ngIf="!extension.isStatic">
+                                        <fa-icon icon="trash-alt" (click)="removeExtension(extension)">
                                     </div>
                                 </div>
                             </td>
@@ -503,9 +499,157 @@
             <mat-divider style="margin-bottom: 10px"></mat-divider>
             <div>
                 <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
-                <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+                <button mat-stroked-button matStepperNext (click)="initMigration(null, false)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
             </div>
         </form>
+    </mat-step>
+
+    <!-- Gitlab upload -->
+    <mat-step *ngIf="stepUpload == 'gitlab'">
+        <ng-template matStepLabel><span jhiTranslate="migration-process.gitlab.upload">🦊</span></ng-template>
+
+        <div class="pl-5">
+            <div class="row">
+                <fa-icon icon="info-circle"></fa-icon>
+                <span jhiTranslate="migration-process.import.gitlab" [translateValues]="{url: gitlabUrl}" class="pl-2"></span>
+            </div>
+            <br/>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.from">🧐</span>
+            </div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true"><span jhiTranslate="migration-process.import.trunk"></span></mat-checkbox></div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true"><span jhiTranslate="migration-process.import.branches"></span></mat-checkbox></div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true" [checked]="true"><span jhiTranslate="migration-process.import.tags"></span></mat-checkbox></div>
+            <br/>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.files">🗂</span>
+            </div>
+            <div class="row" *ngFor="let extension of staticExtensions">
+                <mat-checkbox [disabled]="true" [checked]="true" class="pl-2">
+                    <span>{{extension.value}}</span>
+                </mat-checkbox>
+            </div>
+            <br/>
+            <div class="row">
+                <fa-icon icon="info-circle"></fa-icon>
+                <span jhiTranslate="migration-process.import.version" class="pl-2">🪱</span>
+            </div>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.version.sample" class="pl-4">🪱</span>
+            </div>
+        </div>
+        <mat-divider style="margin-bottom: 10px; margin-top: 10px"></mat-divider>
+        <div>
+            <div class="row pl-5" *ngIf="historyFormGroup.controls['tagsToMigrate'] === undefined || historyFormGroup.controls['tagsToMigrate'].value === ''">
+                <span jhiTranslate="migration-process.import.nothing.tag"></span>
+            </div>
+            <div class="row pl-5" *ngIf="staticExtensions.length == 0">
+                <span jhiTranslate="migration-process.import.nothing.extension"></span>
+            </div>
+        </div>
+        <div>
+            <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+            <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+        </div>
+    </mat-step>
+
+    <!-- Artifactory upload -->
+    <mat-step *ngIf="stepUpload == 'artifactory'">
+        <ng-template matStepLabel><span jhiTranslate="migration-process.artifactory.upload">🐸</span></ng-template>
+
+        <div class="pl-5">
+            <div class="row">
+                <fa-icon icon="info-circle"></fa-icon>
+                <span jhiTranslate="migration-process.import.artifactory" [translateValues]="{url: artifactoryUrl}" class="pl-2"></span>
+            </div>
+            <br/>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.from">🧐</span>
+            </div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true"><span jhiTranslate="migration-process.import.trunk"></span></mat-checkbox></div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true"><span jhiTranslate="migration-process.import.branches"></span></mat-checkbox></div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true" [checked]="true"><span jhiTranslate="migration-process.import.tags"></span></mat-checkbox></div>
+            <br/>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.files">🗂</span>
+            </div>
+            <div class="row" *ngFor="let extension of staticExtensions">
+                <mat-checkbox [disabled]="true" [checked]="true" class="pl-2">
+                    <span>{{extension.value}}</span>
+                </mat-checkbox>
+            </div>
+            <br/>
+            <div class="row">
+                <fa-icon icon="info-circle"></fa-icon>
+                <span jhiTranslate="migration-process.import.version" class="pl-2">🪱</span>
+            </div>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.version.sample" class="pl-4">🪱</span>
+            </div>
+        </div>
+        <mat-divider style="margin-bottom: 10px; margin-top: 10px"></mat-divider>
+        <div>
+            <div class="row pl-5" *ngIf="historyFormGroup.controls['tagsToMigrate'] === undefined || historyFormGroup.controls['tagsToMigrate'].value === ''">
+                <span jhiTranslate="migration-process.import.nothing.tag"></span>
+            </div>
+            <div class="row pl-5" *ngIf="staticExtensions.length == 0">
+                <span jhiTranslate="migration-process.import.nothing.extension"></span>
+            </div>
+        </div>
+        <div>
+            <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+            <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+        </div>
+    </mat-step>
+
+    <!-- Nexus upload -->
+    <mat-step *ngIf="stepUpload == 'nexus'">
+        <ng-template matStepLabel><span jhiTranslate="migration-process.nexus.upload">📦</span></ng-template>
+
+        <div class="pl-5">
+            <div class="row">
+                <fa-icon icon="info-circle"></fa-icon>
+                <span jhiTranslate="migration-process.import.nexus" [translateValues]="{url: nexusUrl}" class="pl-2"></span>
+            </div>
+            <br/>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.from">🧐</span>
+            </div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true"><span jhiTranslate="migration-process.import.trunk"></span></mat-checkbox></div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true"><span jhiTranslate="migration-process.import.branches"></span></mat-checkbox></div>
+            <div class="row pl-2"><mat-checkbox [disabled]="true" [checked]="true"><span jhiTranslate="migration-process.import.tags"></span></mat-checkbox></div>
+            <br/>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.files">🗂</span>
+            </div>
+            <div class="row" *ngFor="let extension of staticExtensions">
+                <mat-checkbox [disabled]="true" [checked]="true" class="pl-2">
+                    <span>{{extension.value}}</span>
+                </mat-checkbox>
+            </div>
+            <br/>
+            <div class="row">
+                <fa-icon icon="info-circle"></fa-icon>
+                <span jhiTranslate="migration-process.import.version" class="pl-2">🪱</span>
+            </div>
+            <div class="row">
+                <span jhiTranslate="migration-process.import.version.sample" class="pl-4">🪱</span>
+            </div>
+        </div>
+        <mat-divider style="margin-bottom: 10px; margin-top: 10px"></mat-divider>
+        <div>
+            <div class="row pl-5" *ngIf="warningUploadTag()">
+                <span jhiTranslate="migration-process.import.nothing.tag"></span>
+            </div>
+            <div class="row pl-5" *ngIf="warningUploadExtension()">
+                <span jhiTranslate="migration-process.import.nothing.extension"></span>
+            </div>
+        </div>
+        <mat-divider style="margin-bottom: 10px; margin-top: 10px" *ngIf="warningUploadTag() || warningUploadExtension()"></mat-divider>
+        <div>
+            <button mat-stroked-button matStepperPrevious><i class="material-icons">navigate_before</i> <span jhiTranslate="migration-process.back">Back</span></button>
+            <button mat-stroked-button matStepperNext (click)="initMigration(null)"><i class="material-icons">navigate_next</i><span jhiTranslate="migration-process.next">Next</span></button>
+        </div>
     </mat-step>
 
     <!-- Summary step -->

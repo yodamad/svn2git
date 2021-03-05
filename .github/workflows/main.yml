@@ -1,0 +1,46 @@
+name: svn2git CI
+on: [push, pull_request]
+jobs:
+    pipeline:
+        name:  pipeline
+        runs-on: ubuntu-latest
+        if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.pull_request.title, '[skip ci]') && !contains(github.event.pull_request.title, '[ci skip]')"
+        timeout-minutes: 40
+        env:
+            NODE_VERSION: 12.16.1
+            SPRING_OUTPUT_ANSI_ENABLED: DETECT
+            SPRING_JPA_SHOW_SQL: false
+            JHI_DISABLE_WEBPACK_LOGS: true
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: 12.16.1
+            - uses: actions/setup-java@v1
+              with:
+                  java-version: '11.x'
+            - name: 🪦 Install node.js packages
+              run: npm install
+            - name: Update platform
+              run: sudo apt-get update
+            - name: Install git-svn
+              run: sudo apt-get install git-svn
+            - name: 🔍 Analyze code with SonarQube
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                  JASYPT_PWD: ${{ secrets.JASYPT_PWD }}
+              run: |
+                  if [ -n $SONAR_TOKEN ]; then
+                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack -Djasypt.encryptor.password=$JASYPT_PWD
+                  else
+                      echo No SONAR_TOKEN, skipping...
+                  fi
+            - name: 📦 Package application
+              run: ./mvnw -ntp package -Pprod -DskipTests
+            - name: 🐳 Build and publish docker image
+              if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+              run: |
+                  GIT_TAG=:${GITHUB_REF#refs/tags/}
+                  DOCKER_TAG=${GIT_TAG#:refs/heads/main}
+                  ./mvnw -ntp jib:build -Djib.to.image=yodamad/svn2git:latest -Djib.to.auth.username="${{ secrets.DOCKERHUB_LOGIN }}" -Djib.to.auth.password="${{ secrets.DOCKERHUB_PWD }}"

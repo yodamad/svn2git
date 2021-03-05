@@ -1,11 +1,14 @@
 {
     "migration-process" : {
+        "artifactory": {
+            "upload" : "🐸 Upload artefacts"
+        },
         "back" : " Back",
         "blocked": "Some namespaces aren't available. Fix before starting migration",
         "check" : "Check",
         "checking" : "Checking",
         "cleaning" : {
-            "options" : "Cleaning options",
+            "options" : "🧹 Cleaning options",
             "preserve-empty-dirs" : "Yes",
             "not-preserve-empty-dirs" : "No",
             "empty-folder-config" : "Empty folders migrated",
@@ -33,7 +36,7 @@
             "available": "Namespace is available",
             "configuration": "Gitlab configuration",
             "check" : {
-                "account" : "Check your Gitlab account",
+                "account" : "🦊 Check your Gitlab account",
                 "group" : "Check your Gitlab group",
                 "running": "Checking namespace"
             },
@@ -53,6 +56,7 @@
             "url-custom": "Custom",
             "credentials": "Credentials",
             "rename": "New name for project in Gitlab",
+            "upload": "🦊 Upload artefacts",
             "use" : {
                 "default" : "Use default URL and user"
             },
@@ -65,7 +69,7 @@
             "trunk-only" : "Trunk only",
             "no" : "Nothing",
             "option" : "History option",
-            "options" : "History options",
+            "options" : "🦕 History options",
             "branch-for-master": "Master branch (optional)",
             "branch-for-master-placeholder": "Branch",
             "branch-for-master-help": "Branch to use for master if not trunk",
@@ -79,9 +83,28 @@
             "no-migrate-individual-commits" : "All commits are not migrated"
         },
         "home" : "Home",
+        "import": {
+            "artifactory": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://www.jfrog.com/confluence/display/JFROG/Repository+Management#RepositoryManagement-GenericRepositories\" target=\"_blank\">🔗 Generic Registry</a>, within created project",
+            "gitlab": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://docs.gitlab.com/ee/user/packages/generic_packages/index.html\" target=\"_blank\">🔗 Generic Registry</a>, within created project",
+            "nexus": "Files identified will be upload to <b>{{url}}</b> in a <a href=\"https://help.sonatype.com/repomanager3/formats/raw-repositories\" target=\"_blank\">🔗 Raw Repository</a>, within created project",
+            "nothing": {
+                "extension": "⚠️ No extension specified to clean, nothing will be upload ⚠️",
+                "tag": "⚠️ No tag selected to migrate, nothing will be upload ⚠️"
+            },
+            "from": "🗺 From SVN locations :",
+            "branches": "🤷 Branches <i>(not supported yet)</i>",
+            "tags": "👌 Tags",
+            "trunk": "🤷 Trunk <i>(not supported yet)</i>",
+            "files": "🗂 Extensions that will be imported :",
+            "version": "To be able to import artefact in registry, a version is needed. It will be extracted from tag's name if possible otherwise will be <i><b>0.0.0</b></i> by default",
+            "version.sample": "For instance : <i><b>Release_1.0.3</b></i> will be <i><b>1.0.3</b></i>. Or <i><b>v1.2_20210229</b></i> will be <i><b>1.2.0</b></i>"
+        },
         "info" : "Info",
+        "nexus": {
+            "upload" : "📦 Upload artefacts"
+        },
         "no-events" : "Loading, please wait...",
-        "mapping": "Mapping",
+        "mapping": "🔀 Directories Mapping",
         "mapping-help": "Mappings are applied ONLY if there are no conflicts. When the migration is complete, please check that mappings have been applied and resolve conflicts where necessary. e.g. 2 files with same name in one folder.",
         "migration" : {
             "planned" : "Migration planned",
@@ -93,7 +116,7 @@
         "only" : "only",
         "pattern" : "Pattern",
         "projects": "Projects to migrate",
-        "ready": "Ready?",
+        "ready": "🏁 Ready?",
         "regex" : "Regex",
         "summary" : "Migration summary",
         "details" : "Migration details",
@@ -102,7 +125,7 @@
         "summary-mapping" : "Configured mapping",
         "svn" : {
             "check" : {
-                "repository" : "Check your SVN repository"
+                "repository" : "🚇 Check your SVN repository"
             },
             "configuration": "Subversion configuration",
             "contains-flat": "* The flat repositories you selected will contain only a master branch, not concerned by all options",

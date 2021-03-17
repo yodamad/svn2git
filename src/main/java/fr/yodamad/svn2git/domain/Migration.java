@@ -146,6 +146,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private String uploadType;
 
+    @Column(name = "emptydirs")
+    @JsonView(View.Public.class)
+    private Boolean emptyDirs;
+
     @OneToMany(mappedBy = "migration")
     @OrderBy("id ASC")
     private Set<MigrationHistory> histories = new HashSet<>();
@@ -529,6 +533,10 @@ public class Migration implements Serializable {
     public String getUploadType() { return uploadType; }
 
     public void setUploadType(String uploadType) { this.uploadType = uploadType; }
+
+    public Boolean getEmptyDirs() { return emptyDirs; }
+
+    public void setEmptyDirs(Boolean emptyDirs) { this.emptyDirs = emptyDirs; }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

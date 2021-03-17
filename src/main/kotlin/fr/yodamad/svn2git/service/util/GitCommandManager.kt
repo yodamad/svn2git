@@ -47,7 +47,8 @@ open class GitCommandManager(val historyMgr: HistoryManager,
             setSvnElement("branches", workUnit.migration.branches, workUnit),
             setSvnElement("tags", workUnit.migration.tags, workUnit),
             ignorePaths, ignoreRefs,
-            if (applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else EMPTY,
+            if (workUnit.migration.emptyDirs) "--preserve-empty-dirs"
+            else if (workUnit.migration.emptyDirs == null && applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else EMPTY,
             if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else "${workUnit.migration.svnUrl}/",
             workUnit.migration.svnGroup)
 

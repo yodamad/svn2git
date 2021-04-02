@@ -148,7 +148,7 @@ public class Migration implements Serializable {
 
     @Column(name = "emptydirs")
     @JsonView(View.Public.class)
-    private Boolean emptyDirs;
+    private Boolean emptyDirs = false;
 
     @OneToMany(mappedBy = "migration")
     @OrderBy("id ASC")

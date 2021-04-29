@@ -101,7 +101,7 @@ open class GitManager(val historyMgr: HistoryManager,
             try {
                 execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
             } catch (thr: Throwable) {
-                LOG.warn("Cannot git svn fetch", thr.localizedMessage)
+                LOG.warn("Cannot git svn clone", thr.message)
                 cloneOK = false
                 var round = 0
                 var notOk = true
@@ -136,7 +136,7 @@ open class GitManager(val historyMgr: HistoryManager,
         }
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "Round $round : $fetchCommand")
         return try {
-            execCommand(workUnit.commandManager, workUnit.root, fetchCommand)
+            execCommand(workUnit.commandManager, workUnit.directory, fetchCommand)
             historyMgr.endStep(history, StatusEnum.DONE, null)
             false
         } catch (thr: Throwable) {

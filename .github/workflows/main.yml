@@ -45,7 +45,7 @@ jobs:
             - name: 📦 Package application
               run: ./mvnw -ntp package -Pprod -DskipTests
             - name: 🐳 Build and publish docker image
-              if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+              if: github.ref == 'refs/heads/master'
               run: |
                   GIT_TAG=:${GITHUB_REF#refs/tags/}
                   DOCKER_TAG=${GIT_TAG#:refs/heads/main}

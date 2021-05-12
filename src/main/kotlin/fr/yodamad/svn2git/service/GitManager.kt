@@ -107,6 +107,7 @@ open class GitManager(val historyMgr: HistoryManager,
                 var notOk = true
                 while (round++ < applicationProperties.svn.maxFetchAttempts && notOk) {
                     notOk = gitSvnFetch(workUnit, round)
+                    gitGC(workUnit, round)
                 }
             }
         }
@@ -121,19 +122,15 @@ open class GitManager(val historyMgr: HistoryManager,
      * Git svn fetch command to copy svn as git repository
      *
      * @param workUnit Current work unit
+     * @param round Round number
      * @return if fetch is in failure or not
      * @throws IOException
      * @throws InterruptedException
      */
     @Throws(IOException::class, InterruptedException::class)
     open fun gitSvnFetch(workUnit: WorkUnit, round: Int) : Boolean {
-        val fetchCommand = if (!isEmpty(workUnit.migration.svnPassword)) {
-            "git svn fetch -r HEAD"
-        } else if (!isEmpty(applicationProperties.svn.password)) {
-            "git svn fetch -r HEAD"
-        } else {
-            "git svn fetch"
-        }
+        val fetchCommand = "git svn fetch";
+
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "Round $round : $fetchCommand")
         return try {
             execCommand(workUnit.commandManager, workUnit.directory, fetchCommand)
@@ -141,6 +138,31 @@ open class GitManager(val historyMgr: HistoryManager,
             false
         } catch (thr: Throwable) {
             LOG.error("Cannot git svn fetch", thr.printStackTrace())
+            historyMgr.endStep(history, StatusEnum.FAILED, null)
+            true
+        }
+    }
+
+    /**
+     * Git gc command to cleanup unnecessary files and optimize the local repository
+     *
+     * @param workUnit Current work unit
+     * @param round Round number
+     * @return if fetch is in failure or not
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @Throws(IOException::class, InterruptedException::class)
+    open fun gitGC(workUnit: WorkUnit, round: Int) : Boolean {
+        val gcCommand = "git gc";
+
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_GC, "Round $round : $gcCommand")
+        return try {
+            execCommand(workUnit.commandManager, workUnit.directory, gcCommand)
+            historyMgr.endStep(history, StatusEnum.DONE, null)
+            false
+        } catch (thr: Throwable) {
+            LOG.error("Cannot git gc", thr.printStackTrace())
             historyMgr.endStep(history, StatusEnum.FAILED, null)
             true
         }

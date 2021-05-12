@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
     pipeline:
         name:  pipeline
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-latest
         if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.pull_request.title, '[skip ci]') && !contains(github.event.pull_request.title, '[ci skip]')"
         timeout-minutes: 40
         env:
@@ -24,7 +24,7 @@ jobs:
             - name: Updgrade platform
               run: sudo apt-get upgrade
             - name: Install git-svn
-              run: sudo apt-get install git-svn
+              run: sudo apt-get install git git-svn
             - name: 🔍 Analyze code with SonarQube
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

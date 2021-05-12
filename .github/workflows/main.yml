@@ -21,8 +21,8 @@ jobs:
                   java-version: '11.x'
             - name: 🪦 Install node.js packages
               run: npm install
-            - name: Update platform
-              run: sudo apt-get update
+            - name: Updgrade platform
+              run: sudo apt-get upgrade
             - name: Install git-svn
               run: sudo apt-get install git-svn
             - name: 🔍 Analyze code with SonarQube

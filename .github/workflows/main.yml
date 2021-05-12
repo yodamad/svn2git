@@ -21,10 +21,16 @@ jobs:
                   java-version: '11.x'
             - name: 🪦 Install node.js packages
               run: npm install
+            - name: 🚮 Remove current git
+              run: sudo apt-get remove git git-man
+            - name: Add repo
+              run: sudo add-apt-repository --remove --yes ppa:git-core/ppa
             - name: Update platform
               run: sudo apt-get update
+            - name: Upgrade platform
+              run: sudo apt-get upgrade
             - name: Install git-svn
-              run: sudo apt-get install git-svn
+              run: sudo apt-get install --yes git git-svn
             - name: 🔍 Analyze code with SonarQube
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

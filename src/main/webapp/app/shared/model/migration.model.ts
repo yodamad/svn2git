@@ -40,7 +40,7 @@ export interface IMigration {
     branchesToMigrate?: string;
     createdTimestamp?: Moment;
     workingDirectory?: string;
-    preserveEmptyDirs?: boolean;
+    emptyDirs?: boolean;
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
     flat?: boolean;
@@ -72,12 +72,12 @@ export class Migration implements IMigration {
         public branchesToMigrate?: string,
         public createdTimestamp?: Moment,
         public workingDirectory?: string,
-        public preserveEmptyDirs?: boolean,
+        public emptyDirs?: boolean,
         public histories?: IMigrationHistory[],
         public mappings?: IMapping[],
         public flat?: boolean,
         public uploadType?: string
     ) {
-        this.preserveEmptyDirs = this.preserveEmptyDirs || false;
+        this.emptyDirs = this.emptyDirs || false;
     }
 }

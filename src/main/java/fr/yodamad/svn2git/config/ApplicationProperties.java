@@ -128,6 +128,11 @@ public class ApplicationProperties {
          */
         public String svnUrlModifiable;
 
+        /**
+         * Max attempts of git-svn fetch before failing migration
+         */
+        public Integer maxFetchAttempts;
+
         public String getUser() {
             return user;
         }
@@ -167,6 +172,10 @@ public class ApplicationProperties {
         public void setSvnUrlModifiable(String svnUrlModifiable) {
             this.svnUrlModifiable = svnUrlModifiable;
         }
+
+        public Integer getMaxFetchAttempts() { return maxFetchAttempts; }
+
+        public void setMaxFetchAttempts(Integer maxFetchAttempts) { this.maxFetchAttempts = maxFetchAttempts; }
     }
 
     public static class Gitlab {

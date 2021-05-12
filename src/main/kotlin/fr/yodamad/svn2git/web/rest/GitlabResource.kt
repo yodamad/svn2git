@@ -103,7 +103,7 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
                             .findAny()
                         if (subgroup.isPresent) {
                             if (cycle == depth - 1) {
-                                return checkUserForProject(user!!, group, gitlab)
+                                return checkUserForProject(user!!, subgroup, gitlab)
                             }
                             cycle++
                             groupId = subgroup.get().id

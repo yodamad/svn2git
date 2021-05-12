@@ -96,10 +96,76 @@ open class GitManager(val historyMgr: HistoryManager,
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
         // Only Clone if first attempt at migration
+        var cloneOK = true
         if (workUnit.commandManager.isFirstAttemptMigration) {
-            execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
+            try {
+                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
+            } catch (thr: Throwable) {
+                LOG.warn("Cannot git svn clone", thr.message)
+                cloneOK = false
+                var round = 0
+                var notOk = true
+                while (round++ < applicationProperties.svn.maxFetchAttempts && notOk) {
+                    notOk = gitSvnFetch(workUnit, round)
+                    gitGC(workUnit, round)
+                }
+            }
         }
-        historyMgr.endStep(history, StatusEnum.DONE, null)
+        if (cloneOK) {
+            historyMgr.endStep(history, StatusEnum.DONE, null)
+        } else {
+            historyMgr.endStep(history, StatusEnum.DONE_WITH_WARNINGS, null)
+        }
+    }
+
+    /**
+     * Git svn fetch command to copy svn as git repository
+     *
+     * @param workUnit Current work unit
+     * @param round Round number
+     * @return if fetch is in failure or not
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @Throws(IOException::class, InterruptedException::class)
+    open fun gitSvnFetch(workUnit: WorkUnit, round: Int) : Boolean {
+        val fetchCommand = "git svn fetch";
+
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "Round $round : $fetchCommand")
+        return try {
+            execCommand(workUnit.commandManager, workUnit.directory, fetchCommand)
+            historyMgr.endStep(history, StatusEnum.DONE, null)
+            false
+        } catch (thr: Throwable) {
+            LOG.error("Cannot git svn fetch", thr.printStackTrace())
+            historyMgr.endStep(history, StatusEnum.FAILED, null)
+            true
+        }
+    }
+
+    /**
+     * Git gc command to cleanup unnecessary files and optimize the local repository
+     *
+     * @param workUnit Current work unit
+     * @param round Round number
+     * @return if fetch is in failure or not
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @Throws(IOException::class, InterruptedException::class)
+    open fun gitGC(workUnit: WorkUnit, round: Int) : Boolean {
+        val gcCommand = "git gc";
+
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_GC, "Round $round : $gcCommand")
+        return try {
+            execCommand(workUnit.commandManager, workUnit.directory, gcCommand)
+            historyMgr.endStep(history, StatusEnum.DONE, null)
+            false
+        } catch (thr: Throwable) {
+            LOG.error("Cannot git gc", thr.printStackTrace())
+            historyMgr.endStep(history, StatusEnum.FAILED, null)
+            true
+        }
     }
 
     /**

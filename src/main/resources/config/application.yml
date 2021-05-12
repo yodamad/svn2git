@@ -155,6 +155,7 @@ application:
         password:
         credentials: required
         svnUrlModifiable: true
+        maxFetchAttempts: 20
     override:
         extensions: false
         mappings: false

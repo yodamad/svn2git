@@ -21,10 +21,16 @@ jobs:
                   java-version: '11.x'
             - name: 🪦 Install node.js packages
               run: npm install
+            - name: 🚮 Remove current git
+              run: sudo apt-get remove git git-man
+            - name: Add repo
+              run: sudo add-apt-repository --remove --yes ppa:git-core/ppa
             - name: Update platform
               run: sudo apt-get update
+            - name: Upgrade platform
+              run: sudo apt-get upgrade
             - name: Install git-svn
-              run: sudo apt-get install git-svn
+              run: sudo apt-get install --yes git git-svn
             - name: 🔍 Analyze code with SonarQube
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,3 +50,5 @@ jobs:
                   GIT_TAG=:${GITHUB_REF#refs/tags/}
                   DOCKER_TAG=${GIT_TAG#:refs/heads/main}
                   ./mvnw -ntp jib:build -Djib.to.image=yodamad/svn2git:latest -Djib.to.auth.username="${{ secrets.DOCKERHUB_LOGIN }}" -Djib.to.auth.password="${{ secrets.DOCKERHUB_PWD }}"
+                  VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+                  ./mvnw -ntp jib:build -Djib.to.image=yodamad/svn2git:$VERSION -Djib.to.auth.username="${{ secrets.DOCKERHUB_LOGIN }}" -Djib.to.auth.password="${{ secrets.DOCKERHUB_PWD }}"

@@ -573,9 +573,9 @@ export class MigrationStepperComponent implements OnInit {
             console.log(this.mig.maxFileSize);
         }
         if (this.preserveEmptyDirs !== undefined) {
-            this.mig.preserveEmptyDirs = this.preserveEmptyDirs;
+            this.mig.emptyDirs = this.preserveEmptyDirs;
         } else {
-            this.mig.preserveEmptyDirs = false;
+            this.mig.emptyDirs = false;
         }
         if (this.staticExtensions !== undefined && this.staticExtensions.length > 0) {
             const values: string[] = [];

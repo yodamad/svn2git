@@ -131,7 +131,7 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun gitSvnFetch(workUnit: WorkUnit, round: Int) : Boolean {
         val fetchCommand = "git svn fetch";
 
-        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "Round $round : $fetchCommand")
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "$fetchCommand (Round $round)")
         return try {
             execCommand(workUnit.commandManager, workUnit.directory, fetchCommand)
             historyMgr.endStep(history, StatusEnum.DONE, null)

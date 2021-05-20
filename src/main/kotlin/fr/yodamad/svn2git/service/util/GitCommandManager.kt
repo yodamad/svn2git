@@ -39,8 +39,8 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         // regex with negative look forward allows us to choose the branch and tag names to keep
         val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
 
-        val cloneCommand = String.format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",
-            formattedOrEmpty(secret, "echo %s |", "echo(%s|"),
+        val cloneCommand = String.format("%s echo p | git svn clone %s %s %s %s %s %s %s %s %s%s",
+            formattedOrEmpty(secret, "echo %s |", "echo(%s)|"),
             formattedOrEmpty(username, "--username %s"),
             formattedOrEmpty(workUnit.migration.svnRevision, "-r%s:HEAD"),
             setTrunk(workUnit),

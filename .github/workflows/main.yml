@@ -53,3 +53,6 @@ jobs:
                   docker build . -t yodamad/svn2git:latest
                   VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
                   docker build . -t yodamad/svn2git:$VERSION
+                  docker push yodamad/svn2git:$VERSION
+                  docker push yodamad/svn2git:latest
+                  docker push yodamad/svn2git:master

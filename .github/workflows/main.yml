@@ -47,8 +47,9 @@ jobs:
             - name: 🐳 Build and publish docker image
               if: github.ref == 'refs/heads/master'
               run: |
+                  docker login -u ${{ secrets.DOCKERHUB_LOGIN }} -p ${{ secrets.DOCKERHUB_PWD }}
                   GIT_TAG=:${GITHUB_REF#refs/tags/}
                   DOCKER_TAG=${GIT_TAG#:refs/heads/main}
-                  ./mvnw -ntp jib:build -Djib.to.image=yodamad/svn2git:latest -Djib.to.auth.username="${{ secrets.DOCKERHUB_LOGIN }}" -Djib.to.auth.password="${{ secrets.DOCKERHUB_PWD }}"
+                  docker build . -t yodamad/svn2git:latest
                   VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-                  ./mvnw -ntp jib:build -Djib.to.image=yodamad/svn2git:$VERSION -Djib.to.auth.username="${{ secrets.DOCKERHUB_LOGIN }}" -Djib.to.auth.password="${{ secrets.DOCKERHUB_PWD }}"
+                  docker build . -t yodamad/svn2git:$VERSION

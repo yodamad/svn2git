@@ -5,7 +5,7 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
     JAVA_OPTS=""
 
 RUN apt update && \
-    apt install -y git git-svn subversion
+    apt install -y git git-svn subversion expect
 
 COPY target/svn2git.jar /usr/svn2git/
 

@@ -159,6 +159,7 @@ application:
         password: ENC(NCCvax0umvRUhKRJv91NYNzNao04KDprAgsLRWOBIQOCh1zDfZ6BekY3kBfQag87)
         credentials: required
         svnUrlModifiable: true
+        maxFetchAttempts: 1
     override:
         extensions: false
         mappings: false

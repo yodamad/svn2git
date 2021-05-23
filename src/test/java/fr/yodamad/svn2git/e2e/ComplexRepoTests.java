@@ -80,7 +80,7 @@ public class ComplexRepoTests {
         branches.stream().filter(b -> b.getName().equals("master")).forEach(b -> hasHistory(project, b.getName()));
 
         // Check tags
-        List<Tag> tags = checkTags(project);
+        List<Tag> tags = checkTags(project, 5);
         tags.forEach(t -> hasNoHistory(project, t.getName()));
     }
 

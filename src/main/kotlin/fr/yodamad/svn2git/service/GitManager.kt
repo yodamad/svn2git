@@ -93,6 +93,7 @@ open class GitManager(val historyMgr: HistoryManager,
             cloneCommand = gitCommandManager.initCommand(workUnit, null, null)
             safeCommand = cloneCommand
         }
+       
         val cloneScript = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
@@ -111,6 +112,8 @@ open class GitManager(val historyMgr: HistoryManager,
                     notOk = gitSvnFetch(workUnit, round)
                     gitGC(workUnit, round)
                 }
+                historyMgr.endStep(history, StatusEnum.FAILED, null)
+                cloneOK = false
             }
         }
         if (cloneOK) {

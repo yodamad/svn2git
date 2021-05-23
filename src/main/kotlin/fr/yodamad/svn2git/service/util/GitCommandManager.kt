@@ -82,6 +82,9 @@ open class GitCommandManager(val historyMgr: HistoryManager,
             out.println("expect \"\$ \"")
         }
 
+        if (Files.exists(script.toPath())) LOG.info("Script is generated !! ${script.path}")
+        else "🤔 where is the script"
+
         Files.setPosixFilePermissions(script.toPath(), setOf(
             PosixFilePermission.OWNER_READ,
             PosixFilePermission.OWNER_WRITE,

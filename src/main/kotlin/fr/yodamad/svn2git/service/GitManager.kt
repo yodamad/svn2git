@@ -113,7 +113,7 @@ open class GitManager(val historyMgr: HistoryManager,
                     gitGC(workUnit, round)
                 }
                 historyMgr.endStep(history, StatusEnum.FAILED, null)
-                cloneOK = false
+                throw RuntimeException()
             }
         }
         if (cloneOK) {

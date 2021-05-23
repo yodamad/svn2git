@@ -102,6 +102,7 @@ open class GitManager(val historyMgr: HistoryManager,
             try {
                 execCommand(workUnit.commandManager, workUnit.root, cloneScript, safeCommand)
             } catch (thr: Throwable) {
+                thr.printStackTrace()
                 LOG.warn("Cannot git svn clone", thr.message)
                 cloneOK = false
                 var round = 0

@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.nio.charset.Charset.defaultCharset
+import java.nio.file.Files
+import java.nio.file.Path
 
 @Service
 open class GitManager(val historyMgr: HistoryManager,
@@ -95,6 +97,9 @@ open class GitManager(val historyMgr: HistoryManager,
         }
 
         val cloneScript = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
+        if (Files.exists(Path.of(cloneScript))) LOG.info("Script is generated !! ${cloneScript}")
+        else "🤔 where is the script"
+
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
         // Only Clone if first attempt at migration

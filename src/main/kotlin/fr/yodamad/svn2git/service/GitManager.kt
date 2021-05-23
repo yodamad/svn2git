@@ -93,13 +93,14 @@ open class GitManager(val historyMgr: HistoryManager,
             cloneCommand = gitCommandManager.initCommand(workUnit, null, null)
             safeCommand = cloneCommand
         }
+        val cloneScript = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
         // Only Clone if first attempt at migration
         var cloneOK = true
         if (workUnit.commandManager.isFirstAttemptMigration) {
             try {
-                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
+                execCommand(workUnit.commandManager, workUnit.root, cloneScript, safeCommand)
             } catch (thr: Throwable) {
                 LOG.warn("Cannot git svn clone", thr.message)
                 cloneOK = false

@@ -11,8 +11,11 @@ import fr.yodamad.svn2git.service.MappingManager
 import org.apache.commons.lang3.StringUtils.isEmpty
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermission
 
 @Service
 open class GitCommandManager(val historyMgr: HistoryManager,
@@ -20,6 +23,8 @@ open class GitCommandManager(val historyMgr: HistoryManager,
                         var applicationProperties: ApplicationProperties) {
 
     private val LOG = LoggerFactory.getLogger(GitCommandManager::class.java)
+
+    private val empty_line = ""
 
     /**
      * Init command with or without password in clear
@@ -39,8 +44,8 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         // regex with negative look forward allows us to choose the branch and tag names to keep
         val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
 
-        val cloneCommand = String.format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",
-            formattedOrEmpty(secret, "echo %s |", "echo(%s|"),
+        val cloneCommand = String.format("git svn clone %s %s %s %s %s %s %s %s %s%s",
+            //formattedOrEmpty(secret, "echo %s |", "echo(%s)|"),
             formattedOrEmpty(username, "--username %s"),
             formattedOrEmpty(workUnit.migration.svnRevision, "-r%s:HEAD"),
             setTrunk(workUnit),
@@ -54,6 +59,37 @@ open class GitCommandManager(val historyMgr: HistoryManager,
 
         // replace any multiple whitespaces and return
         return cloneCommand.replace("\\s{2,}".toRegex(), " ").trim { it <= ' ' }
+    }
+
+    open fun generateGitSvnCloneScript(workUnit: WorkUnit, gitSvnCloneCommand: String): String {
+        val script = File("${workUnit.directory}/git-svn-clone.sh")
+        script.printWriter().use { out ->
+            out.println("#!/usr/bin/expect -f")
+            out.println(empty_line)
+            out.println("spawn $gitSvnCloneCommand")
+            out.println(empty_line)
+            out.println("expect {")
+            out.println("  \"(R)eject, accept (t)emporarily or accept (p)ermanently? \" {")
+            out.println("    send -- \"p\\r\"")
+            out.println("    exp_continue")
+            out.println("  }")
+            out.println("  \"Password for '${workUnit.migration.svnUser}': \" {")
+            out.println("    send \"${workUnit.migration.svnPassword}\\r\"")
+            out.println("  }")
+            out.println("  \"Certificate problem.\"")
+            out.println("}")
+            out.println(empty_line)
+            out.println("expect \"\$ \"")
+        }
+
+        Files.setPosixFilePermissions(script.toPath(), setOf(
+            PosixFilePermission.OWNER_READ,
+            PosixFilePermission.OWNER_WRITE,
+            PosixFilePermission.OWNER_EXECUTE,
+            PosixFilePermission.GROUP_READ,
+            PosixFilePermission.OTHERS_READ
+        ))
+        return script.path
     }
 
     /**

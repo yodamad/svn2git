@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.nio.charset.Charset.defaultCharset
+import java.nio.file.Files
+import java.nio.file.Path
 
 @Service
 open class GitManager(val historyMgr: HistoryManager,
@@ -93,14 +95,20 @@ open class GitManager(val historyMgr: HistoryManager,
             cloneCommand = gitCommandManager.initCommand(workUnit, null, null)
             safeCommand = cloneCommand
         }
+
+        val cloneScript = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
+        if (Files.exists(Path.of(cloneScript))) LOG.info("Script is generated !! ${cloneScript}")
+        else "🤔 where is the script"
+
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
         // Only Clone if first attempt at migration
         var cloneOK = true
         if (workUnit.commandManager.isFirstAttemptMigration) {
             try {
-                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
+                execCommand(workUnit.commandManager, workUnit.root, cloneScript, safeCommand)
             } catch (thr: Throwable) {
+                thr.printStackTrace()
                 LOG.warn("Cannot git svn clone", thr.message)
                 cloneOK = false
                 var round = 0
@@ -109,6 +117,8 @@ open class GitManager(val historyMgr: HistoryManager,
                     notOk = gitSvnFetch(workUnit, round)
                     gitGC(workUnit, round)
                 }
+                historyMgr.endStep(history, StatusEnum.FAILED, null)
+                throw RuntimeException()
             }
         }
         if (cloneOK) {
@@ -131,7 +141,7 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun gitSvnFetch(workUnit: WorkUnit, round: Int) : Boolean {
         val fetchCommand = "git svn fetch";
 
-        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "Round $round : $fetchCommand")
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "$fetchCommand (Round $round)")
         return try {
             execCommand(workUnit.commandManager, workUnit.directory, fetchCommand)
             historyMgr.endStep(history, StatusEnum.DONE, null)

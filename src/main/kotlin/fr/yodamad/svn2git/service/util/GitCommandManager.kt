@@ -44,9 +44,6 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         // Initialise ignorePaths string that will be passed to git svn clone
         val ignorePaths: String = generateIgnorePaths(workUnit.migration.trunk, workUnit.migration.tags, workUnit.migration.branches, workUnit.migration.svnProject, svnDirectoryDeleteList)
 
-        // regex with negative look forward allows us to choose the branch and tag names to keep
-        //val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
-
         val cloneCommand = String.format("git svn clone %s %s %s %s %s %s %s %s%s",
             //formattedOrEmpty(secret, "echo %s |", "echo(%s)|"),
             formattedOrEmpty(username, "--username %s"),

@@ -12,6 +12,7 @@ import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,15 @@ public class ComplexRepoTests {
         String group = format("%s/%s", complex().namespace, subGroup);
         Optional<Project> project = api.getProjectApi().getOptionalProject(group, projectName);
         if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());
+    }
+
+    @After
+    public void forceCleanGitlab() throws GitLabApiException, InterruptedException {
+        Optional<Project> project = api.getProjectApi().getOptionalProject(complex().namespace, complex().name);
+        if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());
+        while(api.getProjectApi().getOptionalProject(complex().namespace, complex().name).isPresent()) {
+            Thread.sleep(500);
+        }
     }
 
     @Test

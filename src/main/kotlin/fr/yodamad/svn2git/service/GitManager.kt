@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.io.Shell.execCommand
+import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.repository.MappingRepository
 import fr.yodamad.svn2git.service.util.*
 import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils
@@ -17,8 +18,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.nio.charset.Charset.defaultCharset
-import java.nio.file.Files
-import java.nio.file.Path
 
 @Service
 open class GitManager(val historyMgr: HistoryManager,
@@ -81,7 +80,7 @@ open class GitManager(val historyMgr: HistoryManager,
      */
     @Throws(IOException::class, InterruptedException::class)
     open fun gitSvnClone(workUnit: WorkUnit) {
-        val cloneCommand: String
+        var cloneCommand: String
         val safeCommand: String
         if (!isEmpty(workUnit.migration.svnPassword)) {
             val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
@@ -96,9 +95,8 @@ open class GitManager(val historyMgr: HistoryManager,
             safeCommand = cloneCommand
         }
 
-        val cloneScript = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
-        if (Files.exists(Path.of(cloneScript))) LOG.info("Script is generated !! ${cloneScript}")
-        else "🤔 where is the script"
+        // Waiting for Windows support...
+        if (!isWindows) cloneCommand = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
 
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
@@ -106,11 +104,10 @@ open class GitManager(val historyMgr: HistoryManager,
         var cloneOK = true
         if (workUnit.commandManager.isFirstAttemptMigration) {
             try {
-                execCommand(workUnit.commandManager, workUnit.root, cloneScript, safeCommand)
+                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
             } catch (thr: Throwable) {
                 thr.printStackTrace()
                 LOG.warn("Cannot git svn clone", thr.message)
-                cloneOK = false
                 var round = 0
                 var notOk = true
                 while (round++ < applicationProperties.svn.maxFetchAttempts && notOk) {

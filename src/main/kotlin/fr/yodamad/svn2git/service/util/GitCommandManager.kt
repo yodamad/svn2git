@@ -4,7 +4,10 @@ import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
-import fr.yodamad.svn2git.functions.*
+import fr.yodamad.svn2git.functions.EMPTY
+import fr.yodamad.svn2git.functions.buildTrunk
+import fr.yodamad.svn2git.functions.formattedOrEmpty
+import fr.yodamad.svn2git.functions.generateIgnorePaths
 import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.service.HistoryManager
 import fr.yodamad.svn2git.service.MappingManager
@@ -42,16 +45,16 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         val ignorePaths: String = generateIgnorePaths(workUnit.migration.trunk, workUnit.migration.tags, workUnit.migration.branches, workUnit.migration.svnProject, svnDirectoryDeleteList)
 
         // regex with negative look forward allows us to choose the branch and tag names to keep
-        val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
+        //val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
 
-        val cloneCommand = String.format("git svn clone %s %s %s %s %s %s %s %s %s%s",
+        val cloneCommand = String.format("git svn clone %s %s %s %s %s %s %s %s%s",
             //formattedOrEmpty(secret, "echo %s |", "echo(%s)|"),
             formattedOrEmpty(username, "--username %s"),
             formattedOrEmpty(workUnit.migration.svnRevision, "-r%s:HEAD"),
             setTrunk(workUnit),
             setSvnElement("branches", workUnit.migration.branches, workUnit),
             setSvnElement("tags", workUnit.migration.tags, workUnit),
-            ignorePaths, ignoreRefs,
+            ignorePaths,
             if (workUnit.migration.emptyDirs) "--preserve-empty-dirs"
             else if (workUnit.migration.emptyDirs == null && applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else EMPTY,
             if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else "${workUnit.migration.svnUrl}/",

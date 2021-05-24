@@ -11,7 +11,6 @@ import fr.yodamad.svn2git.service.HistoryManager
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
-import java.util.function.Consumer
 
 @Service
 open class GitTagManager(val gitManager: GitManager,
@@ -28,10 +27,12 @@ open class GitTagManager(val gitManager: GitManager,
      * @param remotes
      */
     open fun manageTags(workUnit: WorkUnit, remotes: List<String>) {
-        listTagsOnly(remotes)?.forEach(Consumer { t: String ->
+        listTagsOnly(remotes)?.stream()?.filter {
+            t -> workUnit.migration.tagsToMigrate == null || workUnit.migration.tagsToMigrate.split(",").any { a -> t.endsWith(a) }
+        }?.forEach { t: String ->
             val warn: Boolean = pushTag(workUnit, t)
             gitCommandManager.sleepBeforePush(workUnit, warn)
-        })
+        }
     }
 
     /**

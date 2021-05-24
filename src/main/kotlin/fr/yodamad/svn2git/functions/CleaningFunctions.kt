@@ -60,7 +60,7 @@ fun exceedsMaxSize(workUnit: WorkUnit, path: Path): Boolean {
  */
 fun getListFromCommaSeparatedString(commaSeparatedStr: String?): List<String>? {
     return if (StringUtils.isNotBlank(commaSeparatedStr)) {
-        commaSeparatedStr?.split("\\s*,\\s*")?.toTypedArray()?.toList()
+        commaSeparatedStr?.split(",")
     } else {
         ArrayList()
     }

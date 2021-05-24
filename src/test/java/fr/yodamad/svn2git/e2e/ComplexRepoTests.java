@@ -111,6 +111,33 @@ public class ComplexRepoTests {
         tags.forEach(t -> hasNoHistory(project, t.getName()));
     }
 
+    @Test
+    public void test_migration_with_filter_branches() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initComplexMigration(applicationProperties);
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setTags("*");
+        migration.setBranchesToMigrate("v1.0");
+        migration.setBranches("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 1);
+        branches.stream().filter(b -> !b.getName().equals("master")).forEach(b -> hasNoHistory(project, b.getName()));
+        branches.stream().filter(b -> b.getName().equals("master")).forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project, 5);
+        tags.forEach(t -> hasNoHistory(project, t.getName()));
+    }
+
     private void startAndCheck(Migration migration) throws ExecutionException, InterruptedException {
         Migration saved = migrationRepository.save(migration);
         Future<String> result = migrationManager.startMigration(saved.getId(), false);

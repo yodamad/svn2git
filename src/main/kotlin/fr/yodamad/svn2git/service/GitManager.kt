@@ -112,7 +112,7 @@ open class GitManager(val historyMgr: HistoryManager,
             try {
                 execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand, true)
             } catch (thr: Throwable) {
-                thr.printStackTrace()
+                cloneOK = false
                 LOG.warn("Cannot git svn clone", thr.message)
                 var round = 0
                 var notOk = true
@@ -120,8 +120,10 @@ open class GitManager(val historyMgr: HistoryManager,
                     notOk = gitSvnFetch(workUnit, round)
                     gitGC(workUnit, round)
                 }
-                historyMgr.endStep(history, StatusEnum.FAILED, null)
-                throw RuntimeException()
+                if (notOk) {
+                    historyMgr.endStep(history, StatusEnum.FAILED, null)
+                    throw RuntimeException()
+                }
             }
         }
         if (cloneOK) {

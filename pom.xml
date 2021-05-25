@@ -75,6 +75,7 @@
         <sonar-maven-plugin.version>3.5.0.1254</sonar-maven-plugin.version>
         <git-commit-id-plugin.version>2.2.5</git-commit-id-plugin.version>
         <jasypt.version>3.0.3</jasypt.version>
+        <handlebars.version>4.2.0</handlebars.version>
 
         <!-- Sonar properties -->
         <sonar.projectKey>yodamad_svn2git</sonar.projectKey>
@@ -425,6 +426,12 @@
             <version>${kotlin.version}</version>
         </dependency>
 
+        <!-- Templating -->
+        <dependency>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>handlebars</artifactId>
+            <version>${handlebars.version}</version>
+        </dependency>
 
         <!-- Jolokia for Glowroot -->
         <dependency>

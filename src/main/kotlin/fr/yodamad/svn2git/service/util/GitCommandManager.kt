@@ -1,5 +1,6 @@
 package fr.yodamad.svn2git.service.util
 
+import com.github.jknack.handlebars.Handlebars
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
@@ -16,9 +17,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.IOException
+import java.io.StringWriter
 import java.net.URI
 import java.nio.file.Files
-import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.PosixFilePermission.*
 
 @Service
 open class GitCommandManager(val historyMgr: HistoryManager,
@@ -62,34 +64,21 @@ open class GitCommandManager(val historyMgr: HistoryManager,
     }
 
     open fun generateGitSvnCloneScript(workUnit: WorkUnit, gitSvnCloneCommand: String): String {
-        val script = File("${workUnit.directory}/git-svn-clone.sh")
-        script.printWriter().use { out ->
-            out.println("#!/usr/bin/expect -f")
-            out.println(empty_line)
-            out.println("spawn $gitSvnCloneCommand")
-            out.println(empty_line)
-            out.println("expect {")
-            out.println("  \"(R)eject, accept (t)emporarily or accept (p)ermanently? \" {")
-            out.println("    send -- \"p\\r\"")
-            out.println("    exp_continue")
-            out.println("  }")
-            out.println("  \"Password for '${workUnit.migration.svnUser}': \" {")
-            out.println("    send \"${workUnit.migration.svnPassword}\\r\"")
-            out.println("  }")
-            out.println("  \"Certificate problem.\"")
-            out.println("}")
-            out.println(empty_line)
-            out.println("expect \"\$ \"")
-        }
 
-        Files.setPosixFilePermissions(script.toPath(), setOf(
-            PosixFilePermission.OWNER_READ,
-            PosixFilePermission.OWNER_WRITE,
-            PosixFilePermission.OWNER_EXECUTE,
-            PosixFilePermission.GROUP_READ,
-            PosixFilePermission.OTHERS_READ
-        ))
-        return script.path
+        val scriptInfo = ScriptInfo(gitSvnCloneCommand, workUnit.migration.svnUser, workUnit.migration.svnPassword)
+
+        val handlebars = Handlebars()
+        val template = handlebars.compile("templates/scripts/git-svn-clone.sh")
+
+        val fileToWrite = File("${workUnit.directory}/git-svn-clone.sh")
+        val writer = StringWriter()
+        template.apply(scriptInfo, writer)
+        fileToWrite.writeText(writer.toString())
+
+        Files.setPosixFilePermissions(fileToWrite.toPath(),
+            setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ))
+
+        return fileToWrite.path
     }
 
     /**
@@ -176,3 +165,8 @@ open class GitCommandManager(val historyMgr: HistoryManager,
             else -> workUnit.migration.gitlabToken
         }
 }
+
+/**
+ * Info to inject in generated script
+ */
+data class ScriptInfo(val svnCommand: String, val svnUser: String, val svnPassword: String)

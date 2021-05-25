@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+
+set timeout -1; # no timeout
+set tryrun 1
+
+while {$tryrun} {
+  spawn {{{ svnCommand }}}
+  set tryrun 0
+  expect {
+    "(R)eject, accept (t)emporarily or accept (p)ermanently? " {
+      send -- "p\r"
+      exp_continue
+    }
+
+    "Password for '{{{ svnUser }}}': " {
+      send "{{{ svnPassword }}}\r"
+      exp_continue
+    }
+
+    -gl "couldn't truncate file*" {
+      puts "catching error... continue \n"
+      set tryrun 1
+      exp_continue
+    }
+  }
+}

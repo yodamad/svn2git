@@ -81,6 +81,25 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         return fileToWrite.path
     }
 
+    open fun generateGitSvnClonePackageForWindows(workUnit: WorkUnit) {
+        generateFile(workUnit, "gitsvn.ps1")
+        generateFile(workUnit, "gitsvn-wrapper.ps1")
+        generateFile(workUnit, "GitSvnCloneWrapper.cs")
+    }
+
+    private fun generateFile(workUnit: WorkUnit, filename: String) {
+        val handlebars = Handlebars()
+        val template = handlebars.compile("templates/scripts/win/$filename")
+
+        val fileToWrite = File("${workUnit.directory}/$filename")
+        val writer = StringWriter()
+        template.apply(null, writer)
+        fileToWrite.writeText(writer.toString())
+
+        Files.setPosixFilePermissions(fileToWrite.toPath(),
+            setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ))
+    }
+
     /**
      * Set trunk information
      */

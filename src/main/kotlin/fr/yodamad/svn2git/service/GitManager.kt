@@ -82,21 +82,27 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun gitSvnClone(workUnit: WorkUnit) {
         var cloneCommand: String
         val safeCommand: String
-        if (!isEmpty(workUnit.migration.svnPassword)) {
-            val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
-            cloneCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, escapedPassword)
-            safeCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, STARS)
-        } else if (!isEmpty(applicationProperties.svn.password)) {
-            val escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password)
-            cloneCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, escapedPassword)
-            safeCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, STARS)
+        if (!isWindows) {
+            if (!isEmpty(workUnit.migration.svnPassword)) {
+                val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
+                cloneCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, escapedPassword)
+                safeCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, STARS)
+            } else if (!isEmpty(applicationProperties.svn.password)) {
+                val escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password)
+                cloneCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, escapedPassword)
+                safeCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, STARS)
+            } else {
+                cloneCommand = gitCommandManager.initCommand(workUnit, null, null)
+                safeCommand = cloneCommand
+            }
+
+            // Waiting for Windows support...
+            cloneCommand = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
         } else {
-            cloneCommand = gitCommandManager.initCommand(workUnit, null, null)
+            gitCommandManager.generateGitSvnClonePackageForWindows(workUnit)
+            cloneCommand = "${workUnit.directory}\\gitsvn.ps1 -url ${workUnit.migration.svnUrl} -username ${workUnit.migration.svnUser} -password ${workUnit.migration.svnPassword} -certAcceptResponse t\n"
             safeCommand = cloneCommand
         }
-
-        // Waiting for Windows support...
-        if (!isWindows) cloneCommand = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
 
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
@@ -104,7 +110,7 @@ open class GitManager(val historyMgr: HistoryManager,
         var cloneOK = true
         if (workUnit.commandManager.isFirstAttemptMigration) {
             try {
-                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
+                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand, true)
             } catch (thr: Throwable) {
                 thr.printStackTrace()
                 LOG.warn("Cannot git svn clone", thr.message)

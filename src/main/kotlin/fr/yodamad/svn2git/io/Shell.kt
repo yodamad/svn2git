@@ -65,11 +65,12 @@ object Shell {
      */
     @JvmOverloads
     @Throws(InterruptedException::class, IOException::class)
-    fun execCommand(commandManager: CommandManager, directory: String, command: String?, securedCommandToPrint: String? = command): Int {
+    fun execCommand(commandManager: CommandManager, directory: String, command: String?, securedCommandToPrint: String? = command, usePowershell: Boolean = true): Int {
         val builder = ProcessBuilder()
         val execDir = formatDirectory(directory)
         if (isWindows) {
-            builder.command("cmd.exe", "/c", command)
+            if (usePowershell) builder.command("powsershell.exe", "/c", command)
+            else builder.command("cmd.exe", "/c", command)
         } else {
             builder.command("sh", "-c", command)
         }

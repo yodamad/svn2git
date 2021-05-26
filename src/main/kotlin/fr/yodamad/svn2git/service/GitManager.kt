@@ -100,7 +100,8 @@ open class GitManager(val historyMgr: HistoryManager,
             cloneCommand = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
         } else {
             gitCommandManager.generateGitSvnClonePackageForWindows(workUnit)
-            cloneCommand = "${workUnit.directory}\\gitsvn.ps1 -url ${workUnit.migration.svnUrl} -username ${workUnit.migration.svnUser} -password ${workUnit.migration.svnPassword} -certAcceptResponse t\n"
+            val commandOptions = gitCommandManager.initOptions(workUnit)
+            cloneCommand = "${workUnit.directory}\\gitsvn.ps1 -url ${workUnit.migration.svnUrl} -username ${workUnit.migration.svnUser} -password ${workUnit.migration.svnPassword} -certAcceptResponse t -options $commandOptions \n"
             safeCommand = cloneCommand
         }
 

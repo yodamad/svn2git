@@ -29,8 +29,6 @@ open class GitCommandManager(val historyMgr: HistoryManager,
 
     private val LOG = LoggerFactory.getLogger(GitCommandManager::class.java)
 
-    private val empty_line = ""
-
     /**
      * Init command with or without password in clear
      *
@@ -40,27 +38,27 @@ open class GitCommandManager(val historyMgr: HistoryManager,
      * @return
      */
     open fun initCommand(workUnit: WorkUnit, username: String?, secret: String?): String {
-
-        // Get list of svnDirectoryDelete
-        val svnDirectoryDeleteList: List<String> = mappingMgr.getSvnDirectoryDeleteList(workUnit.migration.id)
-        // Initialise ignorePaths string that will be passed to git svn clone
-        val ignorePaths: String = generateIgnorePaths(workUnit.migration.trunk, workUnit.migration.tags, workUnit.migration.branches, workUnit.migration.svnProject, svnDirectoryDeleteList)
-
-        val cloneCommand = String.format("git svn clone %s %s %s %s %s %s %s %s%s",
-            //formattedOrEmpty(secret, "echo %s |", "echo(%s)|"),
+        val cloneCommand = String.format("git svn clone %s %s %s%s",
             formattedOrEmpty(username, "--username %s"),
-            formattedOrEmpty(workUnit.migration.svnRevision, "-r%s:HEAD"),
-            setTrunk(workUnit),
-            setSvnElement("branches", workUnit.migration.branches, workUnit),
-            setSvnElement("tags", workUnit.migration.tags, workUnit),
-            ignorePaths,
-            if (workUnit.migration.emptyDirs) "--preserve-empty-dirs"
-            else if (workUnit.migration.emptyDirs == null && applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else EMPTY,
+            initOptions(workUnit),
             if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else "${workUnit.migration.svnUrl}/",
             workUnit.migration.svnGroup)
 
         // replace any multiple whitespaces and return
         return cloneCommand.replace("\\s{2,}".toRegex(), " ").trim { it <= ' ' }
+    }
+
+    open fun initOptions(workUnit: WorkUnit) : String {
+        val svnDirectoryDeleteList: List<String> = mappingMgr.getSvnDirectoryDeleteList(workUnit.migration.id)
+        return String.format("%s %s %s %s %s %s",
+            formattedOrEmpty(workUnit.migration.svnRevision, "-r%s:HEAD"),
+            setTrunk(workUnit),
+            setSvnElement("branches", workUnit.migration.branches, workUnit),
+            setSvnElement("tags", workUnit.migration.tags, workUnit),
+            generateIgnorePaths(workUnit.migration.trunk, workUnit.migration.tags, workUnit.migration.branches, workUnit.migration.svnProject, svnDirectoryDeleteList),
+            if (workUnit.migration.emptyDirs) "--preserve-empty-dirs"
+            else if (workUnit.migration.emptyDirs == null && applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else EMPTY,
+        )
     }
 
     open fun generateGitSvnCloneScript(workUnit: WorkUnit, gitSvnCloneCommand: String): String {

@@ -3,7 +3,8 @@ param (
 [string]$username,
 [string]$password,
 [string]$certAcceptResponse,
-[string]$logfile
+[string]$logfile,
+[string]$options
 )
 
 # Throw if Powershell Core
@@ -18,7 +19,7 @@ Add-Type -Path "$PSScriptRoot\GitSvnCloneWrapper.cs"
 $wrapper = New-Object GitSvnWrapper.GitSvnCloneWrapper -ArgumentList $pspath
 
 # Execute
-$result = $wrapper.Execute($url, $username, $password, $certAcceptResponse)
+$result = $wrapper.Execute($url, $username, $password, $certAcceptResponse, $options)
 $lastOutput = $wrapper.LastOutput
 $lastError = $wrapper.LastError
 $rc = $wrapper.ReturnCode # This is the rc from the git command

@@ -80,8 +80,8 @@ open class GitManager(val historyMgr: HistoryManager,
      */
     @Throws(IOException::class, InterruptedException::class)
     open fun gitSvnClone(workUnit: WorkUnit) {
-        var cloneCommand: String
-        val safeCommand: String
+        var cloneCommand: String = ""
+        var safeCommand: String
         if (!isWindows) {
             if (!isEmpty(workUnit.migration.svnPassword)) {
                 val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
@@ -100,7 +100,9 @@ open class GitManager(val historyMgr: HistoryManager,
             cloneCommand = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
         } else {
             gitCommandManager.generateGitSvnClonePackageForWindows(workUnit)
-            val commandOptions = gitCommandManager.initOptions(workUnit)
+            var commandOptions = gitCommandManager.initOptions(workUnit)
+            // If no options, put fake one
+            if (commandOptions.trim().isEmpty()) commandOptions = "fake_option"
             cloneCommand = "${workUnit.directory}\\gitsvn.ps1 -url ${workUnit.migration.svnUrl} -username ${workUnit.migration.svnUser} -password ${workUnit.migration.svnPassword} -certAcceptResponse t -options $commandOptions \n"
             safeCommand = cloneCommand
         }

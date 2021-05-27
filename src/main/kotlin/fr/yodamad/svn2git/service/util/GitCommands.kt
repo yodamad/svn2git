@@ -1,6 +1,8 @@
 package fr.yodamad.svn2git.service.util
 
 import fr.yodamad.svn2git.data.WorkUnit
+import fr.yodamad.svn2git.functions.encode
+import fr.yodamad.svn2git.functions.gitFormat
 import fr.yodamad.svn2git.io.Shell.execCommand
 
 // Keywords
@@ -21,8 +23,8 @@ fun deleteBranch(branch: String) = gitCommand(BRANCH, "-D", branch)
 fun renameBranch(branch: String) = gitCommand(BRANCH, "-m", branch)
 
 // Pull management
-fun checkoutFromOrigin(branch: String) = gitCommand(CHECKOUT, "-b", "$branch refs/remotes/origin/$branch")
-fun checkout(branch: String = MASTER) = gitCommand(CHECKOUT, target = branch)
+fun checkoutFromOrigin(branch: String) = gitCommand(CHECKOUT, "-b", "${branch.gitFormat()} refs/remotes/origin/${branch.encode()}")
+fun checkout(branch: String = MASTER) = gitCommand(CHECKOUT, target = branch.encode())
 
 // Push management
 fun add(element: String) = gitCommand("add", target = element)
@@ -32,7 +34,7 @@ fun push(branch: String = MASTER) = "$GIT_PUSH --set-upstream origin $branch"
 
 // Maintenance management
 fun gc() = gitCommand("gc")
-fun resetHard(branch: String = MASTER) = gitCommand(RESET, "--hard", "origin/$branch")
+fun resetHard(branch: String = MASTER) = gitCommand(RESET, "--hard", "origin/${branch.encode()}")
 fun resetHead() = gitCommand(RESET, "--hard", "HEAD")
 fun gitClean(commandManager: CommandManager, workUnit: WorkUnit) {
     try {

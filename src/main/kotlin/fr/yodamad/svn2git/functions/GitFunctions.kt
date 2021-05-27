@@ -1,17 +1,16 @@
 package fr.yodamad.svn2git.functions
 
 import fr.yodamad.svn2git.data.WorkUnit
+import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.service.GitManager
 import fr.yodamad.svn2git.service.util.MASTER
 import fr.yodamad.svn2git.service.util.ORIGIN_TAGS
-import fr.yodamad.svn2git.io.Shell
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
-import java.util.*
 import java.util.stream.Collectors
 
 
@@ -215,6 +214,6 @@ fun buildTrunk(workUnit: WorkUnit): String? {
     return if (mig.flat) {
         if (mig.svnGroup == mig.svnProject) {
             "--trunk=/"
-        } else String.format("--trunk=%s/", workUnit.migration.svnProject)
-    } else String.format("--trunk=%s/trunk", workUnit.migration.svnProject)
+        } else String.format("--trunk=%s/", workUnit.migration.svnProject.encode())
+    } else String.format("--trunk=%s/trunk", workUnit.migration.svnProject.encode())
 }

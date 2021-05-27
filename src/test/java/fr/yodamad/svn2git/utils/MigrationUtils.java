@@ -19,6 +19,11 @@ public abstract class MigrationUtils {
         return mig;
     }
 
+    public static Migration initWeirdMigration(ApplicationProperties props) {
+        Migration mig = initMigration(weird(), props);
+        return mig;
+    }
+
     public static Migration initComplexMigration(ApplicationProperties props) {
         Migration mig = initMigration(complex(), props);
         String name = format("/%s", complex().name);

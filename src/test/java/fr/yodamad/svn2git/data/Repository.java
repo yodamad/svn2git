@@ -49,12 +49,21 @@ public class Repository {
         return repository;
     }
 
+    public static Repository weird() {
+        Repository repository = new Repository();
+        repository.name = "weird";
+        repository.namespace = "weird";
+        repository.keep.add(Files.REVISION);
+        return repository;
+    }
+
     public class Files {
         public static final String REVISION = "revision.txt";
         public static final String FILE_BIN = "file.bin";
         public static final String DEEP_FILE = "deep.file";
         public static final String FLAT_FILE = "flat.file";
-        public static final String ANOTHER_BIN = Dirs.FOLDER + "another.bin";
+        public static final String ROOT_ANOTHER_BIN = "another.bin";
+        public static final String ANOTHER_BIN = Dirs.FOLDER + ROOT_ANOTHER_BIN;
         public static final String MAPPED_ANOTHER_BIN = Dirs.DIRECTORY + "another.bin";
         public static final String JAVA = Dirs.FOLDER + "App.java";
         public static final String MAPPED_JAVA = Dirs.DIRECTORY + "App.java";

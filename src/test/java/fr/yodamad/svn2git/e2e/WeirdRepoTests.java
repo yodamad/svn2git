@@ -90,6 +90,32 @@ public class WeirdRepoTests {
         checkTags(project, 0);
     }
 
+    @Test
+    public void test_migration_with_space_in_branch_name() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initWeirdMigration(applicationProperties);
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setTags(null);
+        migration.setBranches("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        isMissing(project.get(), ROOT_ANOTHER_BIN);
+        isPresent(project.get(), FILE_BIN, false);
+        isPresent(project.get(), REVISION, false);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 3);
+        assertThat(branches.stream().anyMatch(b -> b.getName().equals("branch_with_space"))).isTrue();
+
+        // Check tags
+        checkTags(project, 0);
+    }
+
     private void startAndCheck(Migration migration) throws ExecutionException, InterruptedException {
         Migration saved = migrationRepository.save(migration);
         Future<String> result = migrationManager.startMigration(saved.getId(), false);

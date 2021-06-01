@@ -3,6 +3,7 @@ package fr.yodamad.svn2git.service.util
 import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
+import fr.yodamad.svn2git.functions.decode
 import fr.yodamad.svn2git.functions.gitFormat
 import fr.yodamad.svn2git.functions.listBranchesOnly
 import fr.yodamad.svn2git.io.Shell.execCommand
@@ -35,6 +36,11 @@ open class GitBranchManager(val gitManager: GitManager,
         branchName = branchName.replaceFirst("origin/".toRegex(), "").gitFormat()
         LOG.debug("Branch %s $branchName")
         val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName)
+
+        if (workUnit.migration.trunk != null && workUnit.migration.trunk != "trunk" && workUnit.migration.trunk.equals(branch.decode())) {
+            // Don't push branch that is used as new master
+            return true;
+        }
 
         try {
             execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b \"$branchName\" $branch")

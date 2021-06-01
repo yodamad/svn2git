@@ -217,3 +217,7 @@ fun buildTrunk(workUnit: WorkUnit): String? {
         } else String.format("--trunk=%s/", workUnit.migration.svnProject.encode())
     } else String.format("--trunk=%s/trunk", workUnit.migration.svnProject.encode())
 }
+
+fun buildSvnCompleteUrl(workUnit: WorkUnit) =
+    if (workUnit.migration.svnUrl.endsWith("/")) "${workUnit.migration.svnUrl}${workUnit.migration.svnGroup}"
+    else "${workUnit.migration.svnUrl}/${workUnit.migration.svnGroup}"

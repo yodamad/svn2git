@@ -5,11 +5,9 @@ import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
-import fr.yodamad.svn2git.functions.EMPTY
-import fr.yodamad.svn2git.functions.buildTrunk
-import fr.yodamad.svn2git.functions.formattedOrEmpty
-import fr.yodamad.svn2git.functions.generateIgnorePaths
+import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.io.Shell
+import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.service.HistoryManager
 import fr.yodamad.svn2git.service.MappingManager
 import org.apache.commons.lang3.StringUtils.isEmpty
@@ -38,11 +36,10 @@ open class GitCommandManager(val historyMgr: HistoryManager,
      * @return
      */
     open fun initCommand(workUnit: WorkUnit, username: String?, secret: String?): String {
-        val cloneCommand = String.format("git svn clone %s %s %s%s",
+        val cloneCommand = String.format("git svn clone %s %s %s",
             formattedOrEmpty(username, "--username %s"),
             initOptions(workUnit),
-            if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else "${workUnit.migration.svnUrl}/",
-            workUnit.migration.svnGroup)
+            buildSvnCompleteUrl(workUnit))
 
         // replace any multiple whitespaces and return
         return cloneCommand.replace("\\s{2,}".toRegex(), " ").trim { it <= ' ' }
@@ -63,7 +60,7 @@ open class GitCommandManager(val historyMgr: HistoryManager,
 
     open fun generateGitSvnCloneScript(workUnit: WorkUnit, gitSvnCloneCommand: String): String {
 
-        val scriptInfo = ScriptInfo(gitSvnCloneCommand, workUnit.migration.svnUser, workUnit.migration.svnPassword)
+        val scriptInfo = ScriptInfo(gitSvnCloneCommand, workUnit.migration.svnUser, workUnit.migration.svnPassword, "${workUnit.directory}")
 
         val handlebars = Handlebars()
         val template = handlebars.compile("templates/scripts/git-svn-clone.sh")
@@ -73,9 +70,12 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         template.apply(scriptInfo, writer)
         fileToWrite.writeText(writer.toString())
 
-        Files.setPosixFilePermissions(fileToWrite.toPath(),
-            setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ))
-
+        if (!isWindows) {
+            Files.setPosixFilePermissions(
+                fileToWrite.toPath(),
+                setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ)
+            )
+        }
         return fileToWrite.path
     }
 
@@ -94,8 +94,12 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         template.apply(null, writer)
         fileToWrite.writeText(writer.toString())
 
-        Files.setPosixFilePermissions(fileToWrite.toPath(),
-            setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ))
+        if (!isWindows) {
+            Files.setPosixFilePermissions(
+                fileToWrite.toPath(),
+                setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ)
+            )
+        }
     }
 
     /**
@@ -186,4 +190,4 @@ open class GitCommandManager(val historyMgr: HistoryManager,
 /**
  * Info to inject in generated script
  */
-data class ScriptInfo(val svnCommand: String, val svnUser: String, val svnPassword: String)
+data class ScriptInfo(val svnCommand: String, val svnUser: String, val svnPassword: String, val workingDir: String)

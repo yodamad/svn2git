@@ -7,6 +7,7 @@ import fr.yodamad.svn2git.domain.Migration
 import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
+import fr.yodamad.svn2git.functions.buildSvnCompleteUrl
 import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.repository.MappingRepository
@@ -80,8 +81,8 @@ open class GitManager(val historyMgr: HistoryManager,
      */
     @Throws(IOException::class, InterruptedException::class)
     open fun gitSvnClone(workUnit: WorkUnit) {
-        var cloneCommand: String = ""
-        var safeCommand: String
+        var cloneCommand: String
+        val safeCommand: String
         if (!isWindows) {
             if (!isEmpty(workUnit.migration.svnPassword)) {
                 val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
@@ -103,7 +104,7 @@ open class GitManager(val historyMgr: HistoryManager,
             var commandOptions = gitCommandManager.initOptions(workUnit)
             // If no options, put fake one
             if (commandOptions.trim().isEmpty()) commandOptions = "fake_option"
-            cloneCommand = "${workUnit.directory}\\gitsvn.ps1 -url ${workUnit.migration.svnUrl} -username ${workUnit.migration.svnUser} -password ${workUnit.migration.svnPassword} -certAcceptResponse t -options $commandOptions \n"
+            cloneCommand = "${workUnit.directory}\\gitsvn.ps1 -url ${buildSvnCompleteUrl(workUnit)} -username ${workUnit.migration.svnUser} -password ${workUnit.migration.svnPassword} -certAcceptResponse t -options \"$commandOptions\" \n"
             safeCommand = cloneCommand
         }
 

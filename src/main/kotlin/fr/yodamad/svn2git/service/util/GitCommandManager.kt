@@ -80,14 +80,12 @@ open class GitCommandManager(val historyMgr: HistoryManager,
     }
 
     open fun generateGitSvnClonePackageForWindows(workUnit: WorkUnit) {
-        generateFile(workUnit, "gitsvn.ps1")
-        generateFile(workUnit, "gitsvn-wrapper.ps1")
-        generateFile(workUnit, "GitSvnCloneWrapper.cs")
+        generateFile(workUnit, "git-svn-clone.ps1")
     }
 
     private fun generateFile(workUnit: WorkUnit, filename: String) {
         val handlebars = Handlebars()
-        val template = handlebars.compile("templates/scripts/win/$filename")
+        val template = handlebars.compile("templates/scripts/$filename")
 
         val fileToWrite = File("${workUnit.directory}/$filename")
         val writer = StringWriter()

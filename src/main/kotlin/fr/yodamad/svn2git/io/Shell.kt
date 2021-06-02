@@ -69,7 +69,7 @@ object Shell {
         val builder = ProcessBuilder()
         val execDir = formatDirectory(directory)
         if (isWindows) {
-            if (usePowershell) builder.command(command)
+            if (usePowershell) builder.command("powershell.exe", "-File", command)
             else builder.command("cmd.exe", "/c", command)
         } else {
             builder.command("sh", "-c", command)

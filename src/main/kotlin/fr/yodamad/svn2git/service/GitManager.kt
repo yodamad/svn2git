@@ -7,7 +7,6 @@ import fr.yodamad.svn2git.domain.Migration
 import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
-import fr.yodamad.svn2git.functions.buildSvnCompleteUrl
 import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.repository.MappingRepository
@@ -100,12 +99,9 @@ open class GitManager(val historyMgr: HistoryManager,
             // Waiting for Windows support...
             cloneCommand = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
         } else {
-            gitCommandManager.generateGitSvnClonePackageForWindows(workUnit)
             val commandOptions = gitCommandManager.initOptions(workUnit)
-            cloneCommand = "${workUnit.directory}\\git-svn-clone.ps1" +
-                " -repoUrl ${buildSvnCompleteUrl(workUnit)} -username ${workUnit.migration.svnUser}" +
-                " -password ${workUnit.migration.svnPassword} -debugging -outputStdout -destination \"${workUnit.directory}\"" +
-                " -certificateAcceptResponse t -cloneOptions \"$commandOptions\" \n"
+            gitCommandManager.generateGitSvnClonePackageForWindows(workUnit, commandOptions)
+            cloneCommand = "${workUnit.directory}\\git-command.ps1"
             safeCommand = cloneCommand
         }
 

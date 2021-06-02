@@ -23,7 +23,6 @@ proc gitSvnClone { user password } {
 		}
 		eof { return 0   }
 	}
-
 }
 
 # Execute git svn clone command
@@ -46,11 +45,11 @@ if { $git_clone_results == 1 } {
 		spawn git svn fetch
 		set tryrun 0
 		expect {
-			   -gl "couldn't truncate file*" {
-				puts "catching error... continue fetching"
-				set tryrun 1
-				exp_continue
-				}
-			}
-		}
+           -gl "couldn't truncate file*" {
+            puts "catching error... continue fetching"
+            set tryrun 1
+            exp_continue
+            }
+        }
+    }
 }

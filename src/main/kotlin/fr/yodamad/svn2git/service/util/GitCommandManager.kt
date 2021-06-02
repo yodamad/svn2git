@@ -79,25 +79,25 @@ open class GitCommandManager(val historyMgr: HistoryManager,
         return fileToWrite.path
     }
 
-    open fun generateGitSvnClonePackageForWindows(workUnit: WorkUnit) {
-        generateFile(workUnit, "git-svn-clone.ps1")
-    }
+    open fun generateGitSvnClonePackageForWindows(workUnit: WorkUnit, cloneOptions: String?) {
 
-    private fun generateFile(workUnit: WorkUnit, filename: String) {
+        val scriptInfo = ScriptInfo("", workUnit.migration.svnUser, workUnit.migration.svnPassword,
+            "${workUnit.directory}", buildSvnCompleteUrl(workUnit), cloneOptions)
+
         val handlebars = Handlebars()
-        val template = handlebars.compile("templates/scripts/$filename")
+        var template = handlebars.compile("templates/scripts/win/git-command.ps1")
 
-        val fileToWrite = File("${workUnit.directory}/$filename")
-        val writer = StringWriter()
+        var fileToWrite = File("${workUnit.directory}/git-command.ps1")
+        var writer = StringWriter()
+        template.apply(scriptInfo, writer)
+        fileToWrite.writeText(writer.toString())
+
+        template = handlebars.compile("templates/scripts/win/git-svn-clone.ps1")
+        fileToWrite = File("${workUnit.directory}/git-svn-clone.ps1")
+        writer = StringWriter()
         template.apply(null, writer)
         fileToWrite.writeText(writer.toString())
 
-        if (!isWindows) {
-            Files.setPosixFilePermissions(
-                fileToWrite.toPath(),
-                setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ)
-            )
-        }
     }
 
     /**
@@ -188,4 +188,4 @@ open class GitCommandManager(val historyMgr: HistoryManager,
 /**
  * Info to inject in generated script
  */
-data class ScriptInfo(val svnCommand: String, val svnUser: String, val svnPassword: String, val workingDir: String)
+data class ScriptInfo(val svnCommand: String, val svnUser: String, val svnPassword: String, val workingDir: String, val svnUrl: String? = "", val cloneOptions: String? = "")

@@ -1,0 +1,55 @@
+#!/usr/bin/expect -f
+
+set cmd_git_clone "{{{ svnCommand }}}"
+set timeout -1
+
+# Procedure to execute git svn clone
+proc gitSvnClone { user password } {
+	expect {
+	  "(R)eject, accept (t)emporarily or accept (p)ermanently? " {
+		send -- "p\r"
+		exp_continue
+	  }
+
+	  "Password for '$user': " {
+		send "$password\r"
+        exp_continue
+	  }
+
+
+	  -gl "couldn't truncate file*" {
+		puts "catching error... continue with git svn fetch"
+		 return 1
+		}
+		eof { return 0   }
+	}
+}
+
+# Execute git svn clone command
+eval spawn $cmd_git_clone
+set git_clone_results [gitSvnClone "{{{ svnUser }}}" "{{{ svnPassword }}}"]
+
+# If successful git svn clone, ...
+if { $git_clone_results == 0 } {
+  # Successful git clone
+  exit 0
+}
+
+# If git svn clone KO : git svn fetch, ...
+if { $git_clone_results == 1 } {
+	#go in git reporsitory for fetching
+	cd {{{ workingDir }}}
+	set timeout -1   ;# no timeout
+	set tryrun 1
+	while {$tryrun} {
+		spawn git svn fetch
+		set tryrun 0
+		expect {
+           -gl "couldn't truncate file*" {
+            puts "catching error... continue fetching"
+            set tryrun 1
+            exp_continue
+            }
+        }
+    }
+}

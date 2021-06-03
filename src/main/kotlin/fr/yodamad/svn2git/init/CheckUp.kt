@@ -22,6 +22,9 @@ class CheckUp {
     private val SVN_VERSION = "svn"
     private val SVN_ERROR = "⛔️ svn2git requires 'svn' v1+"
 
+    private val EXPECT_VERSION = "expect"
+    private val EXPECT_ERROR = "⛔️ expect binary is required on Linux. 👉 Run apt-get|yum install expect."
+
     val isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows")
 
     @PostConstruct
@@ -29,6 +32,7 @@ class CheckUp {
         var allGood = checkGitSvnClone()
         allGood = allGood && checkCommand("git svn --version", GIT_SVN_VERSION, GIT_SVN_ERROR)
         allGood = allGood && checkCommand("svn --version", SVN_VERSION, SVN_ERROR)
+        if (!isWindows) allGood = allGood && checkCommand("expect -version", EXPECT_VERSION, EXPECT_ERROR)
         if (!allGood) exitProcess(1)
     }
 

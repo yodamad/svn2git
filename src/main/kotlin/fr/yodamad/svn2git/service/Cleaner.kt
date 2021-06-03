@@ -462,7 +462,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         execCommand(workUnit.commandManager, workUnit.directory, svnBranchList)
         var elementsToKeep = Files.readAllLines(Paths.get(workUnit.directory, SVN_LIST))
             .stream()
-            .map { l: String -> l.trim { it <= ' ' }.replace("/", "") }
+            .map { l: String -> l.trim { it <= ' ' }.replace("/", "").encode() }
             .collect(Collectors.toList())
 
         // ######### Switch elementsToKeep if necessary ##################################

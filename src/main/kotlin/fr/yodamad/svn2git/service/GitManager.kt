@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.io.Shell.execCommand
+import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.repository.MappingRepository
 import fr.yodamad.svn2git.service.util.*
 import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils
@@ -79,35 +80,50 @@ open class GitManager(val historyMgr: HistoryManager,
      */
     @Throws(IOException::class, InterruptedException::class)
     open fun gitSvnClone(workUnit: WorkUnit) {
-        val cloneCommand: String
+        var cloneCommand: String
         val safeCommand: String
-        if (!isEmpty(workUnit.migration.svnPassword)) {
-            val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
-            cloneCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, escapedPassword)
-            safeCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, STARS)
-        } else if (!isEmpty(applicationProperties.svn.password)) {
-            val escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password)
-            cloneCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, escapedPassword)
-            safeCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, STARS)
+        if (!isWindows) {
+            if (!isEmpty(workUnit.migration.svnPassword)) {
+                val escapedPassword = StringEscapeUtils.escapeJava(workUnit.migration.svnPassword)
+                cloneCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, escapedPassword)
+                safeCommand = gitCommandManager.initCommand(workUnit, workUnit.migration.svnUser, STARS)
+            } else if (!isEmpty(applicationProperties.svn.password)) {
+                val escapedPassword = StringEscapeUtils.escapeJava(applicationProperties.svn.password)
+                cloneCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, escapedPassword)
+                safeCommand = gitCommandManager.initCommand(workUnit, applicationProperties.svn.user, STARS)
+            } else {
+                cloneCommand = gitCommandManager.initCommand(workUnit, null, null)
+                safeCommand = cloneCommand
+            }
+
+            // Waiting for Windows support...
+            cloneCommand = gitCommandManager.generateGitSvnCloneScript(workUnit, cloneCommand)
         } else {
-            cloneCommand = gitCommandManager.initCommand(workUnit, null, null)
+            val commandOptions = gitCommandManager.initOptions(workUnit)
+            gitCommandManager.generateGitSvnClonePackageForWindows(workUnit, commandOptions)
+            cloneCommand = "${workUnit.directory}\\git-command.ps1"
             safeCommand = cloneCommand
         }
+
         val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_CHECKOUT,
             (if (workUnit.commandManager.isFirstAttemptMigration) "" else Constants.REEXECUTION_SKIPPING) + safeCommand)
         // Only Clone if first attempt at migration
         var cloneOK = true
         if (workUnit.commandManager.isFirstAttemptMigration) {
             try {
-                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand)
+                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand, true)
             } catch (thr: Throwable) {
-                LOG.warn("Cannot git svn clone", thr.message)
                 cloneOK = false
+                LOG.warn("Cannot git svn clone", thr.message)
                 var round = 0
                 var notOk = true
                 while (round++ < applicationProperties.svn.maxFetchAttempts && notOk) {
                     notOk = gitSvnFetch(workUnit, round)
                     gitGC(workUnit, round)
+                }
+                if (notOk) {
+                    historyMgr.endStep(history, StatusEnum.FAILED, null)
+                    throw RuntimeException()
                 }
             }
         }
@@ -131,7 +147,7 @@ open class GitManager(val historyMgr: HistoryManager,
     open fun gitSvnFetch(workUnit: WorkUnit, round: Int) : Boolean {
         val fetchCommand = "git svn fetch";
 
-        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "Round $round : $fetchCommand")
+        val history = historyMgr.startStep(workUnit.migration, StepEnum.SVN_FETCH, "$fetchCommand (Round $round)")
         return try {
             execCommand(workUnit.commandManager, workUnit.directory, fetchCommand)
             historyMgr.endStep(history, StatusEnum.DONE, null)

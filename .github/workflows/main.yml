@@ -30,7 +30,7 @@ jobs:
             - name: Upgrade platform
               run: sudo apt-get upgrade
             - name: Install git-svn
-              run: sudo apt-get install --yes git git-svn
+              run: sudo apt-get install --yes git git-svn expect
             - name: 🔍 Analyze code with SonarQube
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

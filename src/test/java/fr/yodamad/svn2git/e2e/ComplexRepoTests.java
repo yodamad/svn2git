@@ -12,6 +12,7 @@ import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,15 @@ public class ComplexRepoTests {
         if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());
     }
 
+    @After
+    public void forceCleanGitlab() throws GitLabApiException, InterruptedException {
+        Optional<Project> project = api.getProjectApi().getOptionalProject(complex().namespace, complex().name);
+        if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());
+        while(api.getProjectApi().getOptionalProject(complex().namespace, complex().name).isPresent()) {
+            Thread.sleep(500);
+        }
+    }
+
     @Test
     public void test_migration_on_complex_repository() throws ExecutionException, InterruptedException, GitLabApiException {
         Migration migration = initComplexMigration(applicationProperties);
@@ -80,7 +90,61 @@ public class ComplexRepoTests {
         branches.stream().filter(b -> b.getName().equals("master")).forEach(b -> hasHistory(project, b.getName()));
 
         // Check tags
-        List<Tag> tags = checkTags(project);
+        List<Tag> tags = checkTags(project, 5);
+        tags.forEach(t -> hasNoHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_migration_with_filter_tags() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initComplexMigration(applicationProperties);
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setTags("*");
+        migration.setTagsToMigrate("v1.0,v1.1");
+        migration.setBranches("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project);
+        branches.stream().filter(b -> !b.getName().equals("master")).forEach(b -> hasNoHistory(project, b.getName()));
+        branches.stream().filter(b -> b.getName().equals("master")).forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project, 2);
+        tags.forEach(t -> hasNoHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_migration_with_filter_branches() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initComplexMigration(applicationProperties);
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setTags("*");
+        migration.setBranchesToMigrate("v1.0");
+        migration.setBranches("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 1);
+        branches.stream().filter(b -> !b.getName().equals("master")).forEach(b -> hasNoHistory(project, b.getName()));
+        branches.stream().filter(b -> b.getName().equals("master")).forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project, 5);
         tags.forEach(t -> hasNoHistory(project, t.getName()));
     }
 

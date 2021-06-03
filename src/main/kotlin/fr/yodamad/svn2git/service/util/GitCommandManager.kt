@@ -1,18 +1,24 @@
 package fr.yodamad.svn2git.service.util
 
+import com.github.jknack.handlebars.Handlebars
 import fr.yodamad.svn2git.config.ApplicationProperties
 import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.io.Shell
+import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.service.HistoryManager
 import fr.yodamad.svn2git.service.MappingManager
 import org.apache.commons.lang3.StringUtils.isEmpty
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.io.File
 import java.io.IOException
+import java.io.StringWriter
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermission.*
 
 @Service
 open class GitCommandManager(val historyMgr: HistoryManager,
@@ -30,30 +36,68 @@ open class GitCommandManager(val historyMgr: HistoryManager,
      * @return
      */
     open fun initCommand(workUnit: WorkUnit, username: String?, secret: String?): String {
-
-        // Get list of svnDirectoryDelete
-        val svnDirectoryDeleteList: List<String> = mappingMgr.getSvnDirectoryDeleteList(workUnit.migration.id)
-        // Initialise ignorePaths string that will be passed to git svn clone
-        val ignorePaths: String = generateIgnorePaths(workUnit.migration.trunk, workUnit.migration.tags, workUnit.migration.branches, workUnit.migration.svnProject, svnDirectoryDeleteList)
-
-        // regex with negative look forward allows us to choose the branch and tag names to keep
-        val ignoreRefs: String = generateIgnoreRefs(workUnit.migration.branchesToMigrate, workUnit.migration.tagsToMigrate)
-
-        val cloneCommand = String.format("%s git svn clone %s %s %s %s %s %s %s %s %s%s",
-            formattedOrEmpty(secret, "echo %s |", "echo(%s|"),
+        val cloneCommand = String.format("git svn clone %s %s %s",
             formattedOrEmpty(username, "--username %s"),
+            initOptions(workUnit),
+            buildSvnCompleteUrl(workUnit))
+
+        // replace any multiple whitespaces and return
+        return cloneCommand.replace("\\s{2,}".toRegex(), " ").trim { it <= ' ' }
+    }
+
+    open fun initOptions(workUnit: WorkUnit) : String {
+        val svnDirectoryDeleteList: List<String> = mappingMgr.getSvnDirectoryDeleteList(workUnit.migration.id)
+        return String.format("%s %s %s %s %s %s",
             formattedOrEmpty(workUnit.migration.svnRevision, "-r%s:HEAD"),
             setTrunk(workUnit),
             setSvnElement("branches", workUnit.migration.branches, workUnit),
             setSvnElement("tags", workUnit.migration.tags, workUnit),
-            ignorePaths, ignoreRefs,
+            generateIgnorePaths(workUnit.migration.trunk, workUnit.migration.tags, workUnit.migration.branches, workUnit.migration.svnProject, svnDirectoryDeleteList),
             if (workUnit.migration.emptyDirs) "--preserve-empty-dirs"
             else if (workUnit.migration.emptyDirs == null && applicationProperties.getFlags().isGitSvnClonePreserveEmptyDirsOption) "--preserve-empty-dirs" else EMPTY,
-            if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else "${workUnit.migration.svnUrl}/",
-            workUnit.migration.svnGroup)
+        )
+    }
 
-        // replace any multiple whitespaces and return
-        return cloneCommand.replace("\\s{2,}".toRegex(), " ").trim { it <= ' ' }
+    open fun generateGitSvnCloneScript(workUnit: WorkUnit, gitSvnCloneCommand: String): String {
+
+        val scriptInfo = ScriptInfo(gitSvnCloneCommand, workUnit.migration.svnUser, workUnit.migration.svnPassword, "${workUnit.directory}")
+
+        val handlebars = Handlebars()
+        val template = handlebars.compile("templates/scripts/git-svn-clone.sh")
+
+        val fileToWrite = File("${workUnit.directory}/git-svn-clone.sh")
+        val writer = StringWriter()
+        template.apply(scriptInfo, writer)
+        fileToWrite.writeText(writer.toString())
+
+        if (!isWindows) {
+            Files.setPosixFilePermissions(
+                fileToWrite.toPath(),
+                setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ, OTHERS_READ)
+            )
+        }
+        return fileToWrite.path
+    }
+
+    open fun generateGitSvnClonePackageForWindows(workUnit: WorkUnit, cloneOptions: String?) {
+
+        val scriptInfo = ScriptInfo("", workUnit.migration.svnUser, workUnit.migration.svnPassword,
+            "${workUnit.directory}", buildSvnCompleteUrl(workUnit), cloneOptions)
+
+        val handlebars = Handlebars()
+        var template = handlebars.compile("templates/scripts/win/git-command.ps1")
+
+        var fileToWrite = File("${workUnit.directory}/git-command.ps1")
+        var writer = StringWriter()
+        template.apply(scriptInfo, writer)
+        fileToWrite.writeText(writer.toString())
+
+        template = handlebars.compile("templates/scripts/win/git-svn-clone.ps1")
+        fileToWrite = File("${workUnit.directory}/git-svn-clone.ps1")
+        writer = StringWriter()
+        template.apply(null, writer)
+        fileToWrite.writeText(writer.toString())
+
     }
 
     /**
@@ -140,3 +184,8 @@ open class GitCommandManager(val historyMgr: HistoryManager,
             else -> workUnit.migration.gitlabToken
         }
 }
+
+/**
+ * Info to inject in generated script
+ */
+data class ScriptInfo(val svnCommand: String, val svnUser: String, val svnPassword: String, val workingDir: String, val svnUrl: String? = "", val cloneOptions: String? = "")

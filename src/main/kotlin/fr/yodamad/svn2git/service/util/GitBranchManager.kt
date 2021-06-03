@@ -3,6 +3,8 @@ package fr.yodamad.svn2git.service.util
 import fr.yodamad.svn2git.data.WorkUnit
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
+import fr.yodamad.svn2git.functions.decode
+import fr.yodamad.svn2git.functions.gitFormat
 import fr.yodamad.svn2git.functions.listBranchesOnly
 import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.service.GitManager
@@ -30,12 +32,18 @@ open class GitBranchManager(val gitManager: GitManager,
     @Throws(RuntimeException::class)
     open fun pushBranch(workUnit: WorkUnit, branch: String): Boolean {
         var branchName = branch.replaceFirst("refs/remotes/origin/".toRegex(), "")
-        branchName = branchName.replaceFirst("origin/".toRegex(), "")
+        // Spaces aren't permitted, so replaced them with an underscore
+        branchName = branchName.replaceFirst("origin/".toRegex(), "").gitFormat()
         LOG.debug("Branch %s $branchName")
         val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName)
 
+        if (workUnit.migration.trunk != null && workUnit.migration.trunk != "trunk" && workUnit.migration.trunk.equals(branch.decode())) {
+            // Don't push branch that is used as new master
+            return true;
+        }
+
         try {
-            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b $branchName $branch")
+            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b \"$branchName\" $branch")
         } catch (iEx: IOException) {
             LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
             historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { SERVER_API_URL } from 'app/app.constants';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
 import { MigrationFilter } from 'app/shared/model/migration-filter.model';
 
@@ -56,9 +56,13 @@ export class MigrationProcessService {
 
     checkSvn(name: string, url: string, user: string, password: string, depth: number): Observable<EntityStructureResponseType> {
         const svnInfo = new SvnInfo(url, user, password);
-        return this.http
-            .post<SvnStructure>(`${this.repositoryUrl}/${name}?depth=${depth}`, svnInfo, { observe: 'response' })
-            .pipe(map((res: EntityStructureResponseType) => res));
+        return this.http.post<SvnStructure>(`${this.repositoryUrl}/${name}?depth=${depth}`, svnInfo, { observe: 'response' }).pipe(
+            map((res: EntityStructureResponseType) => res),
+            catchError(err => {
+                console.log(err);
+                throw err;
+            })
+        );
     }
 
     findActiveMigrations(): Observable<MigrationArrayResponseType> {

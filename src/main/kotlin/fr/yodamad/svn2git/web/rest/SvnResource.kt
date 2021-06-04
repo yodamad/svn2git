@@ -151,6 +151,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         } catch (ex: SVNException) {
             if (ex is SVNAuthenticationException) {
                 log.error("Cannot access SVN", ex)
+                throw ex
             } else {
                 log.warn("Flat repo", ex)
             }

@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.tmatesoft.svn.core.SVNAuthenticationException;
 
 import java.util.List;
 
@@ -127,11 +128,10 @@ public class SvnResourceTest {
         });
     }
 
-    @Test
+    @Test(expected = SVNAuthenticationException.class)
     public void test_invalid_credentials() {
         svnInfo.user = "hacker";
         svnInfo.password = "hacker";
-        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
-        assertThat(svnStructure.modules).isEmpty();
+        svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
     }
 }

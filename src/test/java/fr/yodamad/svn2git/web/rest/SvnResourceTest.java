@@ -4,6 +4,7 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.data.Repository;
 import fr.yodamad.svn2git.domain.SvnInfo;
 import fr.yodamad.svn2git.domain.SvnStructure;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,26 @@ public class SvnResourceTest {
 
     public static final Integer DEPTH = 2;
 
-    public static final SvnInfo svnInfo = new SvnInfo();
-    static {
+    public SvnInfo svnInfo = new SvnInfo();
+
+    @Before
+    public void initSvnInfo() {
+        svnInfo = new SvnInfo();
         svnInfo.url = "https://chaos.yodamad.fr/svn";
-        svnInfo.user = "demo";
-        svnInfo.password = "demo";
     }
 
     @Test
     public void test_svn_listing_on_simple_repo() {
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
+        assertThat(svnStructure.modules).isEmpty();
+        assertThat(svnStructure.flat).isTrue();
+        assertThat(svnStructure.root).isTrue();
+    }
+
+    @Test
+    public void test_svn_listing_with_overriden_credz() {
+        svnInfo.user = "demo";
+        svnInfo.password = "demo";
         SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
         assertThat(svnStructure.modules).isEmpty();
         assertThat(svnStructure.flat).isTrue();
@@ -113,5 +125,13 @@ public class SvnResourceTest {
             assertThat(m.subModules).isEmpty();
             assertThat(m.flat).isFalse();
         });
+    }
+
+    @Test
+    public void test_invalid_credentials() {
+        svnInfo.user = "hacker";
+        svnInfo.password = "hacker";
+        SvnStructure svnStructure = svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
+        assertThat(svnStructure.modules).isEmpty();
     }
 }

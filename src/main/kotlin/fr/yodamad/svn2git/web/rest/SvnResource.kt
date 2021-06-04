@@ -6,9 +6,9 @@ import fr.yodamad.svn2git.domain.SvnInfo
 import fr.yodamad.svn2git.domain.SvnStructure
 import fr.yodamad.svn2git.domain.SvnStructure.FakeModule
 import fr.yodamad.svn2git.domain.SvnStructure.SvnModule
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
+import org.springframework.util.StringUtils.isEmpty
 import org.springframework.web.bind.annotation.*
 import org.tmatesoft.svn.core.*
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager
@@ -17,7 +17,6 @@ import org.tmatesoft.svn.core.wc.SVNRevision
 import org.tmatesoft.svn.core.wc2.ISvnObjectReceiver
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory
 import org.tmatesoft.svn.core.wc2.SvnTarget
-import java.util.*
 import java.util.function.Consumer
 
 fun keywords() : MutableList<String> {
@@ -96,12 +95,11 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         val operationFactory = SvnOperationFactory()
 
         // Set authentication if needed
-        var authManager: ISVNAuthenticationManager? = DefaultSVNAuthenticationManager(null, true, svnInfo.user, svnInfo.password, null, null)
-        if (!StringUtils.isEmpty(applicationProperties.svn.user)) {
-            authManager = DefaultSVNAuthenticationManager(null, true,
-                applicationProperties.svn.user, applicationProperties.svn.password, null, null)
-            operationFactory.authenticationManager = authManager
+        var authManager: ISVNAuthenticationManager? = DefaultSVNAuthenticationManager(null, true, applicationProperties.svn.user, applicationProperties.svn.password, null, null)
+        if (!isEmpty(svnInfo.password)) {
+            authManager = DefaultSVNAuthenticationManager(null, true, svnInfo.user, svnInfo.password, null, null)
         }
+
         operationFactory.authenticationManager = authManager
         val list = operationFactory.createList()
         list.depth = SVNDepth.IMMEDIATES
@@ -115,6 +113,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
             }
         } catch (e: SVNException) {
             log.error("Cannot list SVN", e)
+            return emptyList()
         }
         val modulesFounds: MutableList<SvnModule> = ArrayList()
         list.receiver = ISvnObjectReceiver { _, `object`: SVNDirEntry ->
@@ -150,7 +149,11 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         try {
             list.run()
         } catch (ex: SVNException) {
-            log.error("Cannot list SVN", ex)
+            if (ex is SVNAuthenticationException) {
+                log.error("Cannot access SVN", ex)
+            } else {
+                log.warn("Flat repo", ex)
+            }
         }
         modulesFounds.stream()
             .filter { m: SvnModule? -> m !is FakeModule }

@@ -42,8 +42,8 @@ public abstract class MigrationUtils {
 
         migration.setSvnUrl("https://chaos.yodamad.fr/svn");
         migration.setSvnProject("");
-        migration.setSvnUser("demo");
-        migration.setSvnPassword("demo");
+        migration.setSvnUser(props.svn.user);
+        migration.setSvnPassword(props.svn.password);
         migration.setSvnGroup(repository.namespace);
 
         migration.setFlat(false);

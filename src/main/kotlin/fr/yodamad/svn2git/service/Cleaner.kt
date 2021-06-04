@@ -456,7 +456,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                 if (workUnit.migration.svnGroup.endsWith("/")) workUnit.migration.svnGroup else String.format("%s/", workUnit.migration.svnGroup),
                 workUnit.migration.svnProject,
                 if (isTags) "tags" else "branches",
-                "--username=" + workUnit.migration.svnUser, "--password=" + workUnit.migration.svnPassword,
+                "--username=" + workUnit.migration.svnUser, "--password=" + workUnit.migration.svnPassword.escape(),
                 SVN_LIST)
         }
         execCommand(workUnit.commandManager, workUnit.directory, svnBranchList)

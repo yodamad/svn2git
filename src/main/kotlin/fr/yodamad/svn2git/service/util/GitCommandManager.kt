@@ -60,7 +60,7 @@ open class GitCommandManager(val historyMgr: HistoryManager,
 
     open fun generateGitSvnCloneScript(workUnit: WorkUnit, gitSvnCloneCommand: String): String {
 
-        val scriptInfo = ScriptInfo(gitSvnCloneCommand, workUnit.migration.svnUser, workUnit.migration.svnPassword, "${workUnit.directory}")
+        val scriptInfo = ScriptInfo(gitSvnCloneCommand, workUnit.migration.svnUser, workUnit.migration.svnPassword.escape(), "${workUnit.directory}")
 
         val handlebars = Handlebars()
         val template = handlebars.compile("templates/scripts/git-svn-clone.sh")

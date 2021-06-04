@@ -6,6 +6,7 @@
         "back" : " Retour",
         "blocked": "Certains namespaces ne sont pas disponibles. Corriger pour continuer",
         "check" : "Vérifier",
+        "check-token" : "Vérifier le token",
         "checking" : "En cours",
         "cleaning" : {
             "options" : "🧹 Nettoyage",
@@ -54,7 +55,7 @@
             "url-help": "L'url de base comme https://gitlab.com/",
             "url-default": "Par défault",
             "url-custom": "Personnalisé",
-            "credentials": "Identifiants",
+            "username": "Username",
             "rename": "Nouveau nom du projet dans Gitlab",
             "upload": "🦊 Upload fichiers",
             "use" : {
@@ -62,6 +63,7 @@
             },
             "user" : "Utilisateur",
             "account-found": "Compte trouvé sur Gitlab",
+            "account-info": "<b>{{ username }}</b> sera utilisé pour la connexion à Gitlab",
             "account-unknown": "Compte non trouvé sur Gitlab, vous devez vous connecter dessus au préalable"
         },
         "history" : {

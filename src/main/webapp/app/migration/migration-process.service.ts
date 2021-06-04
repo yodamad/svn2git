@@ -7,6 +7,7 @@ import { IMigration } from 'app/shared/model/migration.model';
 import { MigrationFilter } from 'app/shared/model/migration-filter.model';
 
 type EntityResponseType = HttpResponse<boolean>;
+type StringResponseType = HttpResponse<string>;
 type EntityStructureResponseType = HttpResponse<SvnStructure>;
 type MigrationArrayResponseType = HttpResponse<IMigration[]>;
 
@@ -26,6 +27,13 @@ export class MigrationProcessService {
     private activeMigrationsUrl = this.migrationUrl + '/active';
 
     constructor(private http: HttpClient) {}
+
+    currentUserFromToken(url: string, token?: string): Observable<StringResponseType> {
+        const gitlabInfo = new GitlabInfo(url, token);
+        return this.http
+            .post<string>(`${this.userUrl}`, gitlabInfo, { observe: 'response', responseType: 'text' as 'json' })
+            .pipe(map((res: StringResponseType) => res));
+    }
 
     checkUser(name: string, url: string, token?: string): Observable<EntityResponseType> {
         const gitlabInfo = new GitlabInfo(url, token);

@@ -156,7 +156,7 @@ application:
     svn:
         url: ENC(SF16uNMiFtw5iGVKeQh9DrrkgriJkHaXJ+BwOGze9bCqfl599KaFGpzEHrVIuQmuCOYEMLFfYTmxb5KxOj9D5A==)
         user: ENC(qBfCeKNjnlO9orpWnINdxCq7Kwoap1J0cFaWNWgD7y5uhrLamyOtWqhf8uzxY4Xk)
-        password: ENC(49THJSG8x/Cm7D9BVUp4rlu3JwipsN25ILDvGx6bp8T7RmRJtgUeFsEneD1gFs7O)
+        password: ENC(duJwZldD3uFQZuqdNco981ohKwKFVaMv8DfXFiNdSc/cExNGMNO0qAJOl9E0O0H6)
         credentials: required
         svnUrlModifiable: true
         maxFetchAttempts: 1

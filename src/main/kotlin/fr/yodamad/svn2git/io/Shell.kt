@@ -4,6 +4,7 @@ import fr.yodamad.svn2git.domain.Migration
 import fr.yodamad.svn2git.service.util.CommandManager
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
+import org.springframework.util.StringUtils.isEmpty
 import java.io.*
 import java.nio.charset.Charset
 import java.time.LocalDateTime
@@ -65,7 +66,7 @@ object Shell {
      */
     @JvmOverloads
     @Throws(InterruptedException::class, IOException::class)
-    fun execCommand(commandManager: CommandManager, directory: String, command: String?, securedCommandToPrint: String? = command, usePowershell: Boolean = false): Int {
+    fun execCommand(commandManager: CommandManager, directory: String, command: String?, securedCommandToPrint: String? = command, usePowershell: Boolean = false, alwaysPrintOutput: Boolean = false): Int {
         val builder = ProcessBuilder()
         val execDir = formatDirectory(directory)
         if (isWindows) {
@@ -78,9 +79,9 @@ object Shell {
         LOG.debug(String.format("Exec command : %s", securedCommandToPrint))
         LOG.debug(String.format("in %s", execDir))
         val process = builder.start()
-        val streamGobbler = StreamGobbler(process.inputStream) { s: String? -> LOG.debug(s) }
+        val streamGobbler = StreamGobbler(process.inputStream) { s: String? -> if (alwaysPrintOutput && !isEmpty(s) && !s!!.contains("password", true)) LOG.info(s) else LOG.debug(s) }
         Executors.newSingleThreadExecutor().submit(streamGobbler)
-        val errorStreamGobbler = StreamGobbler(process.errorStream) { s: String? -> LOG.debug(s) }
+        val errorStreamGobbler = StreamGobbler(process.errorStream) { s: String? -> LOG.error(s) }
         Executors.newSingleThreadExecutor().submit(errorStreamGobbler)
         val stderr = IOUtils.toString(process.errorStream, Charset.defaultCharset())
         val exitCode = process.waitFor()

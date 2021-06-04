@@ -930,6 +930,6 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     warningUploadExtension() {
-        return this.staticExtensions.length == 0;
+        return this.staticExtensions.length === 0;
     }
 }

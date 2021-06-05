@@ -111,7 +111,7 @@ open class GitManager(val historyMgr: HistoryManager,
         var cloneOK = true
         if (workUnit.commandManager.isFirstAttemptMigration) {
             try {
-                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand, true)
+                execCommand(workUnit.commandManager, workUnit.root, cloneCommand, safeCommand, true, true)
             } catch (thr: Throwable) {
                 cloneOK = false
                 LOG.warn("Cannot git svn clone", thr.message)

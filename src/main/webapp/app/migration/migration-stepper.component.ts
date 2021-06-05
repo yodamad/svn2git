@@ -67,6 +67,7 @@ export class MigrationStepperComponent implements OnInit {
     svnCredsOption: string;
     svnDepth: number;
     gitlabUrl: string;
+    gitlabUser = '';
     gitlabCredsOption: string;
     renamings: MigrationRenaming[] = [];
     artifactoryUrl: string;
@@ -169,7 +170,6 @@ export class MigrationStepperComponent implements OnInit {
         this.nexusUrl = localStorage.getItem(NEXUS_URL);
 
         this.gitlabFormGroup = this._formBuilder.group({
-            gitlabUser: ['', Validators.required],
             gitlabGroup: ['', Validators.required],
             gitlabURL: [{ value: this.gitlabUrl, disabled: true }, Validators.required],
             gitlabToken: ['']
@@ -224,6 +224,31 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     /**
+     * Get Gitlab user
+     */
+    getGitlabUser() {
+        // initialise to true for each check
+        this.gitlabUserKO = null;
+        this.checkingGitlabUser = true;
+
+        this._migrationProcessService
+            .currentUserFromToken(this.gitlabFormGroup.controls['gitlabURL'].value, this.gitlabFormGroup.controls['gitlabToken'].value)
+            .subscribe(
+                res => {
+                    console.log(res);
+                    this.gitlabUser = res.body;
+                    this.gitlabUserKO = false;
+                    this.checkingGitlabUser = false;
+                },
+                err => {
+                    console.log(err);
+                    this.gitlabUserKO = true;
+                    this.checkingGitlabUser = false;
+                }
+            );
+    }
+
+    /**
      * Check if user exists
      */
     checkGitlabUser() {
@@ -260,7 +285,7 @@ export class MigrationStepperComponent implements OnInit {
         this._migrationProcessService
             .checkGroup(
                 this.gitlabFormGroup.controls['gitlabGroup'].value,
-                this.gitlabFormGroup.controls['gitlabUser'].value,
+                this.gitlabUser,
                 this.gitlabFormGroup.controls['gitlabURL'].value,
                 this.gitlabFormGroup.controls['gitlabToken'].value
             )
@@ -451,7 +476,7 @@ export class MigrationStepperComponent implements OnInit {
         if (this.gitlabFormGroup.controls['gitlabToken'] !== undefined && this.gitlabFormGroup.controls['gitlabToken'].value !== '') {
             this.mig.gitlabToken = this.gitlabFormGroup.controls['gitlabToken'].value;
         }
-        this.mig.user = this.gitlabFormGroup.controls['gitlabUser'].value;
+        this.mig.user = this.gitlabUser;
         this.mig.gitlabGroup = this.gitlabFormGroup.controls['gitlabGroup'].value;
         const renaming = this.renamings.find(
             r =>
@@ -930,6 +955,6 @@ export class MigrationStepperComponent implements OnInit {
     }
 
     warningUploadExtension() {
-        return this.staticExtensions.length == 0;
+        return this.staticExtensions.length === 0;
     }
 }

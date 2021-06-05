@@ -6,6 +6,7 @@
         "back" : " Back",
         "blocked": "Some namespaces aren't available. Fix before starting migration",
         "check" : "Check",
+        "check-token" : "Check Token",
         "checking" : "Checking",
         "cleaning" : {
             "options" : "🧹 Cleaning options",
@@ -54,7 +55,7 @@
             "url-help": "The base URL, e.g. https://gitlab.com/",
             "url-default": "Default",
             "url-custom": "Custom",
-            "credentials": "Credentials",
+            "username": "Username",
             "rename": "New name for project in Gitlab",
             "upload": "🦊 Upload artefacts",
             "use" : {
@@ -62,6 +63,7 @@
             },
             "user" : "User",
             "account-found": "Account found in Gitlab",
+            "account-info": "<b>{{ username }}</b> will be use for Gitlab connection",
             "account-unknown": "Account not found in Gitlab you need to log in first"
         },
         "history" : {

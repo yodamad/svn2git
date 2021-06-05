@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { SERVER_API_URL } from 'app/app.constants';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { IMigration } from 'app/shared/model/migration.model';
 import { MigrationFilter } from 'app/shared/model/migration-filter.model';
 
 type EntityResponseType = HttpResponse<boolean>;
+type StringResponseType = HttpResponse<string>;
 type EntityStructureResponseType = HttpResponse<SvnStructure>;
 type MigrationArrayResponseType = HttpResponse<IMigration[]>;
 
@@ -26,6 +27,13 @@ export class MigrationProcessService {
     private activeMigrationsUrl = this.migrationUrl + '/active';
 
     constructor(private http: HttpClient) {}
+
+    currentUserFromToken(url: string, token?: string): Observable<StringResponseType> {
+        const gitlabInfo = new GitlabInfo(url, token);
+        return this.http
+            .post<string>(`${this.userUrl}`, gitlabInfo, { observe: 'response', responseType: 'text' as 'json' })
+            .pipe(map((res: StringResponseType) => res));
+    }
 
     checkUser(name: string, url: string, token?: string): Observable<EntityResponseType> {
         const gitlabInfo = new GitlabInfo(url, token);
@@ -56,9 +64,13 @@ export class MigrationProcessService {
 
     checkSvn(name: string, url: string, user: string, password: string, depth: number): Observable<EntityStructureResponseType> {
         const svnInfo = new SvnInfo(url, user, password);
-        return this.http
-            .post<SvnStructure>(`${this.repositoryUrl}/${name}?depth=${depth}`, svnInfo, { observe: 'response' })
-            .pipe(map((res: EntityStructureResponseType) => res));
+        return this.http.post<SvnStructure>(`${this.repositoryUrl}/${name}?depth=${depth}`, svnInfo, { observe: 'response' }).pipe(
+            map((res: EntityStructureResponseType) => res),
+            catchError(err => {
+                console.log(err);
+                throw err;
+            })
+        );
     }
 
     findActiveMigrations(): Observable<MigrationArrayResponseType> {

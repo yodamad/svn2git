@@ -11,6 +11,7 @@ import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Project;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +55,15 @@ public class FlatRepoTests {
     public void cleanGitlab() throws GitLabApiException {
         Optional<Project> project = api.getProjectApi().getOptionalProject(flat().namespace, flat().name);
         if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());
+    }
+
+    @After
+    public void forceCleanGitlab() throws GitLabApiException, InterruptedException {
+        Optional<Project> project = api.getProjectApi().getOptionalProject(flat().namespace, flat().name);
+        if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());
+        while(api.getProjectApi().getOptionalProject(flat().namespace, flat().name).isPresent()) {
+            Thread.sleep(500);
+        }
     }
 
     @Test

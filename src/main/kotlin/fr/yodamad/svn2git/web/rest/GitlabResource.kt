@@ -34,6 +34,21 @@ open class GitlabResource(val gitlabAdmin: GitlabAdmin,
     val logger: Logger = LoggerFactory.getLogger(GitlabResource::class.java)
 
     /**
+     * @return current user for token
+     */
+    @Timed
+    @PostMapping("/user")
+    open fun getUserFromToken(@RequestBody gitlabInfo: GitlabInfo) : ResponseEntity<String> {
+        val api: UserApi = overrideGitlab(gitlabInfo).userApi
+        val user = api.getCurrentUser()
+        return if (user != null) {
+            ResponseEntity.ok().body(user.username)
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
+
+    /**
      * Check if a user exists on Gitlab
      *
      * @param userName User ID search

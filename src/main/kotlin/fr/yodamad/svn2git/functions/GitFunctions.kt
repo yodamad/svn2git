@@ -180,6 +180,7 @@ fun listTagsOnly(remotes: List<String>): List<String>? = remotes.stream()
         .map { obj: String -> obj.trim { it <= ' ' } } // Only tags
         .filter { b: String -> b.startsWith(ORIGIN_TAGS) } // Remove temp tags
         .filter { b: String -> !b.contains("@") }
+        .filter { b: String -> !b.contains("\${") }
         .collect(Collectors.toList())
 
 fun isFileInFolder(dirPath: String): Boolean {

@@ -11,6 +11,7 @@ import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Project;
+import org.gitlab4j.api.models.Tag;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,6 +116,33 @@ public class WeirdRepoTests {
         // Check tags
         checkTags(project, 0);
     }
+
+    @Test
+    public void test_migration_with_space_in_tag_name() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initWeirdMigration(applicationProperties);
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setTags("*");
+        migration.setBranches(null);
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        isMissing(project.get(), ROOT_ANOTHER_BIN);
+        isPresent(project.get(), FILE_BIN, false);
+        isPresent(project.get(), REVISION, false);
+
+        // Check branches
+        checkBranches(project, 1);
+
+        // Check tags
+        List<Tag> tags = checkTags(project, 1);
+        assertThat(tags.stream().anyMatch(b -> b.getName().equals("tag%20with%20space"))).isTrue();
+    }
+
 
     private void startAndCheck(Migration migration) throws ExecutionException, InterruptedException {
         Migration saved = migrationRepository.save(migration);

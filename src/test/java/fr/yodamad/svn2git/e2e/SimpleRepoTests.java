@@ -17,7 +17,6 @@ import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,7 @@ import java.util.concurrent.Future;
 import static fr.yodamad.svn2git.data.Repository.Branches.*;
 import static fr.yodamad.svn2git.data.Repository.Dirs.DIRECTORY;
 import static fr.yodamad.svn2git.data.Repository.Dirs.FOLDER;
+import static fr.yodamad.svn2git.data.Repository.Files.EMPTY_DIR;
 import static fr.yodamad.svn2git.data.Repository.Tags.V1_1;
 import static fr.yodamad.svn2git.data.Repository.simple;
 import static fr.yodamad.svn2git.utils.Checks.*;
@@ -99,6 +99,33 @@ public class SimpleRepoTests {
 
         // Check files
         checkAllFiles(project);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project);
+        branches.forEach(b -> hasHistory(project, b.getName()));
+
+        // Check tags
+        List<Tag> tags = checkTags(project);
+        tags.forEach(t -> hasHistory(project, t.getName()));
+    }
+
+    @Test
+    public void test_full_migration_on_simple_repo_with_empty_dirs() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initSimpleMigration(applicationProperties);
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setBranches("*");
+        migration.setTags("*");
+        migration.setEmptyDirs(true);
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        checkAllFiles(project);
+        isPresent(project.get(), EMPTY_DIR, false);
 
         // Check branches
         List<Branch> branches = checkBranches(project);

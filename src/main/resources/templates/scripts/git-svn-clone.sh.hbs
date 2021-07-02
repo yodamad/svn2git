@@ -12,7 +12,7 @@ proc gitSvnClone { user password } {
 	  }
 
 	  "Password for '$user': " {
-		send -- "$password" "\r"
+		send -- "$password\r"
         exp_continue
 	  }
 

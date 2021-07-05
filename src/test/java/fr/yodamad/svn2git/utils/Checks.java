@@ -75,6 +75,16 @@ public class Checks {
         }
     }
 
+    public static void isFolderPresent(Project project, String filename, boolean checkSize) throws GitLabApiException {
+        List<TreeItem> master = gitLabApi.getRepositoryApi().getTree(project.getId(), filename, "master", true);
+        assertThat(master.size()).isGreaterThan(0);
+    }
+
+    public static void isFolderMissing(Project project, String filename, boolean checkSize) throws GitLabApiException {
+        List<TreeItem> master = gitLabApi.getRepositoryApi().getTree(project.getId(), filename, "master", true);
+        assertThat(master.size()).isEqualTo(0);
+    }
+
     public static void isMissing(Project project, String filename) {
         Optional<RepositoryFile> file = gitLabApi.getRepositoryFileApi().getOptionalFileInfo(project.getId(), filename, "master");
         assertThat(file.isPresent()).isFalse();

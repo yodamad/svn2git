@@ -17,7 +17,6 @@ import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +91,7 @@ public class SimpleRepoTests {
         migration.setTrunk("trunk");
         migration.setBranches("*");
         migration.setTags("*");
+        migration.setEmptyDirs(false);
 
         startAndCheck(migration);
 
@@ -100,6 +100,7 @@ public class SimpleRepoTests {
 
         // Check files
         checkAllFiles(project);
+        isFolderMissing(project.get(), EMPTY_DIR, false);
 
         // Check branches
         List<Branch> branches = checkBranches(project);
@@ -111,7 +112,6 @@ public class SimpleRepoTests {
     }
 
     @Test
-    @Ignore
     public void test_full_migration_on_simple_repo_with_empty_dirs() throws ExecutionException, InterruptedException, GitLabApiException {
         Migration migration = initSimpleMigration(applicationProperties);
         migration.setSvnHistory("all");
@@ -127,7 +127,7 @@ public class SimpleRepoTests {
 
         // Check files
         checkAllFiles(project);
-        isPresent(project.get(), EMPTY_DIR, false);
+        isFolderPresent(project.get(), EMPTY_DIR, false);
 
         // Check branches
         List<Branch> branches = checkBranches(project);

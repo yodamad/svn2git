@@ -16,6 +16,11 @@ proc gitSvnClone { user password } {
         exp_continue
 	  }
 
+      -gl "APR does not understand this error code*" {
+        puts "catching error... continue with git svn fetch"
+        return 1
+      }
+      eof { return 0   }
 
 	  -gl "couldn't truncate file*" {
 		puts "catching error... continue with git svn fetch"

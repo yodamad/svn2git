@@ -13,6 +13,10 @@ But it is also available from 🐳 [Docker Hub](https://hub.docker.com/repositor
 docker run --name svn2git -v /tmp/svn2git:/svn2git -p 8080:8080 yodamad/svn2git:latest
 ```
 
+### ⚠️ **For Windows OS users** ⚠️
+
+Due to Windows OS mess *#troll*, it is highly recommended to either use docker image 🐳 or use [WSL2](https://docs.microsoft.com/fr-fr/windows/wsl/install) usage rather than directly launching through cmd or powershell  
+
 ## ✨ Some quick tips to help you with the tool
 
 💪 If you have large repositories to migrate, you may need to ↗️ JVM size :

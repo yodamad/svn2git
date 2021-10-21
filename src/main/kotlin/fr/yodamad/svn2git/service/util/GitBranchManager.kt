@@ -56,7 +56,7 @@ open class GitBranchManager(val gitManager: GitManager,
         if (workUnit.migration.svnHistory == "all") {
             try {
                 gitManager.addRemote(workUnit, true)
-                execCommand(workUnit.commandManager, workUnit.directory, "$GIT_PUSH --set-upstream origin $branchName")
+                execCommand(workUnit.commandManager, workUnit.directory, "$GIT_PUSH --set-upstream origin \"$branchName\"")
                 historyMgr.endStep(history, StatusEnum.DONE)
             } catch (iEx: IOException) {
                 LOG.error(FAILED_TO_PUSH_BRANCH, iEx)

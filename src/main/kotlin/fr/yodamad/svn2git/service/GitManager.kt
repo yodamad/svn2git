@@ -233,7 +233,7 @@ open class GitManager(val historyMgr: HistoryManager,
             // will have no parents and it will be the root of a new history totally disconnected from all the
             // other branches and commits
             execCommand(workUnit.commandManager, workUnit.directory,
-                gitCommand(CHECKOUT, "--orphan", "TEMP_BRANCH_$branch"))
+                gitCommand(CHECKOUT, "--orphan", "\"TEMP_BRANCH_$branch\""))
 
             // Stage All (new, modified, deleted) files. Equivalent to git add . (in Git Version 2.x)
             execCommand(workUnit.commandManager, workUnit.directory, gitCommand("add", flags = "-A"))
@@ -264,7 +264,7 @@ open class GitManager(val historyMgr: HistoryManager,
                 // create the remote
                 addRemote(workUnit, true)
                 // push to remote
-                execCommand(workUnit.commandManager, workUnit.directory, gitCommand("push", "-f", "origin $branch"))
+                execCommand(workUnit.commandManager, workUnit.directory, gitCommand("push", "-f", "origin \"$branch\""))
                 historyMgr.endStep(history, StatusEnum.DONE, "Push $branch with no history")
             }
         } catch (gitEx: IOException) {

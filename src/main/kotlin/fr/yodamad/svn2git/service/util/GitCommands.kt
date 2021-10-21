@@ -19,8 +19,8 @@ const val MASTER = "master"
 fun gitCommand(command: String, flags: String? = "", target: String? = "") = "git $command $flags $target"
 
 // Branch management
-fun deleteBranch(branch: String) = gitCommand(BRANCH, "-D", branch)
-fun renameBranch(branch: String) = gitCommand(BRANCH, "-m", branch)
+fun deleteBranch(branch: String) = gitCommand(BRANCH, "-D", "\"$branch\"")
+fun renameBranch(branch: String) = gitCommand(BRANCH, "-m", "\"$branch\"")
 
 // Pull management
 fun checkoutFromOrigin(branch: String) = gitCommand(CHECKOUT, "-b", "${branch.gitFormat()} refs/remotes/origin/${branch.encode()}")

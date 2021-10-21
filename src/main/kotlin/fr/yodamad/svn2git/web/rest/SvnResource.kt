@@ -118,7 +118,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         val modulesFounds: MutableList<SvnModule> = ArrayList()
         list.receiver = ISvnObjectReceiver { _, `object`: SVNDirEntry ->
             val name = `object`.relativePath
-            if (name != null && !name.isEmpty() && !keywords().contains(name)) {
+            if (name != null && !name.isEmpty() && !keywords().contains(name) && module?.layoutElements.isNullOrEmpty()) {
 
                 // found a directory
                 if (`object`.kind == SVNNodeKind.DIR) {
@@ -140,6 +140,8 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
                 if (module != null) {
                     log.info(String.format("Module %s with layout %s", module.name, name))
                     module.layoutElements.add(name)
+                    module.flat = false
+                    modulesFounds.clear()
                 } else {
                     // Root level case
                     modulesFounds.add(FakeModule())
@@ -159,7 +161,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         modulesFounds.stream()
             .filter { m: SvnModule? -> m !is FakeModule }
             .map { e: SvnModule -> modules.add(e) }.count()
-        if (!modules.isEmpty()) {
+        if (modules.isNotEmpty()) {
             modules.forEach(
                 Consumer { svnSubMod: SvnModule ->
                     svnSubMod.subModules.addAll(

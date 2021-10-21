@@ -85,7 +85,7 @@ public class WeirdRepoTests {
         isPresent(project.get(), REVISION, false);
 
         // Check branches
-        List<Branch> branches = checkBranches(project, 3);
+        List<Branch> branches = checkBranches(project, 4);
 
         // Check tags
         checkTags(project, 0);
@@ -110,7 +110,7 @@ public class WeirdRepoTests {
         isPresent(project.get(), REVISION, false);
 
         // Check branches
-        List<Branch> branches = checkBranches(project, 3);
+        List<Branch> branches = checkBranches(project, 4);
         assertThat(branches.stream().anyMatch(b -> b.getName().equals("branch_with_space"))).isTrue();
 
         // Check tags
@@ -139,10 +139,36 @@ public class WeirdRepoTests {
         checkBranches(project, 1);
 
         // Check tags
-        List<Tag> tags = checkTags(project, 1);
+        List<Tag> tags = checkTags(project, 2);
         assertThat(tags.stream().anyMatch(b -> b.getName().equals("tag%20with%20space"))).isTrue();
     }
 
+    @Test
+    public void test_migration_with_parenthesis_in_names() throws ExecutionException, InterruptedException, GitLabApiException {
+        Migration migration = initWeirdMigration(applicationProperties);
+        migration.setSvnHistory("all");
+        migration.setTrunk("trunk");
+        migration.setTags("*");
+        migration.setBranches("*");
+
+        startAndCheck(migration);
+
+        // Check project
+        Optional<Project> project = checkProject();
+
+        // Check files
+        isMissing(project.get(), ROOT_ANOTHER_BIN);
+        isPresent(project.get(), FILE_BIN, false);
+        isPresent(project.get(), REVISION, false);
+
+        // Check branches
+        List<Branch> branches = checkBranches(project, 4);
+        assertThat(branches.stream().anyMatch(b -> b.getName().equals("branch_with_(parenthesis)"))).isTrue();
+
+        // Check tags
+        List<Tag> tags = checkTags(project, 2);
+        assertThat(tags.stream().anyMatch(b -> b.getName().equals("tag%20with%20(parenthesis)"))).isTrue();
+    }
 
     private void startAndCheck(Migration migration) throws ExecutionException, InterruptedException {
         Migration saved = migrationRepository.save(migration);

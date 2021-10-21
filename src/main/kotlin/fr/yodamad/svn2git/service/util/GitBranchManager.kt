@@ -43,7 +43,7 @@ open class GitBranchManager(val gitManager: GitManager,
         }
 
         try {
-            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b \"$branchName\" $branch")
+            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b \"$branchName\" \"$branch\"")
         } catch (iEx: IOException) {
             LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
             historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)
@@ -56,7 +56,7 @@ open class GitBranchManager(val gitManager: GitManager,
         if (workUnit.migration.svnHistory == "all") {
             try {
                 gitManager.addRemote(workUnit, true)
-                execCommand(workUnit.commandManager, workUnit.directory, "$GIT_PUSH --set-upstream origin $branchName")
+                execCommand(workUnit.commandManager, workUnit.directory, "$GIT_PUSH --set-upstream origin \"$branchName\"")
                 historyMgr.endStep(history, StatusEnum.DONE)
             } catch (iEx: IOException) {
                 LOG.error(FAILED_TO_PUSH_BRANCH, iEx)

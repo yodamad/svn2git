@@ -64,7 +64,7 @@ public class Repository {
         public static final String FLAT_FILE = "flat.file";
         public static final String ROOT_ANOTHER_BIN = "another.bin";
         public static final String ANOTHER_BIN = Dirs.FOLDER + ROOT_ANOTHER_BIN;
-        public static final String EMPTY_DIR = Dirs.FOLDER + Dirs.EMPTY;
+        public static final String EMPTY_DIR = "folder/empty";
         public static final String MAPPED_ANOTHER_BIN = Dirs.DIRECTORY + "another.bin";
         public static final String JAVA = Dirs.FOLDER + "App.java";
         public static final String MAPPED_JAVA = Dirs.DIRECTORY + "App.java";

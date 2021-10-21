@@ -19,3 +19,5 @@ fun String.decode(): String = decode(this, "UTF-8")
 fun String.gitFormat(): String = this.decode().replace(" ", "_")
 
 fun String.escape(): String = if (isWindows) this else this.replace("\\", "\\\\").replace("$", """\$""")
+
+fun String.escapeParenthesis(): String = this.replace("(", "\\(").replace(")", "\\)")

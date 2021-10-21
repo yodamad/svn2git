@@ -13,6 +13,7 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum.DONE_WITH_WARNINGS
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum.*
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
+import fr.yodamad.svn2git.domain.enumeration.SvnLayout.TAG
 import fr.yodamad.svn2git.functions.*
 import fr.yodamad.svn2git.io.Shell
 import fr.yodamad.svn2git.io.Shell.execCommand
@@ -75,7 +76,7 @@ open class Cleaner(val historyMgr: HistoryManager,
                     branchName = branchName.replaceFirst("origin/".toRegex(), "")
                     LOG.debug("Branch $branchName", branchName)
                     // checkout new branchName from existing remote branch
-                    val gitCommand = String.format("git checkout -b %s %s", branchName, b)
+                    val gitCommand = String.format("git checkout -b \"%s\" \"%s\"", branchName, b)
                     execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
                     val cleanedFilesBranch: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, b.replace("origin", "branches"), SvnLayout.BRANCH)
@@ -97,10 +98,10 @@ open class Cleaner(val historyMgr: HistoryManager,
             Consumer { t: String ->
                 try {
                     // checkout new branch 'tmp_tag' from existing tag
-                    val gitCommand = String.format("git checkout -b tmp_tag %s", t)
+                    val gitCommand = String.format("git checkout -b tmp_tag \"%s\"", t)
                     execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
-                    val cleanedFilesTag: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, t.replace("origin", "tags"), SvnLayout.TAG)
+                    val cleanedFilesTag: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, t.replace("origin", "tags"), TAG)
                     cleanedFilesMap[t.replace("origin", "tags")] = cleanedFilesTag
                     // back to master
                     execCommand(workUnit.commandManager, workUnit.directory, checkout())
@@ -293,7 +294,6 @@ open class Cleaner(val historyMgr: HistoryManager,
     open fun cleanForbiddenExtensions(workUnit: WorkUnit): Boolean {
         var clean = false
         if (!StringUtils.isEmpty(workUnit.migration.forbiddenFileExtensions)) {
-
             // needed?
             execCommand(workUnit.commandManager, workUnit.directory, gc())
 
@@ -418,7 +418,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         val gitElementsToDelete: MutableList<String> = if (isTags) {
             Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
                 .stream()
-                .map { l: String -> l.trim { it <= ' ' }.replace("origin/", "") }
+                .map { l: String -> l.trim { it <= ' ' }.replace("origin/", "").decode().encode() }
                 .filter { t: String -> t.startsWith("tags") }
                 .map { l: String -> l.replace(TAGS, "") }
                 .filter { l: String -> !l.equals(workUnit.migration.trunk, ignoreCase = true) }
@@ -426,7 +426,7 @@ open class Cleaner(val historyMgr: HistoryManager,
         } else {
             Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
                 .stream()
-                .map { l: String -> l.trim { it <= ' ' }.replace("origin/", "") }
+                .map { l: String -> l.trim { it <= ' ' }.replace("origin/", "").decode().encode() }
                 .filter { l: String -> !l.startsWith(TAGS) }
                 .filter { l: String -> !l.equals(workUnit.migration.trunk, ignoreCase = true) }
                 .collect(Collectors.toList())
@@ -480,12 +480,14 @@ open class Cleaner(val historyMgr: HistoryManager,
         // Remove none git branches
         gitElementsToDelete.forEach(Consumer { line: String ->
             try {
-                var cleanCmd = String.format("git branch -d -r origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
+                var cleanCmd = String.format("git branch -d -r origin/%s", String.format("\"%s%s\"", if (isTags) TAGS else "", line))
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
                 cleanCmd = if (Shell.isWindows) {
                     String.format("rd /s /q \".git\\svn\\refs\\remotes\\origin\\%s\\\"", String.format("%s%s", if (isTags) "tags\\" else "", line))
                 } else {
-                    String.format("rm -rf .git/svn/refs/remotes/origin/%s", String.format("%s%s", if (isTags) TAGS else "", line))
+                    // var mutableLine = line
+                    // if (line.contains("(")) mutableLine = line.escapeParenthesis()
+                    String.format("rm -rf .git/svn/refs/remotes/origin/%s", String.format("\"%s%s\"", if (isTags) TAGS else "", line))
                 }
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
             } catch (ex: IOException) {

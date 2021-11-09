@@ -10,7 +10,7 @@ import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;

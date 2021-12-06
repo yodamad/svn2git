@@ -480,14 +480,14 @@ open class Cleaner(val historyMgr: HistoryManager,
         // Remove none git branches
         gitElementsToDelete.forEach(Consumer { line: String ->
             try {
-                var cleanCmd = String.format("git branch -d -r origin/%s", String.format("\"%s%s\"", if (isTags) TAGS else "", line))
+                var cleanCmd = String.format("git branch -d -r %s", String.format("\"origin/%s%s\"", if (isTags && !line.startsWith(TAGS)) TAGS else "", line))
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
                 cleanCmd = if (Shell.isWindows) {
                     String.format("rd /s /q \".git\\svn\\refs\\remotes\\origin\\%s\\\"", String.format("%s%s", if (isTags) "tags\\" else "", line))
                 } else {
                     // var mutableLine = line
                     // if (line.contains("(")) mutableLine = line.escapeParenthesis()
-                    String.format("rm -rf .git/svn/refs/remotes/origin/%s", String.format("\"%s%s\"", if (isTags) TAGS else "", line))
+                    String.format("rm -rf %s", String.format("\".git/svn/refs/remotes/origin/%s%s\"", if (isTags && !line.startsWith(TAGS)) TAGS else "", line))
                 }
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
             } catch (ex: IOException) {

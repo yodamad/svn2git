@@ -16,7 +16,7 @@ fun formattedOrEmpty(element: String?, container: String, windowsCase: String? =
 
 fun String.encode(): String = encode(this, "UTF-8")
 fun String.decode(): String = decode(this, "UTF-8")
-fun String.gitFormat(): String = this.decode().replace(" ", "_")
+fun String.gitFormat(): String = this.replace("é", "e").decode().replace(" ", "_")
 
 fun String.escape(): String = if (isWindows) this else this.replace("\\", "\\\\").replace("$", """\$""")
 

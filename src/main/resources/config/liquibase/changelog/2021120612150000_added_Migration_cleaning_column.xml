@@ -10,10 +10,10 @@
     <property name="now" value="now()" dbms="mysql"/>
     <property name="autoIncrement" value="true"/>
 
-    <changeSet id="flat" author="mvt">
+    <changeSet id="cleaning" author="mvt">
 
         <addColumn tableName="migration">
-            <column name="flat" type="boolean">
+            <column name="cleaning" type="boolean">
                 <constraints nullable="true" />
             </column>
         </addColumn>

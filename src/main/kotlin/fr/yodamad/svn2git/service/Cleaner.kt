@@ -8,8 +8,7 @@ import fr.yodamad.svn2git.domain.MigrationHistory
 import fr.yodamad.svn2git.domain.MigrationRemovedFile
 import fr.yodamad.svn2git.domain.enumeration.Reason
 import fr.yodamad.svn2git.domain.enumeration.StatusEnum
-import fr.yodamad.svn2git.domain.enumeration.StatusEnum.DONE
-import fr.yodamad.svn2git.domain.enumeration.StatusEnum.DONE_WITH_WARNINGS
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum.*
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum.*
 import fr.yodamad.svn2git.domain.enumeration.SvnLayout
@@ -22,6 +21,7 @@ import fr.yodamad.svn2git.service.client.ArtifactoryAdmin
 import fr.yodamad.svn2git.service.util.checkout
 import fr.yodamad.svn2git.service.util.deleteBranch
 import fr.yodamad.svn2git.service.util.gc
+import fr.yodamad.svn2git.service.util.resetHead
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.data.util.Pair
@@ -61,12 +61,19 @@ open class Cleaner(val historyMgr: HistoryManager,
     @Throws(IOException::class, InterruptedException::class)
     open fun listCleanedFiles(workUnit: WorkUnit): CleanedFilesManager? {
         val cleanedFilesMap: MutableMap<String, CleanedFiles> = LinkedHashMap()
-        val history: MigrationHistory = historyMgr.startStep(workUnit.migration, StepEnum.LIST_REMOVED_FILES, "")
+        val history: MigrationHistory = historyMgr.startStep(workUnit.migration, LIST_REMOVED_FILES, "")
+
         val warnings = AtomicBoolean(false)
         if (!StringUtils.isEmpty(workUnit.migration.trunk)) {
             val cleanedFilesTrunk: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, workUnit.migration.trunk, SvnLayout.TRUNK)
             cleanedFilesMap[workUnit.migration.trunk] = cleanedFilesTrunk
         }
+
+        if (!workUnit.migration.cleaning) {
+            historyMgr.endStep(history, IGNORED, "No cleaning asked")
+            return CleanedFilesManager(cleanedFilesMap)
+        }
+
         val remotes = listRemotes(workUnit.directory)
         listBranchesOnly(remotes, workUnit.migration.trunk)!!.forEach(
             Consumer { b: String ->
@@ -81,6 +88,8 @@ open class Cleaner(val historyMgr: HistoryManager,
                     // listCleanedFilesInSvnLocation
                     val cleanedFilesBranch: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, b.replace("origin", "branches"), SvnLayout.BRANCH)
                     cleanedFilesMap[b.replace("origin", "branches")] = cleanedFilesBranch
+                    // clean potential modification
+                    execCommand(workUnit.commandManager, workUnit.directory, resetHead())
                     // back to master
                     execCommand(workUnit.commandManager, workUnit.directory, checkout())
                     // delete the temporary branch
@@ -103,6 +112,8 @@ open class Cleaner(val historyMgr: HistoryManager,
                     // listCleanedFilesInSvnLocation
                     val cleanedFilesTag: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, t.replace("origin", "tags"), TAG)
                     cleanedFilesMap[t.replace("origin", "tags")] = cleanedFilesTag
+                    // clean potential modification
+                    execCommand(workUnit.commandManager, workUnit.directory, resetHead())
                     // back to master
                     execCommand(workUnit.commandManager, workUnit.directory, checkout())
                     // delete the temporary branch
@@ -469,25 +480,24 @@ open class Cleaner(val historyMgr: HistoryManager,
         if (keepListFromFilter != null && keepListFromFilter.isNotEmpty()) {
             elementsToKeep = keepListFromFilter
         }
-        elementsToKeep.forEach(Consumer { s: String? -> LOG.debug(String.format("elementsToKeep(%s):%s", if (isTags) "tags" else "branches", s)) })
 
         // ######### See what needs to be deleted ##################################
 
         // Diff git & elementsToKeep
         gitElementsToDelete.removeAll(elementsToKeep)
-        gitElementsToDelete.forEach(Consumer { s: String? -> LOG.debug(String.format("gitElements to delete(%s):%s", if (isTags) "tags" else "branches", s)) })
+        //gitElementsToDelete.forEach(Consumer { s: String? -> LOG.debug(String.format("gitElements to delete(%s):%s", if (isTags) "tags" else "branches", s)) })
 
         // Remove none git branches
         gitElementsToDelete.forEach(Consumer { line: String ->
             try {
-                var cleanCmd = String.format("git branch -d -r %s", String.format("\"origin/%s%s\"", if (isTags && !line.startsWith(TAGS)) TAGS else "", line))
+                var cleanCmd = String.format("git branch -d -r %s", String.format("\"origin/%s%s\"",
+                    if (isTags && !line.startsWith("tags")) TAGS else "", line))
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
                 cleanCmd = if (Shell.isWindows) {
                     String.format("rd /s /q \".git\\svn\\refs\\remotes\\origin\\%s\\\"", String.format("%s%s", if (isTags) "tags\\" else "", line))
                 } else {
-                    // var mutableLine = line
-                    // if (line.contains("(")) mutableLine = line.escapeParenthesis()
-                    String.format("rm -rf %s", String.format("\".git/svn/refs/remotes/origin/%s%s\"", if (isTags && !line.startsWith(TAGS)) TAGS else "", line))
+                    String.format("rm -rf %s", String.format("\".git/svn/refs/remotes/origin/%s%s\"",
+                        if (isTags && !line.startsWith("tags")) TAGS else "", line))
                 }
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
             } catch (ex: IOException) {

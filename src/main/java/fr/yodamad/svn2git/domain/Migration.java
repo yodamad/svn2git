@@ -150,6 +150,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private Boolean emptyDirs = false;
 
+    @Column(name = "cleaning")
+    @JsonView(View.Public.class)
+    private Boolean cleaning = true;
+
     @OneToMany(mappedBy = "migration")
     @OrderBy("id ASC")
     private Set<MigrationHistory> histories = new HashSet<>();
@@ -530,6 +534,14 @@ public class Migration implements Serializable {
         this.flat = flat;
     }
 
+    public Boolean getCleaning() {
+        return cleaning;
+    }
+
+    public void setCleaning(Boolean cleaning) {
+        this.cleaning = cleaning;
+    }
+
     public String getUploadType() { return uploadType; }
 
     public void setUploadType(String uploadType) { this.uploadType = uploadType; }
@@ -580,6 +592,7 @@ public class Migration implements Serializable {
             ", branches='" + getBranches() + "'" +
             ", tags='" + getTags() + "'" +
             ", flat='" + getFlat() + "'" +
+            ", cleaning='" + getCleaning() + "'" +
             ", svnHistory='" + getSvnHistory() + "'" +
             ", tagsToMigrate='" + getTagsToMigrate() + "'" +
             ", branchesToMigrate='" + getBranchesToMigrate() + "'" +

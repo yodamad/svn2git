@@ -470,6 +470,7 @@ export class MigrationStepperComponent implements OnInit {
 
         this.mig = new Migration();
         this.mig.trunk = '';
+        this.mig.cleaning = this.stepCleaning;
 
         // Gitlab
         this.mig.gitlabUrl = this.gitlabFormGroup.controls['gitlabURL'].value;

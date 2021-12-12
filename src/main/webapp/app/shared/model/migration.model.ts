@@ -44,6 +44,7 @@ export interface IMigration {
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
     flat?: boolean;
+    cleaning?: boolean;
     uploadType?: string;
 }
 
@@ -76,6 +77,7 @@ export class Migration implements IMigration {
         public histories?: IMigrationHistory[],
         public mappings?: IMapping[],
         public flat?: boolean,
+        public cleaning?: boolean,
         public uploadType?: string
     ) {
         this.emptyDirs = this.emptyDirs || false;

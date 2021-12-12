@@ -1,6 +1,9 @@
 name: svn2git CI
 on: [push, pull_request]
 jobs:
+    concurrency:
+        group: ${{ github.head_ref }}
+        cancel-in-progress: true
     pipeline:
         name:  pipeline
         runs-on: ubuntu-latest
@@ -51,7 +54,7 @@ jobs:
                   GIT_TAG=:${GITHUB_REF#refs/tags/}
                   DOCKER_TAG=${GIT_TAG#:refs/heads/main}
                   docker build . -t yodamad/svn2git:latest
-                  docker build . -t yodamad/svn2git:master                  
+                  docker build . -t yodamad/svn2git:master
                   VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
                   docker build . -t yodamad/svn2git:$VERSION
                   docker push yodamad/svn2git:$VERSION

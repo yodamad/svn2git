@@ -25,6 +25,7 @@
         <scala.version>2.12.6</scala.version>
         <node.version>v14.3.0</node.version>
         <yarn.version>v1.10.1</yarn.version>
+        <log4j2.version>2.15.0</log4j2.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.testresult.directory>${project.build.directory}/test-results</project.testresult.directory>

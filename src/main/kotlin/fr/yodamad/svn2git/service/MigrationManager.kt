@@ -141,12 +141,12 @@ open class MigrationManager(val cleaner: Cleaner,
             // If no files at this stage, no migration is executed i.e. no push to gitlab.
             if (cleanedFilesManager!!.existsFileInSvnLayout(true, SvnLayout.ALL)) {
 
-                // 3.2 Remove
-                val cleanFolderWithBFG = cleaner.cleanFolderWithBFG(workUnit)
-                val cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit)
-                val cleanLargeFiles = cleaner.cleanLargeFiles(workUnit)
-                if (cleanExtensions || cleanLargeFiles || cleanFolderWithBFG) {
-                    gitClean(commandManager, workUnit)
+                if (migration.cleaning) {
+                    // 3.2 Remove
+                    val cleanFolderWithBFG = cleaner.cleanFolderWithBFG(workUnit)
+                    val cleanExtensions = cleaner.cleanForbiddenExtensions(workUnit)
+                    val cleanLargeFiles = cleaner.cleanLargeFiles(workUnit)
+                    if (cleanExtensions || cleanLargeFiles || cleanFolderWithBFG) { gitClean(commandManager, workUnit) }
                 }
 
                 // 4. Git push master based on SVN trunk
@@ -182,6 +182,7 @@ open class MigrationManager(val cleaner: Cleaner,
                 historyMgr.endStep(history, StatusEnum.IGNORED, "Skipping Migration : No Files Available. No Push to Gitlab")
             }
 
+
             // Finalize migration
             if (workUnit.warnings.get()) {
                 migration.status = StatusEnum.DONE_WITH_WARNINGS
@@ -191,7 +192,7 @@ open class MigrationManager(val cleaner: Cleaner,
 
             // migration was successful assure workingDirectory is set to empty so no reexecution is possible
             migration.workingDirectory = ""
-            ioManager.deleteWorkingRoot(workUnit, true)
+            if (applicationProperties.work.cleanAtTheEnd) ioManager.deleteWorkingRoot(workUnit, true)
             migrationRepository.save(migration)
 
             // Log all git config after operations
@@ -206,7 +207,7 @@ open class MigrationManager(val cleaner: Cleaner,
             // A copy has been made and an error thrown. We can reexecute next time.
             if (commandManager.isReexecutable) {
                 migration.workingDirectory = rootDir
-                ioManager.deleteWorkingRoot(workUnit, false)
+                if (applicationProperties.work.cleanAtTheEnd) ioManager.deleteWorkingRoot(workUnit, false)
                 LOG.info("Deleting working directory")
                 LOG.info("REASON:commandManager.isReexecutable() AND ERROR during migration")
             }
@@ -218,8 +219,7 @@ open class MigrationManager(val cleaner: Cleaner,
             commandManager.commandLog.forEach { (k: String, v: String) -> LOG.debug("Directory : $k Command : $v") }
             LOG.debug("==================================================")
             if (applicationProperties.getFlags().getCleanupWorkDirectory()) {
-                // TODO : handle case where already deleted due to migration failure. See above.
-                ioManager.deleteWorkingRoot(workUnit, false)
+                if (applicationProperties.work.cleanAtTheEnd) ioManager.deleteWorkingRoot(workUnit, false)
             } else {
                 LOG.info("Not cleaning up working directory")
                 LOG.info("REASON:applicationProperties.getFlags().getCleanupWorkDirectory()==True")

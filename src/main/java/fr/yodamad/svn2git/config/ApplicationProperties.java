@@ -88,6 +88,8 @@ public class ApplicationProperties {
 
         public Integer maxSvnLevel = 3;
 
+        public Boolean cleanAtTheEnd = false;
+
         public String getDirectory() {
             return directory;
         }
@@ -103,6 +105,10 @@ public class ApplicationProperties {
         public void setMaxSvnLevel(Integer maxSvnLevel) {
             this.maxSvnLevel = maxSvnLevel;
         }
+
+        public Boolean getCleanAtTheEnd() { return cleanAtTheEnd; }
+
+        public void setCleanAtTheEnd(Boolean cleanAtTheEnd) { this.cleanAtTheEnd = cleanAtTheEnd; }
     }
 
     public static class Svn {

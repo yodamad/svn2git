@@ -148,7 +148,7 @@ public class StaticMappingResourceIntTest {
         // Get all the staticMappingList
         restStaticMappingMockMvc.perform(get("/api/static-mappings?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(staticMapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnDirectory").value(hasItem(DEFAULT_SVN_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].regex").value(hasItem(DEFAULT_REGEX.toString())))
@@ -165,7 +165,7 @@ public class StaticMappingResourceIntTest {
         // Get the staticMapping
         restStaticMappingMockMvc.perform(get("/api/static-mappings/{id}", staticMapping.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(staticMapping.getId().intValue()))
             .andExpect(jsonPath("$.svnDirectory").value(DEFAULT_SVN_DIRECTORY.toString()))
             .andExpect(jsonPath("$.regex").value(DEFAULT_REGEX.toString()))

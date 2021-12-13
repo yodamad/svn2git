@@ -217,7 +217,7 @@ public class MigrationRemovedFileResourceIntTest {
         // Get all the migrationRemovedFileList
         restMigrationRemovedFileMockMvc.perform(get("/api/migration-removed-files?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(migrationRemovedFile.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnLocation").value(hasItem(DEFAULT_SVN_LOCATION.toString())))
             .andExpect(jsonPath("$.[*].path").value(hasItem(DEFAULT_PATH.toString())))
@@ -239,7 +239,7 @@ public class MigrationRemovedFileResourceIntTest {
         // Get the migrationRemovedFile
         restMigrationRemovedFileMockMvc.perform(get("/api/migration-removed-files/{id}", migrationRemovedFile.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(migrationRemovedFile.getId().intValue()))
             .andExpect(jsonPath("$.svnLocation").value(DEFAULT_SVN_LOCATION.toString()))
             .andExpect(jsonPath("$.path").value(DEFAULT_PATH.toString()))

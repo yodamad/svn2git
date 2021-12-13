@@ -151,7 +151,7 @@ public class MappingResourceIntTest {
         // Get all the mappingList
         restMappingMockMvc.perform(get("/api/mappings?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(mapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnDirectory").value(hasItem(DEFAULT_SVN_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].regex").value(hasItem(DEFAULT_REGEX.toString())))
@@ -168,7 +168,7 @@ public class MappingResourceIntTest {
         // Get the mapping
         restMappingMockMvc.perform(get("/api/mappings/{id}", mapping.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(mapping.getId().intValue()))
             .andExpect(jsonPath("$.svnDirectory").value(DEFAULT_SVN_DIRECTORY.toString()))
             .andExpect(jsonPath("$.regex").value(DEFAULT_REGEX.toString()))

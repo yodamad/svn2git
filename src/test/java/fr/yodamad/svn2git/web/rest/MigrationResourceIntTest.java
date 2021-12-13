@@ -279,7 +279,7 @@ public class MigrationResourceIntTest {
         // Get all the migrationList
         restMigrationMockMvc.perform(get("/api/migrations?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(migration.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnGroup").value(hasItem(DEFAULT_SVN_GROUP.toString())))
             .andExpect(jsonPath("$.[*].svnProject").value(hasItem(DEFAULT_SVN_PROJECT.toString())))
@@ -299,7 +299,7 @@ public class MigrationResourceIntTest {
         // Get the migration
         MvcResult restMigrationMockMvcResult = restMigrationMockMvc.perform(get("/api/migrations/{id}", migration.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(migration.getId().intValue()))
             .andExpect(jsonPath("$.svnGroup").value(DEFAULT_SVN_GROUP.toString()))
             .andExpect(jsonPath("$.svnProject").value(DEFAULT_SVN_PROJECT.toString()))

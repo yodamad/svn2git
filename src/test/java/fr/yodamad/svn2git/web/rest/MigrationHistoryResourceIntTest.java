@@ -150,7 +150,7 @@ public class MigrationHistoryResourceIntTest {
         // Get all the migrationHistoryList
         restMigrationHistoryMockMvc.perform(get("/api/migration-histories?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(migrationHistory.getId().intValue())))
             .andExpect(jsonPath("$.[*].step").value(hasItem(DEFAULT_STEP.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
@@ -167,7 +167,7 @@ public class MigrationHistoryResourceIntTest {
         // Get the migrationHistory
         restMigrationHistoryMockMvc.perform(get("/api/migration-histories/{id}", migrationHistory.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(migrationHistory.getId().intValue()))
             .andExpect(jsonPath("$.step").value(DEFAULT_STEP.toString()))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))

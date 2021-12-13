@@ -1,14 +1,8 @@
 package fr.yodamad.svn2git.config;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
-import tech.jhipster.config.JHipsterConstants;
-import tech.jhipster.config.JHipsterProperties;
-import tech.jhipster.config.h2.H2ConfigurationHelper;
-import tech.jhipster.web.filter.CachingHttpHeadersFilter;
-import io.undertow.UndertowOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
 import org.springframework.boot.web.server.MimeMappings;
 import org.springframework.boot.web.server.WebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -21,8 +15,15 @@ import org.springframework.http.MediaType;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import tech.jhipster.config.JHipsterConstants;
+import tech.jhipster.config.JHipsterProperties;
+import tech.jhipster.config.h2.H2ConfigurationHelper;
+import tech.jhipster.web.filter.CachingHttpHeadersFilter;
 
-import javax.servlet.*;
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.EnumSet;
 
 import static java.net.URLDecoder.decode;
+import static org.springframework.core.env.Profiles.of;
 
 /**
  * Configuration of web application with Servlet 3.0 APIs.
@@ -56,10 +58,10 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
         }
         EnumSet<DispatcherType> disps = EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.ASYNC);
         initMetrics(servletContext, disps);
-        if (env.acceptsProfiles(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
+        if (env.acceptsProfiles(of((JHipsterConstants.SPRING_PROFILE_PRODUCTION)))) {
             initCachingHttpHeadersFilter(servletContext, disps);
         }
-        if (env.acceptsProfiles(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT)) {
+        if (env.acceptsProfiles(of((JHipsterConstants.SPRING_PROFILE_DEVELOPMENT)))) {
             initH2Console(servletContext);
         }
         log.info("Web application fully configured");

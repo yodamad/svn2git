@@ -33,13 +33,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class WebConfigurerTest {
 
-    private WebConfigurer webConfigurer;
+    private static WebConfigurer webConfigurer;
 
-    private MockServletContext servletContext;
+    private static MockServletContext servletContext;
 
-    private MockEnvironment env;
+    private static MockEnvironment env;
 
-    private JHipsterProperties props;
+    private static JHipsterProperties props;
 
     @BeforeEach
     public void setup() {

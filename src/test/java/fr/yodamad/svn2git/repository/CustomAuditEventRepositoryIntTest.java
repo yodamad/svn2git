@@ -4,7 +4,7 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.config.Constants;
 import fr.yodamad.svn2git.config.audit.AuditEventConverter;
 import fr.yodamad.svn2git.domain.PersistentAuditEvent;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class CustomAuditEventRepositoryIntTest {
 
     private PersistentAuditEvent testOldUserEvent;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         customAuditEventRepository = new CustomAuditEventRepository(persistenceAuditEventRepository, auditEventConverter);
         persistenceAuditEventRepository.deleteAll();

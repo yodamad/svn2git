@@ -14,7 +14,7 @@ import fr.yodamad.svn2git.service.dto.UserDTO;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 import fr.yodamad.svn2git.web.rest.vm.KeyAndPasswordVM;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -81,7 +81,7 @@ public class AccountResourceIntTest {
 
     private MockMvc restUserMockMvc;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         doNothing().when(mockMailService).sendActivationEmail(any());

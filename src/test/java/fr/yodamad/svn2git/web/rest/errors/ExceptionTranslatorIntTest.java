@@ -1,7 +1,7 @@
 package fr.yodamad.svn2git.web.rest.errors;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class ExceptionTranslatorIntTest {
 
     private MockMvc mockMvc;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(exceptionTranslator)

@@ -5,7 +5,7 @@ import fr.yodamad.svn2git.domain.User;
 import fr.yodamad.svn2git.repository.UserRepository;
 import fr.yodamad.svn2git.service.client.ArtifactoryAdmin;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,7 @@ public class DomainUserDetailsServiceIntTest {
     private User userTwo;
     private User userThree;
 
-    @BeforeAll
+    @BeforeEach
     public void init() {
         userOne = new User();
         userOne.setLogin(USER_ONE_LOGIN);

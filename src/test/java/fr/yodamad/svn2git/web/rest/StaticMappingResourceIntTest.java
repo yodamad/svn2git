@@ -5,7 +5,6 @@ import fr.yodamad.svn2git.domain.StaticMapping;
 import fr.yodamad.svn2git.repository.StaticMappingRepository;
 import fr.yodamad.svn2git.service.StaticMappingService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

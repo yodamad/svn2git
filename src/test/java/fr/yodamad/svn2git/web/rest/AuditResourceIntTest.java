@@ -79,11 +79,7 @@ public class AuditResourceIntTest {
 
     @BeforeEach
     public void initTest() {
-        auditEventRepository.deleteAll();
-        auditEvent = new PersistentAuditEvent();
-        auditEvent.setAuditEventType(SAMPLE_TYPE);
-        auditEvent.setPrincipal(SAMPLE_PRINCIPAL);
-        auditEvent.setAuditEventDate(SAMPLE_TIMESTAMP);
+
     }
 
     @Test

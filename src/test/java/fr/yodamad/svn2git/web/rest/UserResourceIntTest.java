@@ -12,7 +12,6 @@ import fr.yodamad.svn2git.service.mapper.UserMapper;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 import fr.yodamad.svn2git.web.rest.vm.ManagedUserVM;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -99,7 +98,7 @@ public class UserResourceIntTest {
 
     private User user;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         UserResource userResource = new UserResource(userService, userRepository, mailService);
 
@@ -108,6 +107,10 @@ public class UserResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setMessageConverters(jacksonMessageConverter)
             .build();
+
+        user = createEntity(em);
+        user.setLogin(DEFAULT_LOGIN);
+        user.setEmail(DEFAULT_EMAIL);
     }
 
     /**
@@ -127,13 +130,6 @@ public class UserResourceIntTest {
         user.setImageUrl(DEFAULT_IMAGEURL);
         user.setLangKey(DEFAULT_LANGKEY);
         return user;
-    }
-
-    @BeforeEach
-    public void initTest() {
-        user = createEntity(em);
-        user.setLogin(DEFAULT_LOGIN);
-        user.setEmail(DEFAULT_EMAIL);
     }
 
     @Test

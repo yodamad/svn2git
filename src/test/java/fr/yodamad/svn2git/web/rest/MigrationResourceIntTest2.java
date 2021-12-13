@@ -9,16 +9,16 @@ import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see MigrationResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class MigrationResourceIntTest2 {
 
@@ -79,7 +79,7 @@ public class MigrationResourceIntTest2 {
     @Autowired
     ResourceLoader resourceLoader;
 
-    @Before
+    @BeforeAll
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService, gitlabResource, applicationProperties);

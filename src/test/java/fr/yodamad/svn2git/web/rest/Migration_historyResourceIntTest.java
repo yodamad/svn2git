@@ -1,25 +1,24 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.domain.MigrationHistory;
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
+import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
-import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
-import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +27,6 @@ import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see MigrationHistoryResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class Migration_historyResourceIntTest {
 
@@ -56,7 +54,7 @@ public class Migration_historyResourceIntTest {
 
     @Autowired
     private MigrationHistoryRepository migration_historyRepository;
-    
+
     @Autowired
     private MigrationHistoryService migration_historyService;
 
@@ -76,7 +74,7 @@ public class Migration_historyResourceIntTest {
 
     private MigrationHistory migration_history;
 
-    @Before
+    @BeforeAll
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationHistoryResource migration_historyResource = new MigrationHistoryResource(migration_historyService);
@@ -101,7 +99,7 @@ public class Migration_historyResourceIntTest {
         return migration_history;
     }
 
-    @Before
+    @BeforeEach
     public void initTest() {
         migration_history = createEntity(em);
     }
@@ -160,7 +158,7 @@ public class Migration_historyResourceIntTest {
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())));
     }
-    
+
     @Test
     @Transactional
     public void getMigration_history() throws Exception {

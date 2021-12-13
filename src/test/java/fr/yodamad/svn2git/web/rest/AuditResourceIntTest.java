@@ -6,9 +6,10 @@ import fr.yodamad.svn2git.domain.PersistentAuditEvent;
 import fr.yodamad.svn2git.repository.PersistenceAuditEventRepository;
 import fr.yodamad.svn2git.service.AuditEventService;
 import fr.yodamad.svn2git.service.client.ArtifactoryAdmin;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +18,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see AuditResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 @Transactional
 public class AuditResourceIntTest {
@@ -65,7 +66,7 @@ public class AuditResourceIntTest {
     @MockBean
     ArtifactoryAdmin artifactoryAdmin;
 
-    @Before
+    @BeforeAll
     public void setup() {
         MockitoAnnotations.initMocks(this);
         AuditEventService auditEventService =
@@ -77,7 +78,7 @@ public class AuditResourceIntTest {
             .setMessageConverters(jacksonMessageConverter).build();
     }
 
-    @Before
+    @BeforeEach
     public void initTest() {
         auditEventRepository.deleteAll();
         auditEvent = new PersistentAuditEvent();

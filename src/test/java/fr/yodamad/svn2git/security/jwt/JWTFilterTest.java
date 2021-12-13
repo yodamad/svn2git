@@ -1,12 +1,10 @@
 package fr.yodamad.svn2git.security.jwt;
 
 import fr.yodamad.svn2git.security.AuthoritiesConstants;
-import io.github.jhipster.config.JHipsterProperties;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -15,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
+import tech.jhipster.config.JHipsterProperties;
 
 import java.util.Collections;
 
@@ -26,7 +25,7 @@ public class JWTFilterTest {
 
     private JWTFilter jwtFilter;
 
-    @Before
+    @BeforeAll
     public void setup() {
         JHipsterProperties jHipsterProperties = new JHipsterProperties();
         tokenProvider = new TokenProvider(jHipsterProperties);

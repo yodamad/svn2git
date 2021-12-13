@@ -1,11 +1,11 @@
 package fr.yodamad.svn2git.service;
+
 import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.config.Constants;
 import fr.yodamad.svn2git.domain.User;
-import io.github.jhipster.config.JHipsterProperties;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
@@ -15,8 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.thymeleaf.spring5.SpringTemplateEngine;
+import tech.jhipster.config.JHipsterProperties;
 
 import javax.mail.Multipart;
 import javax.mail.internet.MimeBodyPart;
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class MailServiceIntTest {
 
@@ -49,7 +50,7 @@ public class MailServiceIntTest {
 
     private MailService mailService;
 
-    @Before
+    @BeforeAll
     public void setup() {
         MockitoAnnotations.initMocks(this);
         doNothing().when(javaMailSender).send(any(MimeMessage.class));

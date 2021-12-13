@@ -1,29 +1,27 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.domain.StaticMapping;
 import fr.yodamad.svn2git.repository.StaticMappingRepository;
 import fr.yodamad.svn2git.service.StaticMappingService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see StaticMappingResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class StaticMappingResourceIntTest {
 
@@ -54,7 +52,7 @@ public class StaticMappingResourceIntTest {
 
     @Autowired
     private StaticMappingRepository staticMappingRepository;
-    
+
     @Autowired
     private StaticMappingService staticMappingService;
 
@@ -74,7 +72,7 @@ public class StaticMappingResourceIntTest {
 
     private StaticMapping staticMapping;
 
-    @Before
+    @BeforeAll
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final StaticMappingResource staticMappingResource = new StaticMappingResource(staticMappingService);
@@ -100,7 +98,7 @@ public class StaticMappingResourceIntTest {
         return staticMapping;
     }
 
-    @Before
+    @BeforeEach
     public void initTest() {
         staticMapping = createEntity(em);
     }
@@ -161,7 +159,7 @@ public class StaticMappingResourceIntTest {
             .andExpect(jsonPath("$.[*].gitDirectory").value(hasItem(DEFAULT_GIT_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].svnDirectoryDelete").value(hasItem(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue())));
     }
-    
+
     @Test
     @Transactional
     public void getStaticMapping() throws Exception {

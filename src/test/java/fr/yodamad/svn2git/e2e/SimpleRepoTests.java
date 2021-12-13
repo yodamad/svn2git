@@ -15,14 +15,14 @@ import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Commit;
 import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class SimpleRepoTests {
 
@@ -64,7 +64,7 @@ public class SimpleRepoTests {
         Checks.initApi(applicationProperties);
     }
 
-    @Before
+    @BeforeEach
     public void checkGitlab() throws GitLabApiException, InterruptedException {
         Optional<Project> project = api.getProjectApi().getOptionalProject(simple().namespace, simple().name);
         if (project.isPresent()) {
@@ -75,7 +75,7 @@ public class SimpleRepoTests {
         }
     }
 
-    @After
+    @AfterEach
     public void cleanGitlab() throws GitLabApiException, InterruptedException {
         Optional<Project> project = api.getProjectApi().getOptionalProject(simple().namespace, simple().name);
         if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());

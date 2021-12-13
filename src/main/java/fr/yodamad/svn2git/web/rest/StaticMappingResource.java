@@ -5,7 +5,7 @@ import fr.yodamad.svn2git.domain.StaticMapping;
 import fr.yodamad.svn2git.service.StaticMappingService;
 import fr.yodamad.svn2git.web.rest.errors.BadRequestAlertException;
 import fr.yodamad.svn2git.web.rest.util.HeaderUtil;
-import io.github.jhipster.web.util.ResponseUtil;
+import tech.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;

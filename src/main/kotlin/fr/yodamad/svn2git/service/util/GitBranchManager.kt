@@ -43,7 +43,7 @@ open class GitBranchManager(val gitManager: GitManager,
         }
 
         try {
-            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b \"$branchName\" \"$branch\"")
+            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -f -b \"$branchName\" \"$branch\"")
         } catch (iEx: IOException) {
             LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
             historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)

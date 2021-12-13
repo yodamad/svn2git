@@ -16,8 +16,10 @@ open class CleanedFilesManager(val cleanedReportMap: Map<String, CleanedFiles>) 
         return cleanedReportMap.entries.stream().filter { entry: Map.Entry<String, CleanedFiles> ->
             if (svnLayout == SvnLayout.ALL) true
             else entry.value.svnLayout == svnLayout }.anyMatch {
-            entry: Map.Entry<String, CleanedFiles> ->
-            if (beforeClean) entry.value.isAtLeastOneFileBeforeClean else entry.value.isAtLeastOneFileAfterClean }
+                entry: Map.Entry<String, CleanedFiles> ->
+                    if (beforeClean) entry.value.isAtLeastOneFileBeforeClean
+                    else entry.value.isAtLeastOneFileAfterClean
+            }
     }
 
     override fun toString(): String {

@@ -1,29 +1,26 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.domain.StaticMapping;
 import fr.yodamad.svn2git.repository.StaticMappingRepository;
 import fr.yodamad.svn2git.service.StaticMappingService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see StaticMappingResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class StaticMappingResourceIntTest {
 
@@ -54,7 +51,7 @@ public class StaticMappingResourceIntTest {
 
     @Autowired
     private StaticMappingRepository staticMappingRepository;
-    
+
     @Autowired
     private StaticMappingService staticMappingService;
 
@@ -74,7 +71,7 @@ public class StaticMappingResourceIntTest {
 
     private StaticMapping staticMapping;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final StaticMappingResource staticMappingResource = new StaticMappingResource(staticMappingService);
@@ -83,6 +80,8 @@ public class StaticMappingResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+
+        staticMapping = createEntity(em);
     }
 
     /**
@@ -98,11 +97,6 @@ public class StaticMappingResourceIntTest {
             .gitDirectory(DEFAULT_GIT_DIRECTORY)
             .svnDirectoryDelete(DEFAULT_SVN_DIRECTORY_DELETE);
         return staticMapping;
-    }
-
-    @Before
-    public void initTest() {
-        staticMapping = createEntity(em);
     }
 
     @Test
@@ -154,14 +148,14 @@ public class StaticMappingResourceIntTest {
         // Get all the staticMappingList
         restStaticMappingMockMvc.perform(get("/api/static-mappings?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(staticMapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnDirectory").value(hasItem(DEFAULT_SVN_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].regex").value(hasItem(DEFAULT_REGEX.toString())))
             .andExpect(jsonPath("$.[*].gitDirectory").value(hasItem(DEFAULT_GIT_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].svnDirectoryDelete").value(hasItem(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue())));
     }
-    
+
     @Test
     @Transactional
     public void getStaticMapping() throws Exception {
@@ -171,20 +165,12 @@ public class StaticMappingResourceIntTest {
         // Get the staticMapping
         restStaticMappingMockMvc.perform(get("/api/static-mappings/{id}", staticMapping.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(staticMapping.getId().intValue()))
             .andExpect(jsonPath("$.svnDirectory").value(DEFAULT_SVN_DIRECTORY.toString()))
             .andExpect(jsonPath("$.regex").value(DEFAULT_REGEX.toString()))
             .andExpect(jsonPath("$.gitDirectory").value(DEFAULT_GIT_DIRECTORY.toString()))
             .andExpect(jsonPath("$.svnDirectoryDelete").value(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue()));
-    }
-
-    @Test
-    @Transactional
-    public void getNonExistingStaticMapping() throws Exception {
-        // Get the staticMapping
-        restStaticMappingMockMvc.perform(get("/api/static-mappings/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
     }
 
     @Test

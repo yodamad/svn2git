@@ -28,5 +28,6 @@
     <include file="config/liquibase/changelog/2021022821550000_added_Migration_gitlab_project_id.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2021030122350000_added_Migration_upload_type.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2021031721150000_added_Migration_emptydirs_column.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2021120612150000_added_Migration_cleaning_column.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

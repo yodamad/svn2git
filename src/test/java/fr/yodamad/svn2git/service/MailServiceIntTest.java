@@ -1,11 +1,11 @@
 package fr.yodamad.svn2git.service;
+
 import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.config.Constants;
 import fr.yodamad.svn2git.domain.User;
-import io.github.jhipster.config.JHipsterProperties;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
@@ -15,8 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.thymeleaf.spring5.SpringTemplateEngine;
+import tech.jhipster.config.JHipsterProperties;
 
 import javax.mail.Multipart;
 import javax.mail.internet.MimeBodyPart;
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class MailServiceIntTest {
 
@@ -49,7 +50,7 @@ public class MailServiceIntTest {
 
     private MailService mailService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         doNothing().when(javaMailSender).send(any(MimeMessage.class));
@@ -115,23 +116,6 @@ public class MailServiceIntTest {
         assertThat(aos.toString()).isEqualTo("\r\ntestContent");
         assertThat(part.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
     }
-
-    // TODO : Broken test
-//    @Test
-//    public void testSendEmailFromTemplate() throws Exception {
-//        User user = new User();
-//        user.setLogin("john");
-//        user.setEmail("john.doe@example.com");
-//        user.setLangKey("en");
-//        mailService.sendEmailFromTemplate(user, "mail/testEmail", "email.test.title");
-//        verify(javaMailSender).send(messageCaptor.capture());
-//        MimeMessage message = messageCaptor.getValue();
-//        assertThat(message.getSubject()).isEqualTo("test title");
-//        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(user.getEmail());
-//        assertThat(message.getFrom()[0].toString()).isEqualTo("test@localhost");
-//        assertThat(message.getContent().toString()).isEqualToNormalizingNewlines("<html>test title, http://127.0.0.1:8080, john</html>\n");
-//        assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
-//    }
 
     @Test
     public void testSendActivationEmail() throws Exception {

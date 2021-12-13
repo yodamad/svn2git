@@ -34,7 +34,7 @@ open class GitBranchManager(val gitManager: GitManager,
         var branchName = branch.replaceFirst("refs/remotes/origin/".toRegex(), "")
         // Spaces aren't permitted, so replaced them with an underscore
         branchName = branchName.replaceFirst("origin/".toRegex(), "").gitFormat()
-        LOG.debug("Branch %s $branchName")
+        LOG.debug("Branch $branchName")
         val history = historyMgr.startStep(workUnit.migration, StepEnum.GIT_PUSH, branchName)
 
         if (workUnit.migration.trunk != null && workUnit.migration.trunk != "trunk" && workUnit.migration.trunk.equals(branch.decode())) {
@@ -43,7 +43,7 @@ open class GitBranchManager(val gitManager: GitManager,
         }
 
         try {
-            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b \"$branchName\" \"$branch\"")
+            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -f -b \"$branchName\" \"$branch\"")
         } catch (iEx: IOException) {
             LOG.error(FAILED_TO_PUSH_BRANCH, iEx)
             historyMgr.endStep(history, StatusEnum.FAILED, iEx.message)

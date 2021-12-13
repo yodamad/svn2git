@@ -16,7 +16,7 @@
 logging:
     level:
         ROOT: WARN
-        io.github.jhipster: WARN
+        tech.jhipster: WARN
         fr.yodamad.svn2git: INFO
 
 spring:
@@ -43,7 +43,7 @@ spring:
         console:
             enabled: false
     jpa:
-        database-platform: io.github.jhipster.domain.util.FixedH2Dialect
+        database-platform: tech.jhipster.domain.util.FixedH2Dialect
         database: H2
         show-sql: false
         properties:
@@ -74,8 +74,6 @@ server:
 # ===================================================================
 
 jhipster:
-    http:
-        version: V_1_1 # To use HTTP/2 you will need to activate TLS (see application-tls.yml)
     # CORS is only enabled by default with the "dev" profile, so BrowserSync can access the API
     cors:
         allowed-origins: "*"
@@ -95,10 +93,6 @@ jhipster:
     mail: # specific JHipster mail property, for standard properties see MailProperties
         from: svn2git@localhost
         base-url: http://127.0.0.1:8080
-    metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
-        logs: # Reports Dropwizard metrics in the logs
-            enabled: false
-            report-frequency: 60 # in seconds
     logging:
         logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
             enabled: false

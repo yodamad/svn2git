@@ -11,7 +11,7 @@ import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.io.Shell.isWindows
 import fr.yodamad.svn2git.repository.MappingRepository
 import fr.yodamad.svn2git.service.util.*
-import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils
+import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.isEmpty
 import org.slf4j.LoggerFactory

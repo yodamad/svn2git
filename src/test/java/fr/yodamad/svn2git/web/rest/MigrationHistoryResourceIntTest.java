@@ -1,22 +1,22 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.domain.MigrationHistory;
+import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
+import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,21 +26,17 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import fr.yodamad.svn2git.domain.enumeration.StepEnum;
-import fr.yodamad.svn2git.domain.enumeration.StatusEnum;
 /**
  * Test class for the MigrationHistoryResource REST controller.
  *
  * @see MigrationHistoryResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class MigrationHistoryResourceIntTest {
 
@@ -58,7 +54,7 @@ public class MigrationHistoryResourceIntTest {
 
     @Autowired
     private MigrationHistoryRepository migrationHistoryRepository;
-    
+
     @Autowired
     private MigrationHistoryService migrationHistoryService;
 
@@ -78,7 +74,7 @@ public class MigrationHistoryResourceIntTest {
 
     private MigrationHistory migrationHistory;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationHistoryResource migrationHistoryResource = new MigrationHistoryResource(migrationHistoryService);
@@ -87,6 +83,7 @@ public class MigrationHistoryResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+        migrationHistory = createEntity(em);
     }
 
     /**
@@ -102,11 +99,6 @@ public class MigrationHistoryResourceIntTest {
             .date(DEFAULT_DATE)
             .data(DEFAULT_DATA);
         return migrationHistory;
-    }
-
-    @Before
-    public void initTest() {
-        migrationHistory = createEntity(em);
     }
 
     @Test
@@ -158,14 +150,14 @@ public class MigrationHistoryResourceIntTest {
         // Get all the migrationHistoryList
         restMigrationHistoryMockMvc.perform(get("/api/migration-histories?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(migrationHistory.getId().intValue())))
             .andExpect(jsonPath("$.[*].step").value(hasItem(DEFAULT_STEP.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
             .andExpect(jsonPath("$.[*].data").value(hasItem(DEFAULT_DATA.toString())));
     }
-    
+
     @Test
     @Transactional
     public void getMigrationHistory() throws Exception {
@@ -175,20 +167,12 @@ public class MigrationHistoryResourceIntTest {
         // Get the migrationHistory
         restMigrationHistoryMockMvc.perform(get("/api/migration-histories/{id}", migrationHistory.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(migrationHistory.getId().intValue()))
             .andExpect(jsonPath("$.step").value(DEFAULT_STEP.toString()))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
             .andExpect(jsonPath("$.date").value(DEFAULT_DATE.toString()))
             .andExpect(jsonPath("$.data").value(DEFAULT_DATA.toString()));
-    }
-
-    @Test
-    @Transactional
-    public void getNonExistingMigrationHistory() throws Exception {
-        // Get the migrationHistory
-        restMigrationHistoryMockMvc.perform(get("/api/migration-histories/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
     }
 
     @Test

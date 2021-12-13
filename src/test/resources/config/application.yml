@@ -26,7 +26,7 @@ spring:
         hikari:
             auto-commit: false
     jpa:
-        database-platform: io.github.jhipster.domain.util.FixedH2Dialect
+        database-platform: tech.jhipster.domain.util.FixedH2Dialect
         database: H2
         open-in-view: false
         show-sql: false
@@ -91,10 +91,6 @@ jhipster:
                 base-64-secret: MWU2ZWM1ZDEyM2MxZWRjNzJmMDQ1YTJkNzYzYzM3MWRkYTliMWYyNWRjMDMzOTVmNzYxNmQ2NDAyMTA1Y2IwODAyZWFkNmIzMjM1ODA5YzFhM2NjYmU0MzNkZDk5YmJkMTM2M2Y5MmEyYTAzZTY1YTgzMzY3NTdmOWY0MTYxM2U=
                 # Token is valid 24 hours
                 token-validity-in-seconds: 86400
-    metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
-        logs: # Reports Dropwizard metrics in the logs
-            enabled: true
-            report-frequency: 60 # in seconds
 
 # ===================================================================
 # Application specific properties

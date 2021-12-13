@@ -14,16 +14,16 @@ import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.service.MigrationRemovedFileService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see MigrationRemovedFileResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class MigrationRemovedFileResourceIntTest {
 
@@ -124,7 +124,7 @@ public class MigrationRemovedFileResourceIntTest {
     @Autowired
     private ApplicationProperties applicationProperties;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationRemovedFileResource migrationRemovedFileResource = new MigrationRemovedFileResource(migrationRemovedFileService);
@@ -140,6 +140,10 @@ public class MigrationRemovedFileResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+
+        migrationRemovedFile = createEntity(em);
+        // create an instance of Migration
+        migration = MigrationResourceIntTest.createEntity(em);
     }
 
     /**
@@ -155,13 +159,6 @@ public class MigrationRemovedFileResourceIntTest {
             .reason(DEFAULT_REASON)
             .fileSize(DEFAULT_FILE_SIZE);
         return migrationRemovedFile;
-    }
-
-    @Before
-    public void initTest() {
-        migrationRemovedFile = createEntity(em);
-        // create an instance of Migration
-        migration = MigrationResourceIntTest.createEntity(em);
     }
 
     @Test
@@ -220,7 +217,7 @@ public class MigrationRemovedFileResourceIntTest {
         // Get all the migrationRemovedFileList
         restMigrationRemovedFileMockMvc.perform(get("/api/migration-removed-files?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(migrationRemovedFile.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnLocation").value(hasItem(DEFAULT_SVN_LOCATION.toString())))
             .andExpect(jsonPath("$.[*].path").value(hasItem(DEFAULT_PATH.toString())))
@@ -242,7 +239,7 @@ public class MigrationRemovedFileResourceIntTest {
         // Get the migrationRemovedFile
         restMigrationRemovedFileMockMvc.perform(get("/api/migration-removed-files/{id}", migrationRemovedFile.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(migrationRemovedFile.getId().intValue()))
             .andExpect(jsonPath("$.svnLocation").value(DEFAULT_SVN_LOCATION.toString()))
             .andExpect(jsonPath("$.path").value(DEFAULT_PATH.toString()))
@@ -287,16 +284,6 @@ public class MigrationRemovedFileResourceIntTest {
 
         return migration.get();
 
-    }
-
-
-
-    @Test
-    @Transactional
-    public void getNonExistingMigrationRemovedFile() throws Exception {
-        // Get the migrationRemovedFile
-        restMigrationRemovedFileMockMvc.perform(get("/api/migration-removed-files/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
     }
 
     @Test

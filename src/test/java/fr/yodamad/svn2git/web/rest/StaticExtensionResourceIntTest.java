@@ -1,28 +1,25 @@
 package fr.yodamad.svn2git.web.rest;
 
 import fr.yodamad.svn2git.Svn2GitApp;
-
 import fr.yodamad.svn2git.domain.StaticExtension;
 import fr.yodamad.svn2git.repository.StaticExtensionRepository;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-
 
 import static fr.yodamad.svn2git.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see StaticExtensionResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class StaticExtensionResourceIntTest {
 
@@ -67,7 +64,7 @@ public class StaticExtensionResourceIntTest {
 
     private StaticExtension staticExtension;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final StaticExtensionResource staticExtensionResource = new StaticExtensionResource(staticExtensionRepository);
@@ -76,6 +73,8 @@ public class StaticExtensionResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+
+        staticExtension = createEntity(em);
     }
 
     /**
@@ -90,11 +89,6 @@ public class StaticExtensionResourceIntTest {
             .description(DEFAULT_DESCRIPTION)
             .enabled(DEFAULT_ENABLED);
         return staticExtension;
-    }
-
-    @Before
-    public void initTest() {
-        staticExtension = createEntity(em);
     }
 
     @Test
@@ -163,13 +157,13 @@ public class StaticExtensionResourceIntTest {
         // Get all the staticExtensionList
         restStaticExtensionMockMvc.perform(get("/api/static-extensions?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(staticExtension.getId().intValue())))
             .andExpect(jsonPath("$.[*].value").value(hasItem(DEFAULT_VALUE.toString())))
             .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION.toString())))
             .andExpect(jsonPath("$.[*].enabled").value(hasItem(DEFAULT_ENABLED.booleanValue())));
     }
-    
+
     @Test
     @Transactional
     public void getStaticExtension() throws Exception {
@@ -179,19 +173,11 @@ public class StaticExtensionResourceIntTest {
         // Get the staticExtension
         restStaticExtensionMockMvc.perform(get("/api/static-extensions/{id}", staticExtension.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(staticExtension.getId().intValue()))
             .andExpect(jsonPath("$.value").value(DEFAULT_VALUE.toString()))
             .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION.toString()))
             .andExpect(jsonPath("$.enabled").value(DEFAULT_ENABLED.booleanValue()));
-    }
-
-    @Test
-    @Transactional
-    public void getNonExistingStaticExtension() throws Exception {
-        // Get the staticExtension
-        restStaticExtensionMockMvc.perform(get("/api/static-extensions/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
     }
 
     @Test

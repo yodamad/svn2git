@@ -20,14 +20,21 @@ proc gitSvnClone { user password } {
         puts "catching error... continue with git svn fetch"
         return 1
       }
-      eof { return 0   }
 
 	  -gl "couldn't truncate file*" {
-		puts "catching error... continue with git svn fetch"
+	     puts "catching error... continue with git svn fetch"
 		 return 1
 		}
-		eof { return 0   }
+
+      "*\.pm*" {
+        puts "something went wrong... continue with git svn fetch"
+        return  1
+      }
+
+      eof { catch wait result }
 	}
+
+	return [lindex $result 3]
 }
 
 # Execute git svn clone command
@@ -58,3 +65,6 @@ if { $git_clone_results == 1 } {
         }
     }
 }
+
+echo "Exit with status $git_clone_results"
+exit $git_clone_results

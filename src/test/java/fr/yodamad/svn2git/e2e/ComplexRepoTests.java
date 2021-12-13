@@ -12,13 +12,13 @@ import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -32,7 +32,7 @@ import static fr.yodamad.svn2git.utils.MigrationUtils.initComplexMigration;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class ComplexRepoTests {
 
@@ -50,7 +50,7 @@ public class ComplexRepoTests {
         Checks.initApi(applicationProperties);
     }
 
-    @Before
+    @BeforeEach
     public void cleanGitlab() throws GitLabApiException {
         String projectName = complex().name.split("/")[1];
         String subGroup = complex().name.split("/")[0];
@@ -59,7 +59,7 @@ public class ComplexRepoTests {
         if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());
     }
 
-    @After
+    @AfterEach
     public void forceCleanGitlab() throws GitLabApiException, InterruptedException {
         Optional<Project> project = api.getProjectApi().getOptionalProject(complex().namespace, complex().name);
         if (project.isPresent()) api.getProjectApi().deleteProject(project.get().getId());

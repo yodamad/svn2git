@@ -118,7 +118,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         val modulesFounds: MutableList<SvnModule> = ArrayList()
         list.receiver = ISvnObjectReceiver { _, `object`: SVNDirEntry ->
             val name = `object`.relativePath
-            if (name != null && !name.isEmpty() && !keywords().contains(name) && module?.layoutElements.isNullOrEmpty()) {
+            if (name != null && !name.isEmpty() && !keywords().contains(name.toLowerCase()) && module?.layoutElements.isNullOrEmpty()) {
 
                 // found a directory
                 if (`object`.kind == SVNNodeKind.DIR) {

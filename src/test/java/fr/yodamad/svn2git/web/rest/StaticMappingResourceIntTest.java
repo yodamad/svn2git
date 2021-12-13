@@ -175,14 +175,6 @@ public class StaticMappingResourceIntTest {
 
     @Test
     @Transactional
-    public void getNonExistingStaticMapping() throws Exception {
-        // Get the staticMapping
-        restStaticMappingMockMvc.perform(get("/api/static-mappings/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
     public void updateStaticMapping() throws Exception {
         // Initialize the database
         staticMappingService.save(staticMapping);

@@ -178,14 +178,6 @@ public class MappingResourceIntTest {
 
     @Test
     @Transactional
-    public void getNonExistingMapping() throws Exception {
-        // Get the mapping
-        restMappingMockMvc.perform(get("/api/mappings/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
     public void updateMapping() throws Exception {
         // Initialize the database
         mappingService.save(mapping);

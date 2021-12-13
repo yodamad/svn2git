@@ -182,14 +182,6 @@ public class StaticExtensionResourceIntTest {
 
     @Test
     @Transactional
-    public void getNonExistingStaticExtension() throws Exception {
-        // Get the staticExtension
-        restStaticExtensionMockMvc.perform(get("/api/static-extensions/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
     public void updateStaticExtension() throws Exception {
         // Initialize the database
         staticExtensionRepository.saveAndFlush(staticExtension);

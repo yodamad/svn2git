@@ -286,16 +286,6 @@ public class MigrationRemovedFileResourceIntTest {
 
     }
 
-
-
-    @Test
-    @Transactional
-    public void getNonExistingMigrationRemovedFile() throws Exception {
-        // Get the migrationRemovedFile
-        restMigrationRemovedFileMockMvc.perform(get("/api/migration-removed-files/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
-    }
-
     @Test
     @Transactional
     public void updateMigrationRemovedFile() throws Exception {

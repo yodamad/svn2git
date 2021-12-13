@@ -177,14 +177,6 @@ public class MigrationHistoryResourceIntTest {
 
     @Test
     @Transactional
-    public void getNonExistingMigrationHistory() throws Exception {
-        // Get the migrationHistory
-        restMigrationHistoryMockMvc.perform(get("/api/migration-histories/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
     public void updateMigrationHistory() throws Exception {
         // Initialize the database
         migrationHistoryService.save(migrationHistory);

@@ -318,14 +318,6 @@ public class MigrationResourceIntTest {
 
     @Test
     @Transactional
-    public void getNonExistingMigration() throws Exception {
-        // Get the migration
-        restMigrationMockMvc.perform(get("/api/migrations/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
     public void updateMigration() throws Exception {
         // Initialize the database
         migrationRepository.saveAndFlush(migration);

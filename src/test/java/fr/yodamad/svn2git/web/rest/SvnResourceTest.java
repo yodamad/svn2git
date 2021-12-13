@@ -4,7 +4,7 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.data.Repository;
 import fr.yodamad.svn2git.domain.SvnInfo;
 import fr.yodamad.svn2git.domain.SvnStructure;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ public class SvnResourceTest {
 
     public static SvnInfo svnInfo = new SvnInfo();
 
-    @BeforeAll
-    static void initSvnInfo() {
+    @BeforeEach
+    public void initSvnInfo() {
         svnInfo = new SvnInfo();
         svnInfo.url = "https://chaos.yodamad.fr/svn";
     }

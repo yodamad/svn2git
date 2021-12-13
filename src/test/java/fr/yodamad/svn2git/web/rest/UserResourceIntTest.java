@@ -291,13 +291,6 @@ public class UserResourceIntTest {
 
     @Test
     @Transactional
-    public void getNonExistingUser() throws Exception {
-        restUserMockMvc.perform(get("/api/users/unknown"))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
     public void updateUser() throws Exception {
         // Initialize the database
         userRepository.saveAndFlush(user);

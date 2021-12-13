@@ -4,7 +4,6 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.domain.StaticExtension;
 import fr.yodamad.svn2git.repository.StaticExtensionRepository;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,7 +64,7 @@ public class StaticExtensionResourceIntTest {
 
     private StaticExtension staticExtension;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final StaticExtensionResource staticExtensionResource = new StaticExtensionResource(staticExtensionRepository);
@@ -74,6 +73,8 @@ public class StaticExtensionResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+
+        staticExtension = createEntity(em);
     }
 
     /**
@@ -88,11 +89,6 @@ public class StaticExtensionResourceIntTest {
             .description(DEFAULT_DESCRIPTION)
             .enabled(DEFAULT_ENABLED);
         return staticExtension;
-    }
-
-    @BeforeEach
-    public void initTest() {
-        staticExtension = createEntity(em);
     }
 
     @Test

@@ -7,7 +7,7 @@ import fr.yodamad.svn2git.repository.UserRepository;
 import fr.yodamad.svn2git.service.dto.UserDTO;
 import fr.yodamad.svn2git.service.util.RandomUtil;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -53,7 +53,7 @@ public class UserServiceIntTest {
 
     private User user;
 
-    @BeforeAll
+    @BeforeEach
     public void init() {
         user = new User();
         user.setLogin("johndoe");

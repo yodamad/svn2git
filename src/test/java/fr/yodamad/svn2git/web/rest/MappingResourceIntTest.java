@@ -5,7 +5,6 @@ import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,7 +71,7 @@ public class MappingResourceIntTest {
 
     private Mapping mapping;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MappingResource mappingResource = new MappingResource(mappingService);

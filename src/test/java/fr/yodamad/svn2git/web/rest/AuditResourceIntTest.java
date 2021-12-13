@@ -6,7 +6,6 @@ import fr.yodamad.svn2git.domain.PersistentAuditEvent;
 import fr.yodamad.svn2git.repository.PersistenceAuditEventRepository;
 import fr.yodamad.svn2git.service.AuditEventService;
 import fr.yodamad.svn2git.service.client.ArtifactoryAdmin;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,7 +65,7 @@ public class AuditResourceIntTest {
     @MockBean
     ArtifactoryAdmin artifactoryAdmin;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         AuditEventService auditEventService =

@@ -12,7 +12,6 @@ import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,7 +103,7 @@ public class MigrationResourceIntTest {
     @Autowired
     private ApplicationProperties applicationProperties;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService, gitlabResource, applicationProperties);
@@ -113,6 +112,7 @@ public class MigrationResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+        migration = createEntity(em);
     }
 
     /**
@@ -132,11 +132,6 @@ public class MigrationResourceIntTest {
             .status(DEFAULT_STATUS);
 
         return migration;
-    }
-
-    @BeforeEach
-    public void initTest() {
-        migration = createEntity(em);
     }
 
     @Test

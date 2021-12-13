@@ -72,7 +72,7 @@ public class StaticMappingResourceIntTest {
 
     private StaticMapping staticMapping;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final StaticMappingResource staticMappingResource = new StaticMappingResource(staticMappingService);
@@ -81,6 +81,8 @@ public class StaticMappingResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+
+        staticMapping = createEntity(em);
     }
 
     /**
@@ -96,11 +98,6 @@ public class StaticMappingResourceIntTest {
             .gitDirectory(DEFAULT_GIT_DIRECTORY)
             .svnDirectoryDelete(DEFAULT_SVN_DIRECTORY_DELETE);
         return staticMapping;
-    }
-
-    @BeforeEach
-    public void initTest() {
-        staticMapping = createEntity(em);
     }
 
     @Test

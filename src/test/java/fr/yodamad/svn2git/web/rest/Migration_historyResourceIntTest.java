@@ -8,7 +8,6 @@ import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,7 +73,7 @@ public class Migration_historyResourceIntTest {
 
     private MigrationHistory migration_history;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationHistoryResource migration_historyResource = new MigrationHistoryResource(migration_historyService);
@@ -83,6 +82,7 @@ public class Migration_historyResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+        migration_history = createEntity(em);
     }
 
     /**
@@ -97,11 +97,6 @@ public class Migration_historyResourceIntTest {
             .status(DEFAULT_STATUS)
             .date(DEFAULT_DATE);
         return migration_history;
-    }
-
-    @BeforeEach
-    public void initTest() {
-        migration_history = createEntity(em);
     }
 
     @Test

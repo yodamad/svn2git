@@ -7,7 +7,6 @@ import fr.yodamad.svn2git.domain.enumeration.StepEnum;
 import fr.yodamad.svn2git.repository.MigrationHistoryRepository;
 import fr.yodamad.svn2git.service.MigrationHistoryService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,7 +74,7 @@ public class MigrationHistoryResourceIntTest {
 
     private MigrationHistory migrationHistory;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationHistoryResource migrationHistoryResource = new MigrationHistoryResource(migrationHistoryService);
@@ -84,6 +83,7 @@ public class MigrationHistoryResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+        migrationHistory = createEntity(em);
     }
 
     /**
@@ -99,11 +99,6 @@ public class MigrationHistoryResourceIntTest {
             .date(DEFAULT_DATE)
             .data(DEFAULT_DATA);
         return migrationHistory;
-    }
-
-    @BeforeEach
-    public void initTest() {
-        migrationHistory = createEntity(em);
     }
 
     @Test

@@ -3,7 +3,7 @@ package fr.yodamad.svn2git.service;
 import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.config.Constants;
 import fr.yodamad.svn2git.domain.User;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -50,7 +50,7 @@ public class MailServiceIntTest {
 
     private MailService mailService;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         doNothing().when(javaMailSender).send(any(MimeMessage.class));

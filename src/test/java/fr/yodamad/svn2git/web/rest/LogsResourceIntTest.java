@@ -4,7 +4,7 @@ import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.LoggerContext;
 import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.web.rest.vm.LoggerVM;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class LogsResourceIntTest {
 
     private MockMvc restLogsMockMvc;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         LogsResource logsResource = new LogsResource();
         this.restLogsMockMvc = MockMvcBuilders

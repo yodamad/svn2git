@@ -14,7 +14,6 @@ import fr.yodamad.svn2git.service.MigrationManager;
 import fr.yodamad.svn2git.service.MigrationRemovedFileService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -125,7 +124,7 @@ public class MigrationRemovedFileResourceIntTest {
     @Autowired
     private ApplicationProperties applicationProperties;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MigrationRemovedFileResource migrationRemovedFileResource = new MigrationRemovedFileResource(migrationRemovedFileService);
@@ -141,6 +140,10 @@ public class MigrationRemovedFileResourceIntTest {
             .setControllerAdvice(exceptionTranslator)
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
+
+        migrationRemovedFile = createEntity(em);
+        // create an instance of Migration
+        migration = MigrationResourceIntTest.createEntity(em);
     }
 
     /**
@@ -156,13 +159,6 @@ public class MigrationRemovedFileResourceIntTest {
             .reason(DEFAULT_REASON)
             .fileSize(DEFAULT_FILE_SIZE);
         return migrationRemovedFile;
-    }
-
-    @BeforeEach
-    public void initTest() {
-        migrationRemovedFile = createEntity(em);
-        // create an instance of Migration
-        migration = MigrationResourceIntTest.createEntity(em);
     }
 
     @Test

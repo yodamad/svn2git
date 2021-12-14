@@ -90,7 +90,7 @@ jhipster:
         from: svn2git@localhost
 
 logging:
-    file: target/svn2git.log
+    file: svn2git.log
 
 # ===================================================================
 # Application specific properties

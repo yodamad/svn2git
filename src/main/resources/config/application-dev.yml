@@ -20,11 +20,6 @@ logging:
         fr.yodamad.svn2git: INFO
 
 spring:
-    profiles:
-        active: dev
-        include:
-            # Uncomment to activate TLS for the dev profile
-            #- tls
     devtools:
         restart:
             enabled: true

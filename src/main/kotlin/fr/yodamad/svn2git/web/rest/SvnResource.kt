@@ -34,6 +34,8 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
     /** Logger.  */
     private val log = LoggerFactory.getLogger(SvnResource::class.java)
 
+    lateinit var structure: SvnStructure
+
     /**
      * Check if a SVN repository
      * @param repositoryName SVN repository ID search
@@ -61,10 +63,11 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
      */
     protected open fun listSVN(svnInfo: SvnInfo, repo: String?, depth: Int?): SvnStructure {
         val depthOrDefault = depth ?: 1
-        val structure = SvnStructure(repo)
+        structure = SvnStructure(repo)
         structure.modules = listModulesSVN(svnInfo, repo, null, 0, depthOrDefault)
         if (structure.modules.stream().anyMatch { m: SvnModule? -> m is FakeModule }) {
             structure.root = true
+            structure.uppercase = structure.modules.first().uppercase
             structure.modules.clear()
         }
         structure.flat = structure.modules.isEmpty()
@@ -118,7 +121,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         val modulesFounds: MutableList<SvnModule> = ArrayList()
         list.receiver = ISvnObjectReceiver { _, `object`: SVNDirEntry ->
             val name = `object`.relativePath
-            if (name != null && !name.isEmpty() && !keywords().contains(name.toLowerCase()) && module?.layoutElements.isNullOrEmpty()) {
+            if (name != null && name.isNotEmpty() && !keywords().contains(name.toLowerCase()) && module?.layoutElements.isNullOrEmpty()) {
 
                 // found a directory
                 if (`object`.kind == SVNNodeKind.DIR) {
@@ -136,7 +139,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
                     modulesFounds.clear()
                 }
             }
-            if (name != null && !name.isEmpty() && keywords().contains(name)) {
+            if (name != null && !name.isEmpty() && keywords().contains(name.toLowerCase())) {
                 if (module != null) {
                     log.info(String.format("Module %s with layout %s", module.name, name))
                     module.layoutElements.add(name)
@@ -144,7 +147,10 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
                     modulesFounds.clear()
                 } else {
                     // Root level case
-                    modulesFounds.add(FakeModule())
+                    val fake = FakeModule()
+                    // Check uppercase
+                    fake.uppercase = name.toUpperCase() == name
+                    modulesFounds.add(fake)
                 }
             }
         }

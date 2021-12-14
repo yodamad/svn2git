@@ -378,7 +378,7 @@ export class MigrationStepperComponent implements OnInit {
             )
             .subscribe(
                 res => {
-                    this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, res.body.root, []);
+                    this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, res.body.root, res.body.uppercase, []);
                     if (res.body.modules && res.body.modules.length > 0) {
                         res.body.modules.forEach(module => this.fillModules(module));
                     } else if (res.body.flat) {
@@ -471,6 +471,7 @@ export class MigrationStepperComponent implements OnInit {
         this.mig = new Migration();
         this.mig.trunk = '';
         this.mig.cleaning = this.stepCleaning;
+        this.mig.uppercase = this.svnDirectories.uppercase;
 
         // Gitlab
         this.mig.gitlabUrl = this.gitlabFormGroup.controls['gitlabURL'].value;

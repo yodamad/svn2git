@@ -15,7 +15,7 @@ import fr.yodamad.svn2git.web.rest.errors.BadRequestAlertException
 import fr.yodamad.svn2git.web.rest.util.HeaderUtil
 import fr.yodamad.svn2git.web.rest.util.PaginationUtil
 import fr.yodamad.svn2git.web.rest.util.View.Public
-import io.github.jhipster.web.util.ResponseUtil
+import tech.jhipster.web.util.ResponseUtil
 import org.apache.commons.lang3.StringUtils
 import org.gitlab4j.api.GitLabApiException
 import org.slf4j.LoggerFactory

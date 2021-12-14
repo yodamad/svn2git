@@ -13,7 +13,7 @@ import fr.yodamad.svn2git.web.rest.errors.LoginAlreadyUsedException;
 import fr.yodamad.svn2git.web.rest.util.HeaderUtil;
 import fr.yodamad.svn2git.web.rest.util.PaginationUtil;
 import com.codahale.metrics.annotation.Timed;
-import io.github.jhipster.web.util.ResponseUtil;
+import tech.jhipster.web.util.ResponseUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

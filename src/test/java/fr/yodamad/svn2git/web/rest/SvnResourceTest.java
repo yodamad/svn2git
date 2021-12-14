@@ -4,20 +4,21 @@ import fr.yodamad.svn2git.Svn2GitApp;
 import fr.yodamad.svn2git.data.Repository;
 import fr.yodamad.svn2git.domain.SvnInfo;
 import fr.yodamad.svn2git.domain.SvnStructure;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.tmatesoft.svn.core.SVNAuthenticationException;
 
 import java.util.List;
 
 import static fr.yodamad.svn2git.data.Repository.Modules.MODULE_1;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class SvnResourceTest {
 
@@ -26,9 +27,9 @@ public class SvnResourceTest {
 
     public static final Integer DEPTH = 2;
 
-    public SvnInfo svnInfo = new SvnInfo();
+    public static SvnInfo svnInfo = new SvnInfo();
 
-    @Before
+    @BeforeEach
     public void initSvnInfo() {
         svnInfo = new SvnInfo();
         svnInfo.url = "https://chaos.yodamad.fr/svn";
@@ -128,10 +129,13 @@ public class SvnResourceTest {
         });
     }
 
-    @Test(expected = SVNAuthenticationException.class)
+    @Test
     public void test_invalid_credentials() {
         svnInfo.user = "hacker";
         svnInfo.password = "hacker";
-        svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
+
+        assertThrows(SVNAuthenticationException.class, () -> {
+            svnResource.listSVN(svnInfo, Repository.simple().name, DEPTH);
+        });
     }
 }

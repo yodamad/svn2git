@@ -4,7 +4,7 @@ import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties
 import fr.yodamad.svn2git.config.ApplicationProperties;
 import fr.yodamad.svn2git.config.DefaultProfileUtil;
 
-import io.github.jhipster.config.JHipsterConstants;
+import tech.jhipster.config.JHipsterConstants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

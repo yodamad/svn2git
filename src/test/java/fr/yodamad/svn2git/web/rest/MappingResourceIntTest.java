@@ -5,16 +5,16 @@ import fr.yodamad.svn2git.domain.Mapping;
 import fr.yodamad.svn2git.repository.MappingRepository;
 import fr.yodamad.svn2git.service.MappingService;
 import fr.yodamad.svn2git.web.rest.errors.ExceptionTranslator;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see MappingResource
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Svn2GitApp.class)
 public class MappingResourceIntTest {
 
@@ -71,7 +71,7 @@ public class MappingResourceIntTest {
 
     private Mapping mapping;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         final MappingResource mappingResource = new MappingResource(mappingService);
@@ -97,7 +97,7 @@ public class MappingResourceIntTest {
         return mapping;
     }
 
-    @Before
+    @BeforeEach
     public void initTest() {
         mapping = createEntity(em);
     }
@@ -151,7 +151,7 @@ public class MappingResourceIntTest {
         // Get all the mappingList
         restMappingMockMvc.perform(get("/api/mappings?sort=id,desc"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(mapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].svnDirectory").value(hasItem(DEFAULT_SVN_DIRECTORY.toString())))
             .andExpect(jsonPath("$.[*].regex").value(hasItem(DEFAULT_REGEX.toString())))
@@ -168,20 +168,12 @@ public class MappingResourceIntTest {
         // Get the mapping
         restMappingMockMvc.perform(get("/api/mappings/{id}", mapping.getId()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(mapping.getId().intValue()))
             .andExpect(jsonPath("$.svnDirectory").value(DEFAULT_SVN_DIRECTORY.toString()))
             .andExpect(jsonPath("$.regex").value(DEFAULT_REGEX.toString()))
             .andExpect(jsonPath("$.gitDirectory").value(DEFAULT_GIT_DIRECTORY.toString()))
             .andExpect(jsonPath("$.svnDirectoryDelete").value(DEFAULT_SVN_DIRECTORY_DELETE.booleanValue()));
-    }
-
-    @Test
-    @Transactional
-    public void getNonExistingMapping() throws Exception {
-        // Get the mapping
-        restMappingMockMvc.perform(get("/api/mappings/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
     }
 
     @Test

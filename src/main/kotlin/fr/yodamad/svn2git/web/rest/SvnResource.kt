@@ -139,7 +139,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
                     modulesFounds.clear()
                 }
             }
-            if (name != null && !name.isEmpty() && keywords().contains(name.toLowerCase())) {
+            if (name != null && name.isNotEmpty() && keywords().contains(name.toLowerCase())) {
                 if (module != null) {
                     log.info(String.format("Module %s with layout %s", module.name, name))
                     module.layoutElements.add(name)

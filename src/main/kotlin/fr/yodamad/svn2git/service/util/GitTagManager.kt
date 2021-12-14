@@ -53,12 +53,12 @@ open class GitTagManager(val gitManager: GitManager,
             val noHistory = workUnit.migration.svnHistory != "all"
 
             // checkout a new branch using local tagName and remote tag name
-            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -b tmp_tag \"$tag\"")
+            execCommand(workUnit.commandManager, workUnit.directory, "git checkout -f -b tmp_tag \"$tag\"")
 
             // If this tag does not contain any files we will ignore it and add warning to logs.
             if (!isFileInFolder(workUnit.directory)) {
                 // Switch over to master
-                execCommand(workUnit.commandManager, workUnit.directory, "git checkout master")
+                execCommand(workUnit.commandManager, workUnit.directory, "git checkout -f master")
 
                 // Now we can delete the branch tmp_tag
                 execCommand(workUnit.commandManager, workUnit.directory, "git branch -D tmp_tag")
@@ -71,7 +71,7 @@ open class GitTagManager(val gitManager: GitManager,
                 }
 
                 // Checkout master.
-                execCommand(workUnit.commandManager, workUnit.directory, "git checkout master")
+                execCommand(workUnit.commandManager, workUnit.directory, "git checkout -f master")
 
                 // create tag from tmp_tag branch.
                 execCommand(workUnit.commandManager, workUnit.directory, "git tag \"$tagName\" tmp_tag")

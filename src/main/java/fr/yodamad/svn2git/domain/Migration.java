@@ -154,6 +154,10 @@ public class Migration implements Serializable {
     @JsonView(View.Public.class)
     private Boolean cleaning = true;
 
+    @Column(name = "uppercase")
+    @JsonView(View.Public.class)
+    private Boolean uppercase = false;
+
     @OneToMany(mappedBy = "migration")
     @OrderBy("id ASC")
     private Set<MigrationHistory> histories = new HashSet<>();
@@ -540,6 +544,14 @@ public class Migration implements Serializable {
 
     public void setCleaning(Boolean cleaning) {
         this.cleaning = cleaning;
+    }
+
+    public Boolean getUppercase() {
+        return uppercase;
+    }
+
+    public void setUppercase(Boolean uppercase) {
+        this.uppercase = uppercase;
     }
 
     public String getUploadType() { return uploadType; }

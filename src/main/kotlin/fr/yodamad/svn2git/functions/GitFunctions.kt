@@ -212,11 +212,12 @@ fun isFileInFolder(dirPath: String): Boolean {
 
 fun buildTrunk(workUnit: WorkUnit): String? {
     val mig = workUnit.migration
+    val trunk = if (workUnit.migration.uppercase) "TRUNK" else "trunk"
     return if (mig.flat) {
         if (mig.svnGroup == mig.svnProject) {
             "--trunk=/"
         } else String.format("--trunk=%s/", workUnit.migration.svnProject.encode())
-    } else String.format("--trunk=%s/trunk", workUnit.migration.svnProject.encode())
+    } else String.format("--trunk=%s/%s", workUnit.migration.svnProject.encode(), trunk)
 }
 
 fun buildSvnCompleteUrl(workUnit: WorkUnit) =

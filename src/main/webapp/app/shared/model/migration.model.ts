@@ -44,6 +44,7 @@ export interface IMigration {
     histories?: IMigrationHistory[];
     mappings?: IMapping[];
     flat?: boolean;
+    uppercase?: boolean;
     cleaning?: boolean;
     uploadType?: string;
 }
@@ -77,6 +78,7 @@ export class Migration implements IMigration {
         public histories?: IMigrationHistory[],
         public mappings?: IMapping[],
         public flat?: boolean,
+        public uppercase?: boolean,
         public cleaning?: boolean,
         public uploadType?: string
     ) {

@@ -107,7 +107,7 @@ class SvnInfo {
 }
 
 export class SvnStructure {
-    constructor(public name: string, public flat: boolean, public root: boolean, public modules: SvnModule[]) {}
+    constructor(public name: string, public flat: boolean, public root: boolean, public uppercase: boolean, public modules: SvnModule[]) {}
 }
 
 export class SvnModule {
@@ -116,7 +116,8 @@ export class SvnModule {
         public name: string,
         public path: string,
         public subModules: SvnModule[],
-        public flat: boolean
+        public flat: boolean,
+        public uppercase: boolean
     ) {}
 }
 

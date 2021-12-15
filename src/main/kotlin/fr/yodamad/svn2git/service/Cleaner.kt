@@ -86,8 +86,9 @@ open class Cleaner(val historyMgr: HistoryManager,
                     val gitCommand = String.format("git checkout -b \"%s\" \"%s\"", branchName, b)
                     execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
-                    val cleanedFilesBranch: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, b.replace("origin", "branches"), SvnLayout.BRANCH)
-                    cleanedFilesMap[b.replace("origin", "branches")] = cleanedFilesBranch
+                    val branches = if (workUnit.migration.uppercase) "branches".toUpperCase() else "branches"
+                    val cleanedFilesBranch: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, b.replace("origin", branches), SvnLayout.BRANCH)
+                    cleanedFilesMap[b.replace("origin", branches)] = cleanedFilesBranch
                     // clean potential modification
                     execCommand(workUnit.commandManager, workUnit.directory, resetHead())
                     // back to master
@@ -110,8 +111,9 @@ open class Cleaner(val historyMgr: HistoryManager,
                     val gitCommand = String.format("git checkout -b tmp_tag \"%s\"", t)
                     execCommand(workUnit.commandManager, workUnit.directory, gitCommand)
                     // listCleanedFilesInSvnLocation
-                    val cleanedFilesTag: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, t.replace("origin", "tags"), TAG)
-                    cleanedFilesMap[t.replace("origin", "tags")] = cleanedFilesTag
+                    val tags = if (workUnit.migration.uppercase) "tags".toUpperCase() else "tags"
+                    val cleanedFilesTag: CleanedFiles = listCleanedFilesInSvnLocation(workUnit, t.replace("origin", tags), TAG)
+                    cleanedFilesMap[t.replace("origin", tags)] = cleanedFilesTag
                     // clean potential modification
                     execCommand(workUnit.commandManager, workUnit.directory, resetHead())
                     // back to master
@@ -388,8 +390,8 @@ open class Cleaner(val historyMgr: HistoryManager,
      */
     open fun cleanElementsOn(workUnit: WorkUnit, tags: Boolean) {
 
-        val elements = if (tags) Pair(workUnit.migration.tags, "tags")
-                        else Pair(workUnit.migration.branches, "branches")
+        val elements = if (tags) Pair(workUnit.migration.tags, if (workUnit.migration.uppercase) "tags".toUpperCase() else "tags")
+                        else Pair(workUnit.migration.branches, if (workUnit.migration.uppercase) "branches".toUpperCase() else "branches")
 
         if (elements.first != null) {
             val history = historyMgr.startStep(workUnit.migration, StepEnum.BRANCH_CLEAN, "Clean removed SVN ${elements.second}")
@@ -430,7 +432,7 @@ open class Cleaner(val historyMgr: HistoryManager,
             Files.readAllLines(Paths.get(workUnit.directory, GIT_LIST))
                 .stream()
                 .map { l: String -> l.trim { it <= ' ' }.replace("origin/", "").decode().encode() }
-                .filter { t: String -> t.startsWith("tags") }
+                .filter { t: String -> t.startsWith("tags") || t.startsWith("TAGS") }
                 .map { l: String -> l.replace(TAGS, "") }
                 .filter { l: String -> !l.equals(workUnit.migration.trunk, ignoreCase = true) }
                 .collect(Collectors.toList())
@@ -461,12 +463,12 @@ open class Cleaner(val historyMgr: HistoryManager,
         val svnUrl = if (workUnit.migration.svnUrl.endsWith("/")) workUnit.migration.svnUrl else String.format("%s/", workUnit.migration.svnUrl)
         val svnBranchList: String = if (StringUtils.isEmpty(workUnit.migration.svnPassword)) {
             String.format("svn ls %s%s%s/%s > %s", svnUrl, workUnit.migration.svnGroup, workUnit.migration.svnProject,
-                if (isTags) "tags" else "branches", SVN_LIST)
+                if (isTags && workUnit.migration.uppercase) "tags".toUpperCase() else if (isTags) "tags" else if (workUnit.migration.uppercase) "branches".toUpperCase() else "branches", SVN_LIST)
         } else {
             String.format("svn ls %s%s%s/%s %s %s > %s", svnUrl,
                 if (workUnit.migration.svnGroup.endsWith("/")) workUnit.migration.svnGroup else String.format("%s/", workUnit.migration.svnGroup),
                 workUnit.migration.svnProject,
-                if (isTags) "tags" else "branches",
+                if (isTags && workUnit.migration.uppercase) "tags".toUpperCase() else if (isTags) "tags" else if (workUnit.migration.uppercase) "branches".toUpperCase() else "branches",
                 "--username=" + workUnit.migration.svnUser, "--password=" + workUnit.migration.svnPassword.escape(),
                 SVN_LIST)
         }
@@ -491,13 +493,13 @@ open class Cleaner(val historyMgr: HistoryManager,
         gitElementsToDelete.forEach(Consumer { line: String ->
             try {
                 var cleanCmd = String.format("git branch -d -r %s", String.format("\"origin/%s%s\"",
-                    if (isTags && !line.startsWith("tags")) TAGS else "", line))
+                    if (isTags && (!line.startsWith("tags") || !line.startsWith("TAGS"))) TAGS else "", line))
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
                 cleanCmd = if (Shell.isWindows) {
                     String.format("rd /s /q \".git\\svn\\refs\\remotes\\origin\\%s\\\"", String.format("%s%s", if (isTags) "tags\\" else "", line))
                 } else {
                     String.format("rm -rf %s", String.format("\".git/svn/refs/remotes/origin/%s%s\"",
-                        if (isTags && !line.startsWith("tags")) TAGS else "", line))
+                        if (isTags && (!line.startsWith("tags") || !line.startsWith("TAGS"))) TAGS else "", line))
                 }
                 execCommand(workUnit.commandManager, workUnit.directory, cleanCmd)
             } catch (ex: IOException) {

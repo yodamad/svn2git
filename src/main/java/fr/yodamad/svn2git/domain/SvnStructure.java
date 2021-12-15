@@ -16,6 +16,8 @@ public class SvnStructure {
     public boolean flat = false;
     /** Flag for classic repository at root level. */
     public boolean root = false;
+    /** Flag to indicate that keywords are in uppercase. */
+    public boolean uppercase = false;
     /** SVN modules. */
     public List<SvnModule> modules = new ArrayList<>();
 
@@ -45,7 +47,8 @@ public class SvnStructure {
         public String path;
         /** Potential submodules. */
         public List<SvnModule> subModules = new ArrayList<>();
-        /** Flag for flat module (no trunk, tags or branches) **/
+        /** Flag to indicate that keywords are in uppercase. */
+        public boolean uppercase = false;
 
         public SvnModule(String name, String path) {
             super(name);

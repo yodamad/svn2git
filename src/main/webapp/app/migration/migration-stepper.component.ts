@@ -378,7 +378,7 @@ export class MigrationStepperComponent implements OnInit {
             )
             .subscribe(
                 res => {
-                    this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, res.body.root, []);
+                    this.svnDirectories = new SvnStructure(res.body.name, res.body.flat, res.body.root, res.body.uppercase, []);
                     if (res.body.modules && res.body.modules.length > 0) {
                         res.body.modules.forEach(module => this.fillModules(module));
                     } else if (res.body.flat) {
@@ -503,6 +503,10 @@ export class MigrationStepperComponent implements OnInit {
         }
 
         const module = this.svnDirectories.modules.find(m => m.path === project);
+
+        if (this.svnDirectories.root) this.mig.uppercase = this.svnDirectories.uppercase;
+        else this.mig.uppercase = module.uppercase;
+
         if (this.svnDirectories.modules && this.svnDirectories.modules.length > 0) {
             if (module && module.flat) {
                 this.mig.trunk = 'trunk';

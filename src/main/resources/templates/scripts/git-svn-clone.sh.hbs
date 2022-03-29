@@ -26,7 +26,7 @@ proc gitSvnClone { user password } {
 		 return 1
 		}
 
-      "*\.pm*" {
+      "*\.pm line*" {
         puts "something went wrong... continue with git svn fetch"
         return  1
       }

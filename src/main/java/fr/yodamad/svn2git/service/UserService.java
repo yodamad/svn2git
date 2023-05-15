@@ -9,8 +9,6 @@ import fr.yodamad.svn2git.security.AuthoritiesConstants;
 import fr.yodamad.svn2git.security.SecurityUtils;
 import fr.yodamad.svn2git.service.dto.UserDTO;
 import fr.yodamad.svn2git.service.util.RandomUtil;
-import fr.yodamad.svn2git.web.rest.errors.*;
-
 import fr.yodamad.svn2git.web.rest.errors.EmailAlreadyUsedException;
 import fr.yodamad.svn2git.web.rest.errors.InvalidPasswordException;
 import fr.yodamad.svn2git.web.rest.errors.LoginAlreadyUsedException;
@@ -25,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -87,13 +88,21 @@ public class UserService {
         userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).ifPresent(existingUser -> {
             boolean removed = removeNonActivatedUser(existingUser);
             if (!removed) {
-                throw new LoginAlreadyUsedException();
+                try {
+                    throw new LoginAlreadyUsedException();
+                } catch (LoginAlreadyUsedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
         userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).ifPresent(existingUser -> {
             boolean removed = removeNonActivatedUser(existingUser);
             if (!removed) {
-                throw new EmailAlreadyUsedException();
+                try {
+                    throw new EmailAlreadyUsedException();
+                } catch (EmailAlreadyUsedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
         User newUser = new User();

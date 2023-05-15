@@ -43,7 +43,7 @@ public class StaticMappingResource {
      */
     @PostMapping("/static-mappings")
     @Timed
-    public ResponseEntity<StaticMapping> createStaticMapping(@RequestBody StaticMapping staticMapping) throws URISyntaxException {
+    public ResponseEntity<StaticMapping> createStaticMapping(@RequestBody StaticMapping staticMapping) throws URISyntaxException, BadRequestAlertException {
         log.debug("REST request to save StaticMapping : {}", staticMapping);
         if (staticMapping.getId() != null) {
             throw new BadRequestAlertException("A new staticMapping cannot already have an ID", ENTITY_NAME, "idexists");
@@ -65,7 +65,7 @@ public class StaticMappingResource {
      */
     @PutMapping("/static-mappings")
     @Timed
-    public ResponseEntity<StaticMapping> updateStaticMapping(@RequestBody StaticMapping staticMapping) throws URISyntaxException {
+    public ResponseEntity<StaticMapping> updateStaticMapping(@RequestBody StaticMapping staticMapping) throws URISyntaxException, BadRequestAlertException {
         log.debug("REST request to update StaticMapping : {}", staticMapping);
         if (staticMapping.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");

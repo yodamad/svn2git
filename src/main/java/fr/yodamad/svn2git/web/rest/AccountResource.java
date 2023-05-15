@@ -1,7 +1,6 @@
 package fr.yodamad.svn2git.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-
 import fr.yodamad.svn2git.domain.User;
 import fr.yodamad.svn2git.repository.UserRepository;
 import fr.yodamad.svn2git.security.SecurityUtils;
@@ -9,14 +8,12 @@ import fr.yodamad.svn2git.service.MailService;
 import fr.yodamad.svn2git.service.UserService;
 import fr.yodamad.svn2git.service.dto.PasswordChangeDTO;
 import fr.yodamad.svn2git.service.dto.UserDTO;
-import fr.yodamad.svn2git.web.rest.errors.*;
 import fr.yodamad.svn2git.web.rest.errors.EmailAlreadyUsedException;
 import fr.yodamad.svn2git.web.rest.errors.EmailNotFoundException;
 import fr.yodamad.svn2git.web.rest.errors.InternalServerErrorException;
 import fr.yodamad.svn2git.web.rest.errors.InvalidPasswordException;
 import fr.yodamad.svn2git.web.rest.vm.KeyAndPasswordVM;
 import fr.yodamad.svn2git.web.rest.vm.ManagedUserVM;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Optional;
 
 
 /**
@@ -57,7 +54,7 @@ public class AccountResource {
      */
     @GetMapping("/activate")
     @Timed
-    public void activateAccount(@RequestParam(value = "key") String key) {
+    public void activateAccount(@RequestParam(value = "key") String key) throws InternalServerErrorException {
         Optional<User> user = userService.activateRegistration(key);
         if (!user.isPresent()) {
             throw new InternalServerErrorException("No user was found for this activation key");
@@ -85,7 +82,7 @@ public class AccountResource {
      */
     @GetMapping("/account")
     @Timed
-    public UserDTO getAccount() {
+    public UserDTO getAccount() throws InternalServerErrorException {
         return userService.getUserWithAuthorities()
             .map(UserDTO::new)
             .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
@@ -100,7 +97,7 @@ public class AccountResource {
      */
     @PostMapping("/account")
     @Timed
-    public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
+    public void saveAccount(@Valid @RequestBody UserDTO userDTO) throws EmailAlreadyUsedException, InternalServerErrorException {
         final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new InternalServerErrorException("Current user login not found"));
         Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
         if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
@@ -137,7 +134,7 @@ public class AccountResource {
      */
     @PostMapping(path = "/account/reset-password/init")
     @Timed
-    public void requestPasswordReset(@RequestBody String mail) {
+    public void requestPasswordReset(@RequestBody String mail) throws EmailNotFoundException {
        mailService.sendPasswordResetMail(
            userService.requestPasswordReset(mail)
                .orElseThrow(EmailNotFoundException::new)
@@ -153,7 +150,7 @@ public class AccountResource {
      */
     @PostMapping(path = "/account/reset-password/finish")
     @Timed
-    public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
+    public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) throws InternalServerErrorException {
         if (!checkPasswordLength(keyAndPassword.getNewPassword())) {
             throw new InvalidPasswordException();
         }

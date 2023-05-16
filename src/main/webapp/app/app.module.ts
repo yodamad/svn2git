@@ -14,7 +14,6 @@ import { Svn2GitSharedModule } from 'app/shared';
 import { Svn2GitCoreModule } from 'app/core';
 import { Svn2GitAppRoutingModule } from './app-routing.module';
 import { Svn2GitHomeModule } from './home/home.module';
-import { Svn2GitAccountModule } from './account/account.module';
 import { Svn2GitEntityModule } from './entities/entity.module';
 import * as moment from 'moment';
 // jhipster-needle-angular-add-module-import JHipster will add new module here
@@ -35,7 +34,6 @@ export function configInit(configService: ConfigurationService) {
         Svn2GitSharedModule,
         Svn2GitCoreModule,
         Svn2GitHomeModule,
-        Svn2GitAccountModule,
         Svn2GitEntityModule,
         Svn2GitMigrationModule,
         BrowserAnimationsModule,

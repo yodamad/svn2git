@@ -2,9 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
-
 import { IMigrationHistory } from 'app/shared/model/migration-history.model';
-import { Principal } from 'app/core';
 import { MigrationHistoryService } from './migration-history.service';
 
 @Component({
@@ -19,8 +17,7 @@ export class MigrationHistoryComponent implements OnInit, OnDestroy {
     constructor(
         private migrationHistoryService: MigrationHistoryService,
         private jhiAlertService: JhiAlertService,
-        private eventManager: JhiEventManager,
-        private principal: Principal
+        private eventManager: JhiEventManager
     ) {}
 
     loadAll() {
@@ -34,9 +31,6 @@ export class MigrationHistoryComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
-            this.currentAccount = account;
-        });
         this.registerChangeInMigrationHistories();
     }
 

@@ -36,7 +36,7 @@ open class MigrationRemovedFileResource(val migrationRemovedFileService: Migrati
     open fun createMigrationRemovedFile(@RequestBody migrationRemovedFile: MigrationRemovedFile): ResponseEntity<MigrationRemovedFile>? {
         log.debug("REST request to save MigrationRemovedFile : {}", migrationRemovedFile)
         if (migrationRemovedFile.id != null) {
-            throw BadRequestAlertException("A new migrationRemovedFile cannot already have an ID", ENTITY_NAME, "idexists")
+            return ResponseEntity.badRequest().build()
         }
         val result = migrationRemovedFileService.save(migrationRemovedFile)
         return ResponseEntity.created(URI("/api/migration-removed-files/" + result.id))
@@ -59,7 +59,7 @@ open class MigrationRemovedFileResource(val migrationRemovedFileService: Migrati
     open fun updateMigrationRemovedFile(@RequestBody migrationRemovedFile: MigrationRemovedFile): ResponseEntity<MigrationRemovedFile>? {
         log.debug("REST request to update MigrationRemovedFile : {}", migrationRemovedFile)
         if (migrationRemovedFile.id == null) {
-            throw BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull")
+            return ResponseEntity.badRequest().build()
         }
         val result = migrationRemovedFileService.save(migrationRemovedFile)
         return ResponseEntity.ok()

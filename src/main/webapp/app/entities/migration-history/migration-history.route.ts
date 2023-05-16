@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
-import { UserRouteAccessService } from 'app/core';
 import { of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MigrationHistory } from 'app/shared/model/migration-history.model';
@@ -30,8 +29,7 @@ export const migrationHistoryRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.migrationHistory.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     },
     {
         path: 'migration-history/:id/view',
@@ -42,7 +40,6 @@ export const migrationHistoryRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.migrationHistory.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     }
 ];

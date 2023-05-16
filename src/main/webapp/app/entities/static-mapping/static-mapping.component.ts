@@ -2,9 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
-
 import { IStaticMapping } from 'app/shared/model/static-mapping.model';
-import { Principal } from 'app/core';
 import { StaticMappingService } from './static-mapping.service';
 
 @Component({
@@ -19,8 +17,7 @@ export class StaticMappingComponent implements OnInit, OnDestroy {
     constructor(
         private staticMappingService: StaticMappingService,
         private jhiAlertService: JhiAlertService,
-        private eventManager: JhiEventManager,
-        private principal: Principal
+        private eventManager: JhiEventManager
     ) {}
 
     loadAll() {
@@ -34,9 +31,6 @@ export class StaticMappingComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
-            this.currentAccount = account;
-        });
         this.registerChangeInStaticMappings();
     }
 

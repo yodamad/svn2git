@@ -36,7 +36,7 @@ open class MappingResource(val mappingService: MappingService) {
     open fun createMapping(@RequestBody mapping: Mapping): ResponseEntity<Mapping>? {
         log.debug("REST request to save Mapping : {}", mapping)
         if (mapping.id != null) {
-            throw BadRequestAlertException("A new mapping cannot already have an ID", ENTITY_NAME, "idexists")
+            return ResponseEntity.badRequest().build()
         }
         val result = mappingService.save(mapping)
         return ResponseEntity.created(URI("/api/mappings/" + result.id))
@@ -59,7 +59,7 @@ open class MappingResource(val mappingService: MappingService) {
     open fun updateMapping(@RequestBody mapping: Mapping): ResponseEntity<Mapping>? {
         log.debug("REST request to update Mapping : {}", mapping)
         if (mapping.id == null) {
-            throw BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull")
+            return ResponseEntity.badRequest().build()
         }
         val result = mappingService.save(mapping)
         return ResponseEntity.ok()

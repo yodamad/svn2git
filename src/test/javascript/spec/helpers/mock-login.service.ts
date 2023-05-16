@@ -1,5 +1,4 @@
 import { SpyObject } from './spyobject';
-import { LoginService } from 'app/core/login/login.service';
 import Spy = jasmine.Spy;
 
 export class MockLoginService extends SpyObject {
@@ -10,7 +9,7 @@ export class MockLoginService extends SpyObject {
     cancelSpy: Spy;
 
     constructor() {
-        super(LoginService);
+        super();
 
         this.setLoginSpy({});
         this.logoutSpy = this.spy('logout').andReturn(this);

@@ -2,10 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { JhiAlertService, JhiEventManager, JhiParseLinks } from 'ng-jhipster';
-
 import { IMigration, StatusEnum } from 'app/shared/model/migration.model';
-import { Principal } from 'app/core';
-
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { MigrationService } from './migration.service';
 
@@ -30,8 +27,7 @@ export class MigrationComponent implements OnInit, OnDestroy {
         private migrationService: MigrationService,
         private jhiAlertService: JhiAlertService,
         private eventManager: JhiEventManager,
-        private parseLinks: JhiParseLinks,
-        private principal: Principal
+        private parseLinks: JhiParseLinks
     ) {
         this.migrations = [];
         this.itemsPerPage = ITEMS_PER_PAGE;
@@ -69,9 +65,6 @@ export class MigrationComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
-            this.currentAccount = account;
-        });
         this.registerChangeInMigrations();
     }
 

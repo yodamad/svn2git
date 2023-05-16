@@ -1,5 +1,4 @@
 import { SpyObject } from './spyobject';
-import { AccountService } from 'app/core/auth/account.service';
 import Spy = jasmine.Spy;
 
 export class MockAccountService extends SpyObject {
@@ -8,7 +7,7 @@ export class MockAccountService extends SpyObject {
     fakeResponse: any;
 
     constructor() {
-        super(AccountService);
+        super();
 
         this.fakeResponse = null;
         this.getSpy = this.spy('get').andReturn(this);

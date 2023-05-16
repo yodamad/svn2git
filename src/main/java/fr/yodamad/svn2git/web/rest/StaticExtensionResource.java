@@ -47,7 +47,7 @@ public class StaticExtensionResource {
     public ResponseEntity<StaticExtension> createStaticExtension(@Valid @RequestBody StaticExtension staticExtension) throws URISyntaxException, BadRequestAlertException {
         log.debug("REST request to save StaticExtension : {}", staticExtension);
         if (staticExtension.getId() != null) {
-            throw new BadRequestAlertException("A new staticExtension cannot already have an ID", ENTITY_NAME, "idexists");
+            return ResponseEntity.badRequest().build();
         }
         StaticExtension result = staticExtensionRepository.save(staticExtension);
         return ResponseEntity.created(new URI("/api/static-extensions/" + result.getId()))
@@ -69,7 +69,7 @@ public class StaticExtensionResource {
     public ResponseEntity<StaticExtension> updateStaticExtension(@Valid @RequestBody StaticExtension staticExtension) throws URISyntaxException, BadRequestAlertException {
         log.debug("REST request to update StaticExtension : {}", staticExtension);
         if (staticExtension.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            return ResponseEntity.badRequest().build();
         }
         StaticExtension result = staticExtensionRepository.save(staticExtension);
         return ResponseEntity.ok()

@@ -73,7 +73,7 @@ public class MappingResourceIntTest {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MappingResource mappingResource = new MappingResource(mappingService);
         this.restMappingMockMvc = MockMvcBuilders.standaloneSetup(mappingResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)

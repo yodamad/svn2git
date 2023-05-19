@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils
 import org.springframework.web.util.UriUtils.decode
 import org.springframework.web.util.UriUtils.encode
 
-val EMPTY = ""
+const val EMPTY = ""
 
 fun formattedOrEmpty(element: String?, container: String, windowsCase: String? = null) =
     when {

@@ -8,6 +8,7 @@ import fr.yodamad.svn2git.domain.SvnStructure.FakeModule
 import fr.yodamad.svn2git.domain.SvnStructure.SvnModule
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
+import org.springframework.util.StringUtils.hasLength
 import org.springframework.util.StringUtils.isEmpty
 import org.springframework.web.bind.annotation.*
 import org.tmatesoft.svn.core.*
@@ -99,7 +100,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
 
         // Set authentication if needed
         var authManager: ISVNAuthenticationManager? = DefaultSVNAuthenticationManager(null, true, applicationProperties.svn.user, applicationProperties.svn.password, null, null)
-        if (!isEmpty(svnInfo.password)) {
+        if (hasLength(svnInfo.password)) {
             authManager = DefaultSVNAuthenticationManager(null, true, svnInfo.user, svnInfo.password, null, null)
         }
 
@@ -121,7 +122,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
         val modulesFounds: MutableList<SvnModule> = ArrayList()
         list.receiver = ISvnObjectReceiver { _, `object`: SVNDirEntry ->
             val name = `object`.relativePath
-            if (name != null && name.isNotEmpty() && !keywords().contains(name.toLowerCase()) && module?.layoutElements.isNullOrEmpty()) {
+            if (name != null && name.isNotEmpty() && !keywords().contains(name.lowercase()) && module?.layoutElements.isNullOrEmpty()) {
 
                 // found a directory
                 if (`object`.kind == SVNNodeKind.DIR) {
@@ -139,7 +140,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
                     modulesFounds.clear()
                 }
             }
-            if (name != null && name.isNotEmpty() && keywords().contains(name.toLowerCase())) {
+            if (name != null && name.isNotEmpty() && keywords().contains(name.lowercase())) {
                 if (module != null) {
                     log.info(String.format("Module %s with layout %s", module.name, name))
                     module.layoutElements.add(name)
@@ -149,7 +150,7 @@ open class SvnResource(val applicationProperties: ApplicationProperties) {
                     // Root level case
                     val fake = FakeModule()
                     // Check uppercase
-                    fake.uppercase = name.toUpperCase() == name
+                    fake.uppercase = name.uppercase() == name
                     modulesFounds.add(fake)
                 }
             }

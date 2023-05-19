@@ -111,7 +111,7 @@ open class GitCommandManager(val historyMgr: HistoryManager,
      * Set element (branch or tag)
      */
     private fun setSvnElement(elementName: String, element: String?, workUnit: WorkUnit): String {
-        val elt = if (workUnit.migration.uppercase) elementName.toUpperCase() else elementName
+        val elt = if (workUnit.migration.uppercase) elementName.uppercase() else elementName
         return if (element == null) EMPTY
             else "--$elementName=${workUnit.migration.svnProject}/$elt"
     }

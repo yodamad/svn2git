@@ -54,8 +54,8 @@ open class HistoryManager(private val migrationHistoryRepository: MigrationHisto
             val execution = Instant.now().toEpochMilli() - history.startTime.toEpochMilli()
             history.executionTime = DateFormatter.toNiceFormat(execution)
         }
-        migrationHistoryRepository.save(history)
-        LOG.info("Finish step ${history?.step} with status $status in ${history?.executionTime}")
+        migrationHistoryRepository.save(history!!)
+        LOG.info("Finish step ${history.step} with status $status in ${history.executionTime}")
     }
 
     /**
@@ -65,7 +65,7 @@ open class HistoryManager(private val migrationHistoryRepository: MigrationHisto
      */
     @Transactional
     open fun loadMigration(migId: Long): Migration {
-        val migration = migrationRepository.getOne(migId)
+        val migration = migrationRepository.getById(migId)
         Hibernate.initialize(migration)
         Hibernate.initialize(migration.histories)
         Hibernate.initialize(migration.mappings)

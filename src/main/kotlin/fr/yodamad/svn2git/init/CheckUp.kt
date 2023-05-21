@@ -25,7 +25,7 @@ class CheckUp {
     private val EXPECT_VERSION = "expect"
     private val EXPECT_ERROR = "⛔️ expect binary is required on Linux. 👉 Run apt-get|yum install expect."
 
-    val isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows")
+    val isWindows = System.getProperty("os.name").lowercase().startsWith("windows")
 
     @PostConstruct
     fun atStartup() {

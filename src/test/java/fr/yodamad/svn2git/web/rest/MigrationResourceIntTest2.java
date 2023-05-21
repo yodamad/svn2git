@@ -81,7 +81,7 @@ public class MigrationResourceIntTest2 {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MigrationResource migrationResource = new MigrationResource(migrationRepository, migrationManager, migrationHistoryService, mappingService, gitlabResource, applicationProperties);
         this.restMigrationMockMvc = MockMvcBuilders.standaloneSetup(migrationResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)

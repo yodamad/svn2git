@@ -66,7 +66,7 @@ public class StaticExtensionResourceIntTest {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final StaticExtensionResource staticExtensionResource = new StaticExtensionResource(staticExtensionRepository);
         this.restStaticExtensionMockMvc = MockMvcBuilders.standaloneSetup(staticExtensionResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)

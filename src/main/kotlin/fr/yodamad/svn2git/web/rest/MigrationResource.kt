@@ -227,7 +227,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
     @Timed
     @GetMapping("/{id}")
     @JsonView(Public::class)
-    open fun getMigration(@PathVariable id: Long?): ResponseEntity<Migration>? {
+    open fun getMigration(@PathVariable id: Long): ResponseEntity<Migration>? {
         log.debug("REST request to get Migration : {}", id)
         val migration = migrationRepository.findById(id)
         return ResponseUtil.wrapOrNotFound(migration)

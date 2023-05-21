@@ -47,8 +47,6 @@ public class SvnStructure {
         public String path;
         /** Potential submodules. */
         public List<SvnModule> subModules = new ArrayList<>();
-        /** Flag to indicate that keywords are in uppercase. */
-        public boolean uppercase = false;
 
         public SvnModule(String name, String path) {
             super(name);

@@ -35,14 +35,13 @@ open class GitlabManager(val historyMgr: HistoryManager,
      * Create project in GitLab
      *
      * @param migration
-     * @param workUnit
      * @throws GitLabApiException
      */
     @Throws(GitLabApiException::class)
     open fun createGitlabProject(migration: Migration) : Int {
         val history: MigrationHistory = historyMgr.startStep(migration, StepEnum.GITLAB_PROJECT_CREATION, migration.gitlabUrl + migration.gitlabGroup)
         var gitlabAdmin = getGitlabAdminPrototype()
-        var gitlabProjectId : Int
+
 
         // If gitlabInfo.token is empty assure using values found in application.yml.
         // i.e. those in default GitlabAdmin object
@@ -61,6 +60,7 @@ open class GitlabManager(val historyMgr: HistoryManager,
         }
         try {
             val group = gitlabAdmin!!.groupApi().getGroup(migration.gitlabGroup)
+            val gitlabProjectId : Int
 
             // If no svn project specified, use svn group instead
             if (isEmpty(migration.svnProject) && isEmpty(migration.gitlabProject)) {

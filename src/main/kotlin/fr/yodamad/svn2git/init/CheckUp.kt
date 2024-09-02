@@ -78,7 +78,7 @@ class CheckUp {
 
     private fun checkGitSvnClone(): Boolean {
         val result = execCommand("git --version")
-        val regex = "git version 2\\.[2-3][0-9]\\.[0-9]".toRegex()
+        val regex = "git version 2\\.[2-9][0-9]\\.[0-9]".toRegex()
         return if (regex.containsMatchIn(result)) true
         else {
             LOG.error(GIT_ERROR)

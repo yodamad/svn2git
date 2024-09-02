@@ -58,7 +58,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
     open fun createMigration(@RequestBody migration: @Valid Migration?): ResponseEntity<Migration?>? {
         log.debug("REST request to save Migration : {}", migration)
         if (migration!!.id != null) {
-            throw BadRequestAlertException("A new migration cannot already have an ID", ENTITY_NAME, "idexists")
+            return ResponseEntity.badRequest().build()
         }
         migration.date = LocalDate.now()
         migration.createdTimestamp = Instant.now()
@@ -135,7 +135,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
     open fun updateMigration(@RequestBody migration: @Valid Migration?): ResponseEntity<Migration>? {
         log.debug("REST request to update Migration : {}", migration)
         if (migration!!.id == null) {
-            throw BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull")
+            return ResponseEntity.badRequest().build()
         }
         val result = migrationRepository.save(migration)
         return ResponseEntity.ok()
@@ -227,7 +227,7 @@ open class MigrationResource(val migrationRepository: MigrationRepository,
     @Timed
     @GetMapping("/{id}")
     @JsonView(Public::class)
-    open fun getMigration(@PathVariable id: Long?): ResponseEntity<Migration>? {
+    open fun getMigration(@PathVariable id: Long): ResponseEntity<Migration>? {
         log.debug("REST request to get Migration : {}", id)
         val migration = migrationRepository.findById(id)
         return ResponseUtil.wrapOrNotFound(migration)

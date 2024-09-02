@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
-import { UserRouteAccessService } from 'app/core';
 import { of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { StaticMapping } from 'app/shared/model/static-mapping.model';
@@ -32,8 +31,7 @@ export const staticMappingRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.staticMapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     },
     {
         path: 'static-mapping/:id/view',
@@ -44,8 +42,7 @@ export const staticMappingRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.staticMapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     },
     {
         path: 'static-mapping/new',
@@ -56,8 +53,7 @@ export const staticMappingRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.staticMapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     },
     {
         path: 'static-mapping/:id/edit',
@@ -68,8 +64,7 @@ export const staticMappingRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.staticMapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     }
 ];
 
@@ -84,7 +79,6 @@ export const staticMappingPopupRoute: Routes = [
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.staticMapping.home.title'
         },
-        canActivate: [UserRouteAccessService],
         outlet: 'popup'
     }
 ];

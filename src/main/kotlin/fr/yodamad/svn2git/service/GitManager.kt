@@ -9,11 +9,10 @@ import fr.yodamad.svn2git.domain.enumeration.StatusEnum
 import fr.yodamad.svn2git.domain.enumeration.StepEnum
 import fr.yodamad.svn2git.io.Shell.execCommand
 import fr.yodamad.svn2git.io.Shell.isWindows
-import fr.yodamad.svn2git.repository.MappingRepository
 import fr.yodamad.svn2git.service.util.*
-import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.isEmpty
+import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
@@ -23,8 +22,6 @@ import java.nio.charset.Charset.defaultCharset
 open class GitManager(val historyMgr: HistoryManager,
                       val gitCommandManager: GitCommandManager,
                       val repoFormatter: GitRepositoryFormatter,
-                      val mappingMgr: MappingManager,
-                      val mappingRepository: MappingRepository,
                       var applicationProperties: ApplicationProperties) {
 
     private val LOG = LoggerFactory.getLogger(GitManager::class.java)

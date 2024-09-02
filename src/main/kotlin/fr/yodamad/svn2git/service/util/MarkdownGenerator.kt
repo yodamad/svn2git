@@ -53,13 +53,13 @@ open class MarkdownGenerator(
     open fun generateSummaryReadme(migration: Migration, cleanedFilesManager: CleanedFilesManager, workUnit: WorkUnit) {
         val md = StringBuilder()
         // Overview
-        md.append(Heading(migration.gitlabProject.toUpperCase().replace("/".toRegex(), ""), 1))
+        md.append(Heading(migration.gitlabProject.uppercase().replace("/".toRegex(), ""), 1))
             .emptyLine()
             .append(" migrated from ${migration.svnUrl}${migration.svnGroup}${migration.svnProject} to ${migration.gitlabUrl}${migration.gitlabGroup}")
             .emptyLine()
-            .append(" gitlab user ${BoldText(ItalicText(if (migration.gitlabToken == null) applicationProperties.gitlab.account.toUpperCase() else migration.user.toUpperCase()))} on ${migration.date}")
+            .append(" gitlab user ${BoldText(ItalicText(if (migration.gitlabToken == null) applicationProperties.gitlab.account.uppercase() else migration.user.uppercase()))} on ${migration.date}")
             .emptyLine()
-            .append(" subversion user ${BoldText(ItalicText(migration.svnUser.toUpperCase()))} on ${migration.date}")
+            .append(" subversion user ${BoldText(ItalicText(migration.svnUser.uppercase()))} on ${migration.date}")
             .emptyLine()
         if (migration.mappings.isNotEmpty()) {
             // Mapping

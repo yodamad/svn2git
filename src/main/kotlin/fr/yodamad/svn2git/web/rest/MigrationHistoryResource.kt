@@ -35,7 +35,7 @@ open class MigrationHistoryResource(val migrationHistoryService: MigrationHistor
     open fun createMigrationHistory(@RequestBody migrationHistory: MigrationHistory): ResponseEntity<MigrationHistory>? {
         log.debug("REST request to save MigrationHistory : {}", migrationHistory)
         if (migrationHistory.id != null) {
-            throw BadRequestAlertException("A new migrationHistory cannot already have an ID", ENTITY_NAME, "idexists")
+            return ResponseEntity.badRequest().build()
         }
         val result = migrationHistoryService.save(migrationHistory)
         return ResponseEntity.created(URI("/api/migration-histories/" + result.id))
@@ -58,7 +58,7 @@ open class MigrationHistoryResource(val migrationHistoryService: MigrationHistor
     open fun updateMigrationHistory(@RequestBody migrationHistory: MigrationHistory): ResponseEntity<MigrationHistory>? {
         log.debug("REST request to update MigrationHistory : {}", migrationHistory)
         if (migrationHistory.id == null) {
-            throw BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull")
+            return ResponseEntity.badRequest().build()
         }
         val result = migrationHistoryService.save(migrationHistory)
         return ResponseEntity.ok()

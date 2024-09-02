@@ -2,9 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
-
 import { IMapping } from 'app/shared/model/mapping.model';
-import { Principal } from 'app/core';
 import { MappingService } from './mapping.service';
 
 @Component({
@@ -16,12 +14,7 @@ export class MappingComponent implements OnInit, OnDestroy {
     currentAccount: any;
     eventSubscriber: Subscription;
 
-    constructor(
-        private mappingService: MappingService,
-        private jhiAlertService: JhiAlertService,
-        private eventManager: JhiEventManager,
-        private principal: Principal
-    ) {}
+    constructor(private mappingService: MappingService, private jhiAlertService: JhiAlertService, private eventManager: JhiEventManager) {}
 
     loadAll() {
         this.mappingService.query().subscribe(
@@ -34,9 +27,6 @@ export class MappingComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
-            this.currentAccount = account;
-        });
         this.registerChangeInMappings();
     }
 

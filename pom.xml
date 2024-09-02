@@ -4,7 +4,7 @@
 
     <groupId>fr.yodamad.svn2git</groupId>
     <artifactId>svn-2-git</artifactId>
-    <version>2.4.2</version>
+    <version>2.4.3</version>
     <packaging>jar</packaging>
     <name>Svn 2 GitLab</name>
 
@@ -61,25 +61,25 @@
         <mapstruct.version>1.4.2.Final</mapstruct.version>
 
         <!-- Kotlin support -->
-        <kotlin.version>1.4.21</kotlin.version>
+        <kotlin.version>1.6.0</kotlin.version>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
 
         <!-- Plugin versions -->
-        <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
-        <maven-enforcer-plugin.version>3.0.0-M2</maven-enforcer-plugin.version>
-        <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
-        <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
-        <jib-maven-plugin.version>1.8.0</jib-maven-plugin.version>
-        <frontend-maven-plugin.version>1.10.0</frontend-maven-plugin.version>
-        <jacoco-maven-plugin.version>0.8.2</jacoco-maven-plugin.version>
-        <scala-maven-plugin.version>3.4.2</scala-maven-plugin.version>
-        <sonar-maven-plugin.version>3.5.0.1254</sonar-maven-plugin.version>
-        <git-commit-id-plugin.version>2.2.5</git-commit-id-plugin.version>
-        <jasypt.version>3.0.3</jasypt.version>
-        <handlebars.version>4.2.0</handlebars.version>
+        <maven-enforcer-plugin.version>3.3.0</maven-enforcer-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
+        <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
+        <jib-maven-plugin.version>3.3.2</jib-maven-plugin.version>
+        <frontend-maven-plugin.version>1.12.1</frontend-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
+        <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
+        <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
+        <git-commit-id-plugin.version>4.9.10</git-commit-id-plugin.version>
+        <jasypt.version>3.0.5</jasypt.version>
+        <handlebars.version>4.3.1</handlebars.version>
 
         <!-- Sonar properties -->
         <sonar.projectKey>yodamad_svn2git</sonar.projectKey>
@@ -207,6 +207,11 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
@@ -311,17 +316,17 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.6.28</version>
+            <version>3.11.2</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.10.18</version>
+            <version>1.12.23</version>
         </dependency>
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>problem-spring-web</artifactId>
-            <version>0.24.0-RC.0</version>
+            <version>0.27.0</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -382,7 +387,7 @@
         <dependency>
             <groupId>org.tmatesoft.svnkit</groupId>
             <artifactId>svnkit</artifactId>
-            <version>1.9.3</version>
+            <version>1.10.11</version>
         </dependency>
         <!-- Markdown -->
         <dependency>
@@ -394,7 +399,7 @@
         <dependency>
             <groupId>org.danilopianini</groupId>
             <artifactId>khttp</artifactId>
-            <version>0.1.0-dev30+51fa9ae</version>
+            <version>1.2.2</version>
         </dependency>
         <!-- Artifactory -->
         <dependency>
@@ -1313,7 +1318,7 @@
                 <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-jpamodelgen</artifactId>
-                    <version>${hibernate.version}</version>
+                    <version>6.2.2.Final</version>
                 </dependency>
             </dependencies>
         </profile>

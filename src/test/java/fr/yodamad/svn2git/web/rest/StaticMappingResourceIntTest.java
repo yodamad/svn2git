@@ -73,7 +73,7 @@ public class StaticMappingResourceIntTest {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final StaticMappingResource staticMappingResource = new StaticMappingResource(staticMappingService);
         this.restStaticMappingMockMvc = MockMvcBuilders.standaloneSetup(staticMappingResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)

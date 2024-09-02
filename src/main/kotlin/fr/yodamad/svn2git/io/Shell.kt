@@ -4,6 +4,7 @@ import fr.yodamad.svn2git.domain.Migration
 import fr.yodamad.svn2git.service.util.CommandManager
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
+import org.springframework.util.StringUtils.hasLength
 import org.springframework.util.StringUtils.isEmpty
 import java.io.*
 import java.nio.charset.Charset
@@ -17,7 +18,7 @@ import java.util.function.Consumer
  */
 object Shell {
     private val LOG = LoggerFactory.getLogger(Shell::class.java)
-    val isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows")
+    val isWindows = System.getProperty("os.name").lowercase().startsWith("windows")
 
     /**
      * Get working directory
@@ -79,7 +80,7 @@ object Shell {
         LOG.debug(String.format("Exec command : %s", securedCommandToPrint))
         LOG.debug(String.format("in %s", execDir))
         val process = builder.start()
-        val streamGobbler = StreamGobbler(process.inputStream) { s: String? -> if (alwaysPrintOutput && !isEmpty(s) && !s!!.contains("password", true)) LOG.info(s) else LOG.debug(s) }
+        val streamGobbler = StreamGobbler(process.inputStream) { s: String? -> if (alwaysPrintOutput && hasLength(s) && !s!!.contains("password", true)) LOG.info(s) else LOG.debug(s) }
         Executors.newSingleThreadExecutor().submit(streamGobbler)
         val errorStreamGobbler = StreamGobbler(process.errorStream) { s: String? -> LOG.error(s) }
         Executors.newSingleThreadExecutor().submit(errorStreamGobbler)

@@ -25,7 +25,7 @@ class CheckUp {
     private val EXPECT_VERSION = "expect"
     private val EXPECT_ERROR = "⛔️ expect binary is required on Linux. 👉 Run apt-get|yum install expect."
 
-    val isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows")
+    val isWindows = System.getProperty("os.name").lowercase().startsWith("windows")
 
     @PostConstruct
     fun atStartup() {
@@ -78,7 +78,7 @@ class CheckUp {
 
     private fun checkGitSvnClone(): Boolean {
         val result = execCommand("git --version")
-        val regex = "git version 2\\.[2-3][0-9]\\.[0-9]".toRegex()
+        val regex = "git version 2\\.[2-9][0-9]\\.[0-9]".toRegex()
         return if (regex.containsMatchIn(result)) true
         else {
             LOG.error(GIT_ERROR)

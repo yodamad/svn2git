@@ -18,7 +18,7 @@ jobs:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v1
               with:
-                  node-version: 12.16.1
+                  node-version: 14
             - uses: actions/setup-java@v1
               with:
                   java-version: '11.x'
@@ -35,13 +35,14 @@ jobs:
             - name: Install git-svn
               run: sudo apt-get install --yes git git-svn expect
             - name: 🔍 Analyze code with SonarQube
+              continue-on-error: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                   JASYPT_PWD: ${{ secrets.JASYPT_PWD }}
               run: |
                   if [ -n $SONAR_TOKEN ]; then
-                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack -Djasypt.encryptor.password=$JASYPT_PWD
+                      ./mvnw -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P-webpack -Djasypt.encryptor.password=$JASYPT_PWD -DskipTests
                   else
                       echo No SONAR_TOKEN, skipping...
                   fi

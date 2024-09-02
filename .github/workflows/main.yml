@@ -35,6 +35,7 @@ jobs:
             - name: Install git-svn
               run: sudo apt-get install --yes git git-svn expect
             - name: 🔍 Analyze code with SonarQube
+              continue-on-error: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

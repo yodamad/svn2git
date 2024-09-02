@@ -137,7 +137,7 @@ application:
     gitlab:
         url: ENC(on6yHVi8RG5HKiUFarLLvA34r8SkzD9Y+gm+/FdxJNgtqXy06Yn2ySyHUURyrD+HDqSOsJg8CA9DU5W8h/nrrg==)
         account: ENC(ywL1moCcWg2BWSuEZMghzeHrxvKjTdAaTGHHiu/ykZoBdvI9b+/TxSBVQjp/3K60)
-        token: ENC(2qUSBHQouncdftM126KM04hieJC79agzK+c5GMBgKFfgrcD3il+5jrS5wE16g97uaMbB/WQygJfTFKF8v7vklw==)
+        token: ENC(fFECeOMTTTrnh+10oZC60D59SBq3jXhWf61w5yUW+dij8IAaKyvJF72oucT65uT6CFI9+yzB2MHlp/IbMNWXkQ==)
         credentials: optional
         waitSeconds: 15
         dynamic-local-config[0]: pack.deltaCacheSize 256m,Limiting deltaCacheSize to 256m (default)

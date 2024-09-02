@@ -126,7 +126,7 @@ public class MigrationRemovedFileResourceIntTest {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MigrationRemovedFileResource migrationRemovedFileResource = new MigrationRemovedFileResource(migrationRemovedFileService);
         this.restMigrationRemovedFileMockMvc = MockMvcBuilders.standaloneSetup(migrationRemovedFileResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)

@@ -2,9 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
-
 import { IStaticExtension } from 'app/shared/model/static-extension.model';
-import { Principal } from 'app/core';
 import { StaticExtensionService } from './static-extension.service';
 
 @Component({
@@ -19,8 +17,7 @@ export class StaticExtensionComponent implements OnInit, OnDestroy {
     constructor(
         private staticExtensionService: StaticExtensionService,
         private jhiAlertService: JhiAlertService,
-        private eventManager: JhiEventManager,
-        private principal: Principal
+        private eventManager: JhiEventManager
     ) {}
 
     loadAll() {
@@ -34,9 +31,6 @@ export class StaticExtensionComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
-            this.currentAccount = account;
-        });
         this.registerChangeInStaticExtensions();
     }
 

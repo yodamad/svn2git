@@ -190,8 +190,8 @@ open class GitRepositoryFormatter(val historyMgr: HistoryManager,
                         }
                         return@mapToInt execCommand(workUnit.commandManager, workUnit.directory,
                             String.format("git mv %s %s \"%s\" \"%s\"",
-                                if (applicationProperties.getFlags().isGitMvFOption()) "-f" else "",
-                                if (applicationProperties.getFlags().isGitMvKOption()) "-k" else "",
+                                if (applicationProperties.getFlags().isGitMvFOption) "-f" else "",
+                                if (applicationProperties.getFlags().isGitMvKOption) "-k" else "",
                                 el, Paths.get(mapping.gitDirectory, el).toString()))
                     } catch (e: InterruptedException) {
                         return@mapToInt ERROR_CODE

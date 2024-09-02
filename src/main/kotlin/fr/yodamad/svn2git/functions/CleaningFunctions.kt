@@ -17,8 +17,8 @@ import java.util.stream.Collectors
  */
 fun isForbiddenExtension(workUnit: WorkUnit, path: Path): Boolean {
     if (workUnit.migration.forbiddenFileExtensions == null) return false
-    val extensions = Arrays.stream(workUnit.migration.forbiddenFileExtensions.split(",").toTypedArray()).map { obj: String -> obj.toLowerCase() }.collect(Collectors.toList())
-    val uppercaseExtensions = Arrays.stream(workUnit.migration.forbiddenFileExtensions.split(",").toTypedArray()).map { obj: String -> obj.toUpperCase() }.collect(Collectors.toList())
+    val extensions = Arrays.stream(workUnit.migration.forbiddenFileExtensions.split(",").toTypedArray()).map { obj: String -> obj.lowercase() }.collect(Collectors.toList())
+    val uppercaseExtensions = Arrays.stream(workUnit.migration.forbiddenFileExtensions.split(",").toTypedArray()).map { obj: String -> obj.uppercase() }.collect(Collectors.toList())
     extensions.addAll(uppercaseExtensions)
     return extensions.stream()
         .anyMatch { ext: String -> path.toString().endsWith(ext.replaceFirst("\\*".toRegex(), "")) }
@@ -45,7 +45,7 @@ fun exceedsMaxSize(workUnit: WorkUnit, path: Path): Boolean {
             "K" -> digits *= 1024
             else -> { }
         }
-        var isFileExceedsMaxSize: Boolean = false
+        var isFileExceedsMaxSize: Boolean
         FileChannel.open(path).use { fileChannel -> isFileExceedsMaxSize = fileChannel.size() > digits }
         return isFileExceedsMaxSize
     }

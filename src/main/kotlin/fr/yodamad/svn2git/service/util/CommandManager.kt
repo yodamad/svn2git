@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils
 import java.util.*
 
 class CommandManager(val migration: Migration) {
-    var rootDir = ""
     /**
      * This is set to true when the svn clone step (and svn cleanup) has finished.
      */

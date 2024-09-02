@@ -14,8 +14,8 @@ import java.io.IOException
 
 @Service
 open class GitTagManager(val gitManager: GitManager,
-    val gitCommandManager: GitCommandManager,
-    val historyMgr: HistoryManager) {
+                         private val gitCommandManager: GitCommandManager,
+                         val historyMgr: HistoryManager) {
 
     private val LOG = LoggerFactory.getLogger(GitTagManager::class.java)
     private val FAILED_TO_PUSH_TAG = "Failed to push tag"

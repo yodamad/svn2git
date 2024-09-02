@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
-import { UserRouteAccessService } from 'app/core';
 import { of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Mapping } from 'app/shared/model/mapping.model';
@@ -30,8 +29,7 @@ export const mappingRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.mapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     },
     {
         path: 'mapping/:id/view',
@@ -42,7 +40,6 @@ export const mappingRoute: Routes = [
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'svn2GitApp.mapping.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+        }
     }
 ];

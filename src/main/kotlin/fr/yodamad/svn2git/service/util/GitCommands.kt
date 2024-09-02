@@ -39,10 +39,10 @@ fun resetHead() = gitCommand(RESET, "--hard", "HEAD")
 fun gitClean(commandManager: CommandManager, workUnit: WorkUnit) {
     try {
         execCommand(commandManager, workUnit.directory, gitCommand("reflog expire", "--expire=now --all"))
-    } catch (rEx: RuntimeException) { }
+    } catch (_: RuntimeException) { }
     try {
         execCommand(commandManager, workUnit.directory, gitCommand("gc", "--prune=now --aggressive"))
-    } catch (rEx: RuntimeException) { }
+    } catch (_: RuntimeException) { }
     execCommand(commandManager, workUnit.directory, gitCommand("reset", target = "HEAD"))
     execCommand(commandManager, workUnit.directory, gitCommand("clean", "-fd"))
 }

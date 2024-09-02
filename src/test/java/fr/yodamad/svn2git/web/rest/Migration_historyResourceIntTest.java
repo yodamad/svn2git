@@ -75,7 +75,7 @@ public class Migration_historyResourceIntTest {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MigrationHistoryResource migration_historyResource = new MigrationHistoryResource(migration_historyService);
         this.restMigration_historyMockMvc = MockMvcBuilders.standaloneSetup(migration_historyResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)

@@ -504,8 +504,11 @@ export class MigrationStepperComponent implements OnInit {
 
         const module = this.svnDirectories.modules.find(m => m.path === project);
 
-        if (this.svnDirectories.root) this.mig.uppercase = this.svnDirectories.uppercase;
-        else this.mig.uppercase = module.uppercase;
+        if (this.svnDirectories.root || this.svnDirectories.flat) {
+            this.mig.uppercase = this.svnDirectories.uppercase;
+        } else {
+            this.mig.uppercase = module.uppercase;
+        }
 
         if (this.svnDirectories.modules && this.svnDirectories.modules.length > 0) {
             if (module && module.flat) {

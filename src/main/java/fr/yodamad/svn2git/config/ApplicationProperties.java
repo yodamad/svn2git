@@ -182,6 +182,18 @@ public class ApplicationProperties {
         public Integer getMaxFetchAttempts() { return maxFetchAttempts; }
 
         public void setMaxFetchAttempts(Integer maxFetchAttempts) { this.maxFetchAttempts = maxFetchAttempts; }
+        /**
+         * List of SVN refs to ignore during migration (e.g., branches/tags).
+         */
+        public List<String> ignoreRefs;
+
+        public List<String> getIgnoreRefs() {
+            return ignoreRefs;
+        }
+
+        public void setIgnoreRefs(List<String> ignoreRefs) {
+            this.ignoreRefs = ignoreRefs;
+        }
     }
 
     public static class Gitlab {
